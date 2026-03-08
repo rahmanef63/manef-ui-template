@@ -13,43 +13,43 @@ import type { Ent } from "../../../types";
 
 const prepareInviteRef = makeFunctionReference<
   "mutation",
-  { teamId: Id<"teams"> },
-  { inviterEmail: string; teamName: string }
->("users/teams/members/invites:prepare");
+  { workspaceId: Id<"workspaces"> },
+  { inviterEmail: string; workspaceName: string }
+>("users/workspaces/members/invites:prepare");
 
 const createInviteRef = makeFunctionReference<
   "mutation",
   {
-    teamId: Id<"teams">;
+    workspaceId: Id<"workspaces">;
     email: string;
     roleId: Id<"roles">;
     inviterEmail: string;
   },
   Id<"invites">
->("users/teams/members/invites:create");
+>("users/workspaces/members/invites:create");
 
 const deleteInviteRef = makeFunctionReference<
   "mutation",
   { inviteId: Id<"invites"> },
   void
->("users/teams/members/invites:deleteInvite");
+>("users/workspaces/members/invites:deleteInvite");
 
 export const list = query({
   args: {
-    teamId: v.optional(v.id("teams")),
+    workspaceId: v.optional(v.id("workspaces")),
   },
-  async handler(ctx, { teamId }) {
+  async handler(ctx, { workspaceId }) {
     if (
-      teamId === undefined ||
+      workspaceId === undefined ||
       ctx.viewer === null ||
-      !(await viewerHasPermission(ctx, teamId, "Read Members"))
+      !(await viewerHasPermission(ctx, workspaceId, "Read Members"))
     ) {
       return null;
     }
 
     return await ctx
-      .table("teams")
-      .getX(teamId)
+      .table("workspaces")
+      .getX(workspaceId)
       .edge("invites")
       .map(async (invite: Ent<"invites">) => {
         return {
@@ -67,7 +67,7 @@ export const deleteInvite = mutation({
   },
   async handler(ctx, { inviteId }) {
     const invite = await ctx.table("invites").getX(inviteId);
-    await viewerHasPermissionX(ctx, invite.teamId, "Manage Members");
+    await viewerHasPermissionX(ctx, invite.workspaceId, "Manage Members");
     await ctx.table("invites").getX(inviteId).delete();
   },
 });
@@ -81,22 +81,22 @@ export const deleteInvite = mutation({
 // `OVERRIDE_INVITE_EMAIL`.
 export const send = action({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     email: v.string(),
     roleId: v.id("roles"),
   },
-  async handler(ctx, { teamId, email, roleId }) {
-    const { inviterEmail, teamName } = await ctx.runMutation(prepareInviteRef, {
-      teamId,
+  async handler(ctx, { workspaceId, email, roleId }) {
+    const { inviterEmail, workspaceName } = await ctx.runMutation(prepareInviteRef, {
+      workspaceId,
     });
     const inviteId = await ctx.runMutation(createInviteRef, {
-      teamId,
+      workspaceId,
       email,
       roleId,
       inviterEmail,
     });
     try {
-      await sendInviteEmail({ email, inviteId, inviterEmail, teamName });
+      await sendInviteEmail({ email, inviteId, inviterEmail, workspaceName });
     } catch (error) {
       await ctx.runMutation(deleteInviteRef, { inviteId });
       throw error;
@@ -106,27 +106,27 @@ export const send = action({
 
 export const prepare = internalMutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
   },
-  async handler(ctx, { teamId }) {
-    await viewerHasPermissionX(ctx, teamId, "Manage Members");
+  async handler(ctx, { workspaceId }) {
+    await viewerHasPermissionX(ctx, workspaceId, "Manage Members");
     return {
       inviterEmail: ctx.viewerX().email,
-      teamName: (await ctx.table("teams").getX(teamId)).name,
+      workspaceName: (await ctx.table("workspaces").getX(workspaceId)).name,
     };
   },
 });
 
 export const create = internalMutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     email: v.string(),
     roleId: v.id("roles"),
     inviterEmail: v.string(),
   },
-  async handler(ctx, { teamId, email, roleId, inviterEmail }) {
+  async handler(ctx, { workspaceId, email, roleId, inviterEmail }) {
     return await ctx.table("invites").insert({
-      teamId,
+      workspaceId,
       email,
       roleId,
       inviterEmail,
@@ -138,12 +138,12 @@ async function sendInviteEmail({
   email,
   inviteId,
   inviterEmail,
-  teamName,
+  workspaceName,
 }: {
   email: string;
   inviteId: Id<"invites">;
   inviterEmail: string;
-  teamName: string;
+  workspaceName: string;
 }) {
   if (
     process.env.RESEND_API_KEY === undefined ||
@@ -162,8 +162,8 @@ async function sendInviteEmail({
     subject: `${inviterEmail} invited you to join them in My App`,
     react: (
       <div>
-        <strong>{inviterEmail}</strong> invited you to join team{" "}
-        <strong>{teamName}</strong> in My App. Click{" "}
+        <strong>{inviterEmail}</strong> invited you to join workspace{" "}
+        <strong>{workspaceName}</strong> in My App. Click{" "}
         <a
           href={`${process.env.HOSTED_URL}/dashboard?${INVITE_PARAM}=${inviteId}`}
         >

@@ -7,7 +7,7 @@ const Activity = lazy(() => import("@/features/activity"));
 
 // Tasks Features
 const MyTasks = lazy(() => import("@/features/my-tasks"));
-const TeamTasks = lazy(() => import("@/features/team-tasks"));
+const WorkspaceTasks = lazy(() => import("@/features/workspace-tasks"));
 const CalendarTasks = lazy(() => import("@/features/calendar"));
 
 // Chat Features
@@ -35,7 +35,7 @@ export const FEATURE_REGISTRY: Record<string, React.ComponentType<any>> = {
 
     // Tasks
     "my-tasks": MyTasks,
-    "team-tasks": TeamTasks,
+    "workspace-tasks": WorkspaceTasks,
     calendar: CalendarTasks,
 
     // Chat

@@ -63,7 +63,7 @@ export function AcceptInviteDialog() {
           <DialogDescription>
             <span className="font-medium">{invite.inviterEmail}</span> has
             invited you to join{" "}
-            <span className="font-medium">{invite.team}</span>.
+            <span className="font-medium">{invite.workspace}</span>.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -78,9 +78,9 @@ export function AcceptInviteDialog() {
           </Button>
           <Button
             onClick={handleFailure(async () => {
-              const teamSlug = await acceptInvite({ inviteId: invite._id });
+              const workspaceSlug = await acceptInvite({ inviteId: invite._id });
               setInviteId(null);
-              router.push(`/dashboard/${teamSlug}`);
+              router.push(`/dashboard/${workspaceSlug}`);
             })}
           >
             Confirm

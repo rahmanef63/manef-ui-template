@@ -3,12 +3,12 @@ import { mutation, query } from "../functions";
 import { getRole, viewerHasPermissionX } from "../permissions";
 import { Ent, QueryCtx } from "../types";
 import { slugify } from "../utils";
-import { createMember } from "./teams/members";
+import { createMember } from "./workspaces/members";
 
-export async function defaultToAccessTeamSlug(viewer: Ent<"users">) {
+export async function defaultToAccessWorkspaceSlug(viewer: Ent<"users">) {
   return (
-    await viewer.edge("members").map((member: any) => member.edge("team").doc())
-  ).filter((team) => team.isPersonal)[0]!
+    await viewer.edge("members").map((member: any) => member.edge("workspace").doc())
+  ).filter((workspace) => workspace.isPersonal)[0]!
     .slug;
 }
 
@@ -21,13 +21,13 @@ export const list = query({
     return await ctx.viewer
       .edge("members")
       .map(async (member: any) => {
-        const team = await member.edge("team");
+        const workspace = await member.edge("workspace");
         return {
-          _id: team._id,
-          name: team.name,
-          slug: team.slug,
-          isPersonal: team.isPersonal,
-          pictureUrl: team.isPersonal ? ctx.viewer!.pictureUrl : null,
+          _id: workspace._id,
+          name: workspace.name,
+          slug: workspace.slug,
+          isPersonal: workspace.isPersonal,
+          pictureUrl: workspace.isPersonal ? ctx.viewer!.pictureUrl : null,
           isDeleted: false,
         };
       })
@@ -41,11 +41,11 @@ export const create = mutation({
   },
   async handler(ctx, { name }) {
     const slug = await getUniqueSlug(ctx, name);
-    const teamId = await ctx
-      .table("teams")
+    const workspaceId = await ctx
+      .table("workspaces")
       .insert({ name, isPersonal: false, slug });
     await createMember(ctx, {
-      teamId,
+      workspaceId,
       user: ctx.viewerX(),
       roleId: (await getRole(ctx, "Admin"))._id,
     });
@@ -55,25 +55,25 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     name: v.string(),
   },
-  async handler(ctx, { teamId, name }) {
-    await viewerHasPermissionX(ctx, teamId, "Manage Team");
-    const team = await ctx.table("teams").getX(teamId);
-    await team.patch({ name });
+  async handler(ctx, { workspaceId, name }) {
+    await viewerHasPermissionX(ctx, workspaceId, "Manage Workspace");
+    const workspace = await ctx.table("workspaces").getX(workspaceId);
+    await workspace.patch({ name });
   },
 });
 
-export const deleteTeam = mutation({
+export const deleteWorkspace = mutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
   },
-  async handler(ctx, { teamId }) {
-    await viewerHasPermissionX(ctx, teamId, "Delete Team");
-    const team = await ctx.table("teams").getX(teamId);
-    await team.delete();
-    if (team.isPersonal) {
+  async handler(ctx, { workspaceId }) {
+    await viewerHasPermissionX(ctx, workspaceId, "Delete Workspace");
+    const workspace = await ctx.table("workspaces").getX(workspaceId);
+    await workspace.delete();
+    if (workspace.isPersonal) {
       await ctx.viewerX().delete();
     }
   },
@@ -85,7 +85,7 @@ export async function getUniqueSlug(ctx: QueryCtx, name: string) {
   let n = 0;
   for (; ;) {
     slug = n === 0 ? base : `${base}-${n}`;
-    const existing = await ctx.table("teams").get("slug", slug);
+    const existing = await ctx.table("workspaces").get("slug", slug);
     if (existing === null) {
       break;
     }

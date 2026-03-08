@@ -5,12 +5,12 @@ import type { Role } from "@/shared/types/roles";
 
 export const listMenuOverridesRef = makeFunctionReference<
   "query",
-  { teamId: Id<"teams"> },
+  { workspaceId: Id<"workspaces"> },
   MenuItemOverride[] | null
 >("menu:listOverrides");
 
 export const viewerRoleRef = makeFunctionReference<
   "query",
-  { teamId: Id<"teams"> },
+  { workspaceId: Id<"workspaces"> },
   Role | null
 >("menu:viewerRole");

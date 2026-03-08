@@ -5,4 +5,4 @@ export const listRolesRef = makeFunctionReference<
   "query",
   Record<string, never>,
   RoleSummary[]
->("users/teams/roles:list");
+>("users/workspaces/roles:list");

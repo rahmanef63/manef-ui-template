@@ -4,7 +4,7 @@ export const helpFeature = defineFeature({
     id: "help",
     label: "Help",
     icon: "CircleHelp",
-    route: "/dashboard/[teamSlug]/help",
+    route: "/dashboard/[workspaceSlug]/help",
     order: 90,
     menuGroupIds: ["core"],
     requiredRoles: ["Admin", "Member"],

@@ -1,4 +1,4 @@
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -11,14 +11,14 @@ import Image from "next/image";
 import { useCallback, useRef, useState, type FormEvent } from "react";
 
 export function MessageBoard() {
-  const team = useCurrentTeam();
+  const workspace = useCurrentWorkspace();
   const {
     results: messages,
     loadMore,
     status,
   } = usePaginatedQuery(
     listMessagesRef,
-    team == null ? "skip" : { teamId: team._id },
+    workspace == null ? "skip" : { workspaceId: workspace._id },
     { initialNumItems: 10 }
   );
   const [message, setMessage] = useState("");
@@ -38,10 +38,10 @@ export function MessageBoard() {
   }, [loadMore, status]);
   const handleSubmit = handleFailure(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (team == null) {
+    if (workspace == null) {
       return;
     }
-    await sendMessage({ text: message, teamId: team._id });
+    await sendMessage({ text: message, workspaceId: workspace._id });
     setMessage("");
   });
 

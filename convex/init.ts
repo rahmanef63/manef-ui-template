@@ -10,8 +10,8 @@ export const init = internalMutation({
     await ctx
       .table("permissions")
       .insertMany([
-        { name: "Manage Team" },
-        { name: "Delete Team" },
+        { name: "Manage Workspace" },
+        { name: "Delete Workspace" },
         { name: "Manage Members" },
         { name: "Read Members" },
         { name: "Contribute" },
@@ -22,8 +22,8 @@ export const init = internalMutation({
       name: "Admin",
       isDefault: false,
       permissions: [
-        await getPermission(ctx, "Manage Team"),
-        await getPermission(ctx, "Delete Team"),
+        await getPermission(ctx, "Manage Workspace"),
+        await getPermission(ctx, "Delete Workspace"),
         await getPermission(ctx, "Manage Members"),
         await getPermission(ctx, "Read Members"),
         await getPermission(ctx, "Contribute"),

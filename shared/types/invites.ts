@@ -5,6 +5,6 @@ export interface InviteSummary {
   _id: Id<"invites">;
   email: string;
   inviterEmail: string;
-  team: string;
+  workspace: string;
   role: Role;
 }

@@ -2,32 +2,32 @@ import { useQuery } from "convex/react";
 import type { UsePaginatedQueryResult } from "convex/react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { listTeamsRef, viewerPermissionsRef } from "@/shared/convex/teams";
-import type { TeamSummary } from "@/shared/types/teams";
+import { listWorkspacesRef, viewerPermissionsRef } from "@/shared/convex/workspaces";
+import type { WorkspaceSummary } from "@/shared/types/workspaces";
 
-export function useCurrentTeam(): TeamSummary | undefined {
+export function useCurrentWorkspace(): WorkspaceSummary | undefined {
   const router = useRouter();
   const pathname = usePathname();
-  const { teamSlug } = useParams();
-  const teams = useQuery(listTeamsRef);
-  const currentTeam =
-    teams?.find((team: TeamSummary) => team.slug === teamSlug) ?? teams?.[0];
+  const { workspaceSlug } = useParams();
+  const workspaces = useQuery(listWorkspacesRef);
+  const currentWorkspace =
+    workspaces?.find((workspace: WorkspaceSummary) => workspace.slug === workspaceSlug) ?? workspaces?.[0];
   useEffect(() => {
-    if (currentTeam !== undefined && currentTeam.slug !== teamSlug) {
+    if (currentWorkspace !== undefined && currentWorkspace.slug !== workspaceSlug) {
       router.push(
-        `/dashboard/${currentTeam.slug}/${pathname
+        `/dashboard/${currentWorkspace.slug}/${pathname
           .split("/")
           .slice(3)
           .join("/")}`
       );
     }
-  }, [currentTeam, pathname, router, teamSlug]);
-  return currentTeam;
+  }, [currentWorkspace, pathname, router, workspaceSlug]);
+  return currentWorkspace;
 }
 
 export function useViewerPermissions() {
-  const team = useCurrentTeam();
-  const permissions = useQuery(viewerPermissionsRef, { teamId: team?._id });
+  const workspace = useCurrentWorkspace();
+  const permissions = useQuery(viewerPermissionsRef, { workspaceId: workspace?._id });
   return permissions == null ? null : new Set(permissions);
 }
 

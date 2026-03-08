@@ -15,12 +15,12 @@ export async function getRole(ctx: QueryCtx, name: Role) {
 
 export async function viewerWithPermission(
   ctx: QueryCtx,
-  teamId: Id<"teams">,
+  workspaceId: Id<"workspaces">,
   name: Permission
 ) {
   const member = await ctx
-    .table("members", "teamUser", (q: any) =>
-      q.eq("teamId", teamId).eq("userId", ctx.viewerX()._id)
+    .table("members", "workspaceUser", (q: any) =>
+      q.eq("workspaceId", workspaceId).eq("userId", ctx.viewerX()._id)
     )
     .unique();
   if (
@@ -37,19 +37,19 @@ export async function viewerWithPermission(
 
 export async function viewerHasPermission(
   ctx: QueryCtx,
-  teamId: Id<"teams">,
+  workspaceId: Id<"workspaces">,
   name: Permission
 ) {
-  const member = await viewerWithPermission(ctx, teamId, name);
+  const member = await viewerWithPermission(ctx, workspaceId, name);
   return member !== null;
 }
 
 export async function viewerWithPermissionX(
   ctx: MutationCtx,
-  teamId: Id<"teams">,
+  workspaceId: Id<"workspaces">,
   name: Permission
 ) {
-  const member = await viewerWithPermission(ctx, teamId, name);
+  const member = await viewerWithPermission(ctx, workspaceId, name);
   if (member === null) {
     throw new Error(`Viewer does not have the permission "${name}"`);
   }
@@ -58,9 +58,9 @@ export async function viewerWithPermissionX(
 
 export async function viewerHasPermissionX(
   ctx: MutationCtx,
-  teamId: Id<"teams">,
+  workspaceId: Id<"workspaces">,
   name: Permission
 ) {
-  await viewerWithPermissionX(ctx, teamId, name);
+  await viewerWithPermissionX(ctx, workspaceId, name);
   return true;
 }

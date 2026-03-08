@@ -41,14 +41,14 @@ export function Notifications() {
           <Fragment key={invite._id}>
             <DropdownMenuItem
               onSelect={handleFailure(async () => {
-                const teamSlug = await acceptInvite({ inviteId: invite._id });
-                router.push(`/dashboard/${teamSlug}`);
+                const workspaceSlug = await acceptInvite({ inviteId: invite._id });
+                router.push(`/dashboard/${workspaceSlug}`);
               })}
             >
               <div>
                 <span className="font-medium">{invite.inviterEmail}</span> has
                 invited you to join{" "}
-                <span className="font-medium">{invite.team}</span>. Click to
+                <span className="font-medium">{invite.workspace}</span>. Click to
                 accept.
               </div>
             </DropdownMenuItem>

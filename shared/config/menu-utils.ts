@@ -41,38 +41,38 @@ export interface BottomNavItem {
 }
 
 /**
- * Helper to resolve route with team slug
+ * Helper to resolve route with workspace slug
  *
- * All menu items should be scoped under /dashboard/[teamSlug]/...
+ * All menu items should be scoped under /dashboard/[workspaceSlug]/...
  * except for specific cases or external links.
  */
-function resolveRoute(href: string, teamSlug?: string): string {
-    if (!teamSlug) return href;
+function resolveRoute(href: string, workspaceSlug?: string): string {
+    if (!workspaceSlug) return href;
     if (href.startsWith("http")) return href;
 
     // Handle root dashboard path
     if (href === "/dashboard") {
-        return `/dashboard/${teamSlug}`;
+        return `/dashboard/${workspaceSlug}`;
     }
 
     // Handle paths that already have placeholders
-    if (href.includes("[teamSlug]")) {
-        return href.replace("[teamSlug]", teamSlug);
+    if (href.includes("[workspaceSlug]")) {
+        return href.replace("[workspaceSlug]", workspaceSlug);
     }
 
     // Handle root paths that should be under dashboard (e.g. /tasks -> /dashboard/slug/tasks)
     // Ensure we don't double-prefix if href already starts with /dashboard
     if (href.startsWith("/") && !href.startsWith("/dashboard")) {
-        return `/dashboard/${teamSlug}${href}`;
+        return `/dashboard/${workspaceSlug}${href}`;
     }
 
     // If path is already /dashboard/something, ensure we inject slug if needed
     // This handles cases where url might be /dashboard/settings but needs slug
-    // Ideally paths should use [teamSlug] placeholder, but this is a fallback
+    // Ideally paths should use [workspaceSlug] placeholder, but this is a fallback
     if (href.startsWith("/dashboard/")) {
         // If it doesn't look like it has a slug segment manually added
         const parts = href.split('/');
-        if (parts[2] !== teamSlug && parts[2] !== "[teamSlug]") {
+        if (parts[2] !== workspaceSlug && parts[2] !== "[workspaceSlug]") {
             // This is ambiguous without strict convention, assuming inputs from MENU_CATALOG
             // are mostly root paths like /tasks, /chat etc.
             // For now, trust inputs unless they are explicitly /dashboard root.
@@ -93,7 +93,7 @@ function resolveRoute(href: string, teamSlug?: string): string {
  */
 export function normalizeBottomNav(
     portalId: string,
-    teamSlug?: string,
+    workspaceSlug?: string,
     availableMenuIds?: MenuId[]
 ): BottomNavItem[] {
     const config = getPortalConfig(portalId);
@@ -122,7 +122,7 @@ export function normalizeBottomNav(
             id: feature.id,
             label: feature.label,
             icon: icon ?? "Menu", // Default icon if missing
-            href: resolveRoute(feature.route, teamSlug),
+            href: resolveRoute(feature.route, workspaceSlug),
         });
         return true;
     };
@@ -163,7 +163,7 @@ export function normalizeBottomNav(
 /**
  * Build sidebar menu tree from PORTAL_CONFIG
  */
-export function buildSidebarTree(portalId: string, teamSlug?: string): SidebarGroup[] {
+export function buildSidebarTree(portalId: string, workspaceSlug?: string): SidebarGroup[] {
     const config = getPortalConfig(portalId);
     const groups: SidebarGroup[] = [];
 
@@ -182,7 +182,7 @@ export function buildSidebarTree(portalId: string, teamSlug?: string): SidebarGr
                 return {
                     id: childFeature.id,
                     label: childFeature.label,
-                    href: resolveRoute(childFeature.route, teamSlug),
+                    href: resolveRoute(childFeature.route, workspaceSlug),
                 };
             }).filter(Boolean) as MenuTab[];
         }
@@ -193,7 +193,7 @@ export function buildSidebarTree(portalId: string, teamSlug?: string): SidebarGr
             id: feature.id,
             label: feature.label,
             icon: icon ?? "Menu", // Fallback
-            href: resolveRoute(feature.route, teamSlug),
+            href: resolveRoute(feature.route, workspaceSlug),
             tabs,
         };
     };
@@ -281,7 +281,7 @@ export function getMenuFromPath(pathname: string): MenuCatalogItem | null {
     if (matches.length === 0) return null;
 
     const { feature, params } = matches[0];
-    const teamSlug = params?.teamSlug;
+    const workspaceSlug = params?.workspaceSlug;
 
     // 2. Determine Parent
     let parentId = feature.id;
@@ -308,7 +308,7 @@ export function getMenuFromPath(pathname: string): MenuCatalogItem | null {
         return {
             id: childFeature.id,
             label: childFeature.label,
-            href: resolveRoute(childFeature.route, teamSlug),
+            href: resolveRoute(childFeature.route, workspaceSlug),
         };
     }).filter(Boolean) as MenuTab[];
 
@@ -316,7 +316,7 @@ export function getMenuFromPath(pathname: string): MenuCatalogItem | null {
         id: parentFeature.id,
         label: parentFeature.label,
         icon: parentFeature.icon ?? "Menu",
-        href: resolveRoute(parentFeature.route, teamSlug),
+        href: resolveRoute(parentFeature.route, workspaceSlug),
         tabs,
     };
 }

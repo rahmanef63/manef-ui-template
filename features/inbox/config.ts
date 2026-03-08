@@ -4,7 +4,7 @@ import { PARENT_FEATURES } from "@/project/registry/navigation";
 export const inboxFeature = defineFeature({
     id: "inbox",
     label: "Inbox",
-    route: "/dashboard/[teamSlug]/chat/inbox",
+    route: "/dashboard/[workspaceSlug]/chat/inbox",
     order: 10,
     menuGroupIds: [PARENT_FEATURES.chat],
     requiredRoles: ["Admin", "Member"],

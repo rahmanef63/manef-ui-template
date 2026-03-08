@@ -4,7 +4,7 @@ export const chatFeature = defineFeature({
     id: "chat",
     label: "Chat",
     icon: "MessageSquare",
-    route: "/dashboard/[teamSlug]/chat",
+    route: "/dashboard/[workspaceSlug]/chat",
     order: 30,
     menuGroupIds: ["core"],
     requiredRoles: ["Admin", "Member"],

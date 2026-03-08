@@ -7,7 +7,7 @@ import type { MessageSummary } from "@/shared/types/messages";
 export const listMessagesRef = makeFunctionReference<
   "query",
   {
-    teamId: Id<"teams">;
+    workspaceId: Id<"workspaces">;
     paginationOpts: Infer<typeof paginationOptsValidator>;
   },
   {
@@ -15,10 +15,10 @@ export const listMessagesRef = makeFunctionReference<
     isDone: boolean;
     continueCursor: string;
   }
->("users/teams/messages:list");
+>("users/workspaces/messages:list");
 
 export const createMessageRef = makeFunctionReference<
   "mutation",
-  { teamId: Id<"teams">; text: string },
+  { workspaceId: Id<"workspaces">; text: string },
   void
->("users/teams/messages:create");
+>("users/workspaces/messages:create");

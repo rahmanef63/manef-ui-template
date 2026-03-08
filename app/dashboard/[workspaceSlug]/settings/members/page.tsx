@@ -1,6 +1,6 @@
 "use client";
 
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { SettingsMenuButton } from "@/features/settings/components/SettingsMenuButton";
 import { AddMember } from "@/features/members/components/AddMember";
 import { MembersList } from "@/features/members/components/MemberList";
@@ -8,13 +8,13 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function MembersPage() {
-  const team = useCurrentTeam();
+  const workspace = useCurrentWorkspace();
   const router = useRouter();
   useEffect(() => {
-    if (team?.isPersonal === true) {
-      router.replace(`/dashboard/${team.slug}/settings`);
+    if (workspace?.isPersonal === true) {
+      router.replace(`/dashboard/${workspace.slug}/settings`);
     }
-  }, [team, router]);
+  }, [workspace, router]);
   return (
     <>
       <div className="flex items-center mt-8">

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
 import { MessageBoard } from "@/features/messages/components/MessageBoard";
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { SectionCards } from "@/components/layout/sections/section-cards";
 import { ChartAreaInteractive } from "@/components/layout/chart-area-interactive";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -40,8 +40,8 @@ const sampleData: z.infer<typeof dataTableSchema>[] = [
 ];
 
 export default function Home() {
-  const team = useCurrentTeam();
-  if (team == null) {
+  const workspace = useCurrentWorkspace();
+  if (workspace == null) {
     return <DashboardSkeleton />;
   }
   return (

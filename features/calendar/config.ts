@@ -4,7 +4,7 @@ import { PARENT_FEATURES } from "@/project/registry/navigation";
 export const calendarTasksFeature = defineFeature({
     id: "calendar",
     label: "Calendar",
-    route: "/dashboard/[teamSlug]/tasks/calendar",
+    route: "/dashboard/[workspaceSlug]/tasks/calendar",
     order: 30,
     menuGroupIds: [PARENT_FEATURES.tasks],
     requiredRoles: ["Admin", "Member"],

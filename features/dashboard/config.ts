@@ -4,7 +4,7 @@ export const dashboardFeature = defineFeature({
   id: "dashboard",
   label: "Dashboard",
   icon: "LayoutDashboard",
-  route: "/dashboard/[teamSlug]",
+  route: "/dashboard/[workspaceSlug]",
   order: 10,
   menuGroupIds: ["core"],
   requiredRoles: ["Admin", "Member"],

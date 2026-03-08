@@ -7,7 +7,7 @@ import { BottomNavBlock } from "./BottomNavBlock";
 import { SiteHeader } from "@/components/layout/header/site-header";
 import { Notifications } from "@/features/notifications/components/Notifications";
 import { Toaster } from "@/components/ui/toaster";
-import { AcceptInviteDialog } from "@/features/teams/components/AcceptInviteDialog";
+import { AcceptInviteDialog } from "@/features/workspaces/components/AcceptInviteDialog";
 
 interface AppShellBlockProps {
     children: React.ReactNode;

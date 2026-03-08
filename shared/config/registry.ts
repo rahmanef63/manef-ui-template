@@ -5,7 +5,7 @@ import { activityFeature } from "@/features/activity/config";
 
 // Tasks Sub-features
 import { myTasksFeature } from "@/features/my-tasks/config";
-import { teamTasksFeature } from "@/features/team-tasks/config";
+import { workspaceTasksFeature } from "@/features/workspace-tasks/config";
 import { calendarTasksFeature } from "@/features/calendar/config";
 
 // Chat Sub-features
@@ -58,7 +58,7 @@ export const featureRegistry = [
   kpiFeature,
   activityFeature,
   myTasksFeature,
-  teamTasksFeature,
+  workspaceTasksFeature,
   calendarTasksFeature,
   inboxFeature,
   agentsFeature,

@@ -4,16 +4,16 @@ import { viewerHasPermissionX } from "./permissions";
 
 export const listOverrides = query({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
   },
-  async handler(ctx, { teamId }) {
+  async handler(ctx, { workspaceId }) {
     if (ctx.viewer === null) {
       return null;
     }
 
     const member = await ctx
-      .table("members", "teamUser", (q: any) =>
-        q.eq("teamId", teamId).eq("userId", ctx.viewerX()._id)
+      .table("members", "workspaceUser", (q: any) =>
+        q.eq("workspaceId", workspaceId).eq("userId", ctx.viewerX()._id)
       )
       .unique();
 
@@ -22,7 +22,7 @@ export const listOverrides = query({
     }
 
     const overrides = await ctx
-      .table("menuItemOverrides", "teamId", (q: any) => q.eq("teamId", teamId))
+      .table("menuItemOverrides", "workspaceId", (q: any) => q.eq("workspaceId", workspaceId))
       .map((doc: any) => doc);
 
     return overrides.map((override: any) => ({
@@ -39,16 +39,16 @@ export const listOverrides = query({
 
 export const viewerRole = query({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
   },
-  async handler(ctx, { teamId }) {
+  async handler(ctx, { workspaceId }) {
     if (ctx.viewer === null) {
       return null;
     }
 
     const member = await ctx
-      .table("members", "teamUser", (q: any) =>
-        q.eq("teamId", teamId).eq("userId", ctx.viewerX()._id)
+      .table("members", "workspaceUser", (q: any) =>
+        q.eq("workspaceId", workspaceId).eq("userId", ctx.viewerX()._id)
       )
       .unique();
 
@@ -71,20 +71,20 @@ const overridePatch = v.object({
 
 export const upsertOverride = mutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     featureId: v.string(),
     patch: overridePatch,
   },
-  async handler(ctx, { teamId, featureId, patch }) {
-    await viewerHasPermissionX(ctx, teamId, "Manage Menu");
+  async handler(ctx, { workspaceId, featureId, patch }) {
+    await viewerHasPermissionX(ctx, workspaceId, "Manage Menu");
 
     const cleanedPatch = Object.fromEntries(
       Object.entries(patch).filter(([, value]) => value !== undefined)
     );
 
     const existing = await ctx
-      .table("menuItemOverrides", "teamFeature", (q: any) =>
-        q.eq("teamId", teamId).eq("featureId", featureId)
+      .table("menuItemOverrides", "workspaceFeature", (q: any) =>
+        q.eq("workspaceId", workspaceId).eq("featureId", featureId)
       )
       .unique();
 
@@ -94,7 +94,7 @@ export const upsertOverride = mutation({
     }
 
     return await ctx.table("menuItemOverrides").insert({
-      teamId,
+      workspaceId,
       featureId,
       ...cleanedPatch,
     });
@@ -103,15 +103,15 @@ export const upsertOverride = mutation({
 
 export const clearOverride = mutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     featureId: v.string(),
   },
-  async handler(ctx, { teamId, featureId }) {
-    await viewerHasPermissionX(ctx, teamId, "Manage Menu");
+  async handler(ctx, { workspaceId, featureId }) {
+    await viewerHasPermissionX(ctx, workspaceId, "Manage Menu");
 
     const existing = await ctx
-      .table("menuItemOverrides", "teamFeature", (q: any) =>
-        q.eq("teamId", teamId).eq("featureId", featureId)
+      .table("menuItemOverrides", "workspaceFeature", (q: any) =>
+        q.eq("workspaceId", workspaceId).eq("featureId", featureId)
       )
       .unique();
 

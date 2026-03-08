@@ -9,9 +9,9 @@ export default function NotFound() {
                 <FileQuestion className="h-10 w-10 text-muted-foreground" />
             </div>
             <div className="space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight">Team Not Found</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Workspace Not Found</h2>
                 <p className="text-muted-foreground">
-                    The team dashboard you are looking for does not exist or you do not have access.
+                    The workspace dashboard you are looking for does not exist or you do not have access.
                 </p>
             </div>
             <Button asChild variant="outline">

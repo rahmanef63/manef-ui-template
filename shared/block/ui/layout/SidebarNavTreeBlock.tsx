@@ -6,7 +6,7 @@ import { usePathname, useParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { buildSidebarTree, resolveIcon } from "@/shared/config";
 import type { SidebarGroup as SidebarGroupType, SidebarMenuItem as SidebarMenuItemType } from "@/shared/config";
 import { NavUser } from "@/components/layout/sidebar/nav-user";
@@ -31,7 +31,7 @@ import {
     SidebarMenuSub,
     SidebarRail,
 } from "@/components/ui/sidebar";
-import { TeamSwitcher } from "@/features/teams/components/TeamSwitcher";
+import { WorkspaceSwitcher } from "@/features/workspaces/components/WorkspaceSwitcher";
 
 interface SidebarNavTreeBlockProps extends React.ComponentProps<typeof Sidebar> {
     portalId?: string;
@@ -41,16 +41,16 @@ export function SidebarNavTreeBlock({
     portalId = "default",
     ...props
 }: SidebarNavTreeBlockProps) {
-    const team = useCurrentTeam();
+    const workspace = useCurrentWorkspace();
     const { data: session } = useSession();
     const pathname = usePathname();
     const params = useParams();
 
-    const teamSlug = typeof params?.teamSlug === 'string' ? params.teamSlug : undefined;
+    const workspaceSlug = typeof params?.workspaceSlug === 'string' ? params.workspaceSlug : undefined;
 
     const sidebarGroups = React.useMemo(
-        () => buildSidebarTree(portalId, teamSlug),
-        [portalId, teamSlug]
+        () => buildSidebarTree(portalId, workspaceSlug),
+        [portalId, workspaceSlug]
     );
 
     const userPayload = {
@@ -64,7 +64,7 @@ export function SidebarNavTreeBlock({
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher />
+                <WorkspaceSwitcher />
             </SidebarHeader>
 
             <SidebarContent>

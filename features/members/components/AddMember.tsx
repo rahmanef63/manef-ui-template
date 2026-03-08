@@ -1,5 +1,5 @@
 import { handleFailure } from "@/shared/errors/handleFailure";
-import { useCurrentTeam, useViewerPermissions } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace, useViewerPermissions } from "@/features/workspaces/hooks/useWorkspaceState";
 import { SelectRole } from "@/features/members/components/SelectRole";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,7 +48,7 @@ function AddMemberForm({
   defaultRole: Id<"roles">;
   permissions: Set<Permission>;
 }) {
-  const team = useCurrentTeam();
+  const workspace = useCurrentWorkspace();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,7 +57,7 @@ function AddMemberForm({
     },
   });
   const sendInvite = useAction(sendMemberInviteRef);
-  if (team == null) {
+  if (workspace == null) {
     return null;
   }
   const hasManagePermission = permissions.has("Manage Members");
@@ -68,7 +68,7 @@ function AddMemberForm({
     >
       <CardHeader>
         <CardTitle>Add member</CardTitle>
-        <CardDescription>Add a member to your team.</CardDescription>
+        <CardDescription>Add a member to your workspace.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -76,7 +76,7 @@ function AddMemberForm({
             autoComplete="off"
             onSubmit={handleFailure(
               form.handleSubmit(async ({ email, role }) => {
-                await sendInvite({ email, roleId: role, teamId: team._id });
+                await sendInvite({ email, roleId: role, workspaceId: workspace._id });
                 form.reset();
                 toast({ title: "Member invite created." });
               })

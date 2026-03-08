@@ -1,7 +1,7 @@
 "use client";
 
 import { handleFailure } from "@/shared/errors/handleFailure";
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,12 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteTeamRef } from "@/shared/convex/teams";
+import { deleteWorkspaceRef } from "@/shared/convex/workspaces";
 import { useMutation } from "convex/react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export function DeleteTeamDialog({
+export function DeleteWorkspaceDialog({
   open,
   setOpen,
 }: {
@@ -24,14 +24,14 @@ export function DeleteTeamDialog({
   setOpen: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const deleteTeam = useMutation(deleteTeamRef);
-  const team = useCurrentTeam();
-  if (team == null) {
+  const deleteWorkspace = useMutation(deleteWorkspaceRef);
+  const workspace = useCurrentWorkspace();
+  if (workspace == null) {
     return null;
   }
   const handleDelete = handleFailure(async () => {
-    await deleteTeam({ teamId: team._id });
-    if (team.isPersonal) {
+    await deleteWorkspace({ workspaceId: workspace._id });
+    if (workspace.isPersonal) {
       await signOut({ callbackUrl: "/" });
       return;
     }
@@ -45,14 +45,14 @@ export function DeleteTeamDialog({
           <DialogDescription>
             You are about to delete{" "}
             <span className="font-semibold text-foreground">
-              {team.isPersonal ? <>your personal account</> : <>{team.name}</>}
+              {workspace.isPersonal ? <>your personal account</> : <>{workspace.name}</>}
             </span>
             . This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="destructive" onClick={handleDelete}>
-            {team.isPersonal ? <>Delete Personal Account</> : <>Delete Team</>}
+            {workspace.isPersonal ? <>Delete Personal Account</> : <>Delete Workspace</>}
           </Button>
         </DialogFooter>
       </DialogContent>

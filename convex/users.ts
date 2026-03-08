@@ -1,7 +1,7 @@
 import { internalMutation, mutation } from "./functions";
 import { getRole } from "./permissions";
-import { defaultToAccessTeamSlug, getUniqueSlug } from "./users/teams";
-import { createMember } from "./users/teams/members";
+import { defaultToAccessWorkspaceSlug, getUniqueSlug } from "./users/workspaces";
+import { createMember } from "./users/workspaces/members";
 
 export const store = mutation({
   args: {},
@@ -15,7 +15,7 @@ export const store = mutation({
       .table("users")
       .get("tokenIdentifier", tokenIdentifier);
     if (existingUser !== null) {
-      return defaultToAccessTeamSlug(existingUser);
+      return defaultToAccessWorkspaceSlug(existingUser);
     }
     let user = await ctx.table("users").get("email", email);
     const nameFallback = emailUserName(email);
@@ -32,13 +32,13 @@ export const store = mutation({
     } else {
       user = await ctx.table("users").insert(userFields).get();
     }
-    const name = `${user.firstName ?? nameFallback}'s Team`;
+    const name = `${user.firstName ?? nameFallback}'s Workspace`;
     const slug = await getUniqueSlug(ctx, identity?.nickname ?? name);
-    const teamId = await ctx
-      .table("teams")
+    const workspaceId = await ctx
+      .table("workspaces")
       .insert({ name, slug, isPersonal: true });
     await createMember(ctx, {
-      teamId,
+      workspaceId,
       user,
       roleId: (await getRole(ctx, "Admin"))._id,
     });

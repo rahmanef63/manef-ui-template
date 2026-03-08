@@ -8,24 +8,24 @@ import type {
 import type { Role } from "@/shared/types/roles";
 
 type BuildMenuInput = {
-  teamSlug?: string;
+  workspaceSlug?: string;
   overrides?: MenuItemOverride[] | null;
   viewerRole?: Role | null;
   projectId?: string;
 };
 
-function resolveRoute(route: string, teamSlug?: string) {
-  if (!teamSlug && route.includes("[teamSlug]")) {
+function resolveRoute(route: string, workspaceSlug?: string) {
+  if (!workspaceSlug && route.includes("[workspaceSlug]")) {
     return "#";
   }
-  if (!teamSlug) return route;
+  if (!workspaceSlug) return route;
   return route
-    .replace(/\[teamSlug\]/g, teamSlug)
-    .replace(/:teamSlug/g, teamSlug);
+    .replace(/\[workspaceSlug\]/g, workspaceSlug)
+    .replace(/:workspaceSlug/g, workspaceSlug);
 }
 
 export function buildMenu({
-  teamSlug,
+  workspaceSlug,
   overrides,
   viewerRole,
   projectId,
@@ -51,7 +51,7 @@ export function buildMenu({
         override?.icon && isIconId(override.icon) ? override.icon : undefined;
       const icon = iconOverride ?? (feature as any).icon;
       const order = override?.order ?? feature.order ?? 0;
-      const href = resolveRoute(feature.route, teamSlug);
+      const href = resolveRoute(feature.route, workspaceSlug);
 
       const item: ResolvedMenuItem = {
         id: feature.id,

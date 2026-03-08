@@ -4,7 +4,7 @@ export const tasksFeature = defineFeature({
     id: "tasks",
     label: "Tasks",
     icon: "CheckSquare",
-    route: "/dashboard/[teamSlug]/tasks",
+    route: "/dashboard/[workspaceSlug]/tasks",
     order: 20,
     menuGroupIds: ["core"],
     requiredRoles: ["Admin", "Member"],

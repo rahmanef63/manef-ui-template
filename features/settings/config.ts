@@ -4,7 +4,7 @@ export const settingsFeature = defineFeature({
   id: "settings",
   label: "Settings",
   icon: "settings",
-  route: "/dashboard/[teamSlug]/settings",
+  route: "/dashboard/[workspaceSlug]/settings",
   order: 90,
   menuGroupIds: ["settings"],
   requiredRoles: ["Admin", "Member"],

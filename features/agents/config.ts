@@ -4,7 +4,7 @@ import { PARENT_FEATURES } from "@/project/registry/navigation";
 export const agentsFeature = defineFeature({
     id: "agents",
     label: "Agents",
-    route: "/dashboard/[teamSlug]/chat/agents",
+    route: "/dashboard/[workspaceSlug]/chat/agents",
     order: 20,
     menuGroupIds: [PARENT_FEATURES.chat],
     requiredRoles: ["Admin", "Member"],

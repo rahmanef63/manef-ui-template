@@ -5,13 +5,13 @@ import { viewerHasPermission, viewerWithPermissionX } from "../../permissions";
 
 export const list = query({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, { teamId, paginationOpts }) => {
+  handler: async (ctx, { workspaceId, paginationOpts }) => {
     if (
       ctx.viewer === null ||
-      !(await viewerHasPermission(ctx, teamId, "Contribute"))
+      !(await viewerHasPermission(ctx, workspaceId, "Contribute"))
     ) {
       return {
         page: [],
@@ -20,8 +20,8 @@ export const list = query({
       };
     }
     return await ctx
-      .table("teams")
-      .getX(teamId)
+      .table("workspaces")
+      .getX(workspaceId)
       .edge("messages")
       .order("desc")
       .paginate(paginationOpts)
@@ -42,17 +42,17 @@ export const list = query({
 
 export const create = mutation({
   args: {
-    teamId: v.id("teams"),
+    workspaceId: v.id("workspaces"),
     text: v.string(),
   },
-  handler: async (ctx, { teamId, text }) => {
-    const member = await viewerWithPermissionX(ctx, teamId, "Contribute");
+  handler: async (ctx, { workspaceId, text }) => {
+    const member = await viewerWithPermissionX(ctx, workspaceId, "Contribute");
     if (text.trim().length === 0) {
       throw new Error("Message must not be empty");
     }
     await ctx.table("messages").insert({
       text,
-      teamId: teamId,
+      workspaceId: workspaceId,
       memberId: member._id,
     });
   },

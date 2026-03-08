@@ -1,8 +1,8 @@
 import {
-  useCurrentTeam,
+  useCurrentWorkspace,
   useStalePaginationValue,
   useViewerPermissions,
-} from "@/features/teams/hooks/useTeamState";
+} from "@/features/workspaces/hooks/useWorkspaceState";
 import { SelectRole } from "@/features/members/components/SelectRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,20 +36,20 @@ import {
 import type { MemberInviteSummary } from "@/shared/types/members";
 
 export function MembersList() {
-  const team = useCurrentTeam();
+  const workspace = useCurrentWorkspace();
   const viewerPermissions = useViewerPermissions();
   const [search, setSearch] = useState("");
 
   const members = usePaginatedQuery(
     listMembersRef,
-    team === undefined ? "skip" : { teamId: team._id, search },
+    workspace === undefined ? "skip" : { workspaceId: workspace._id, search },
     { initialNumItems: 40 }
   );
   const invites = useQuery(listMemberInvitesRef, {
-    teamId: team?._id,
+    workspaceId: workspace?._id,
   });
 
-  if (team == null || viewerPermissions == null || invites == null) {
+  if (workspace == null || viewerPermissions == null || invites == null) {
     return null;
   }
   const searchInput = (

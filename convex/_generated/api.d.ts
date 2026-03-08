@@ -16,11 +16,11 @@ import type * as permissions_schema from "../permissions_schema.js";
 import type * as types from "../types.js";
 import type * as user_invites from "../user_invites.js";
 import type * as users from "../users.js";
-import type * as users_teams from "../users/teams.js";
-import type * as users_teams_members from "../users/teams/members.js";
-import type * as users_teams_members_invites from "../users/teams/members/invites.js";
-import type * as users_teams_messages from "../users/teams/messages.js";
-import type * as users_teams_roles from "../users/teams/roles.js";
+import type * as users_workspaces from "../users/workspaces.js";
+import type * as users_workspaces_members from "../users/workspaces/members.js";
+import type * as users_workspaces_members_invites from "../users/workspaces/members/invites.js";
+import type * as users_workspaces_messages from "../users/workspaces/messages.js";
+import type * as users_workspaces_roles from "../users/workspaces/roles.js";
 import type * as utils from "../utils.js";
 
 import type {
@@ -38,11 +38,11 @@ declare const fullApi: ApiFromModules<{
   types: typeof types;
   user_invites: typeof user_invites;
   users: typeof users;
-  "users/teams": typeof users_teams;
-  "users/teams/members": typeof users_teams_members;
-  "users/teams/members/invites": typeof users_teams_members_invites;
-  "users/teams/messages": typeof users_teams_messages;
-  "users/teams/roles": typeof users_teams_roles;
+  "users/workspaces": typeof users_workspaces;
+  "users/workspaces/members": typeof users_workspaces_members;
+  "users/workspaces/members/invites": typeof users_workspaces_members_invites;
+  "users/workspaces/messages": typeof users_workspaces_messages;
+  "users/workspaces/roles": typeof users_workspaces_roles;
   utils: typeof utils;
 }>;
 

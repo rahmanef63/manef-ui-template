@@ -4,7 +4,7 @@ export const adminFeature = defineFeature({
     id: "admin",
     label: "Admin",
     icon: "Shield",
-    route: "/dashboard/[teamSlug]/admin",
+    route: "/dashboard/[workspaceSlug]/admin",
     order: 80,
     menuGroupIds: ["core"],
     requiredRoles: ["Admin"],

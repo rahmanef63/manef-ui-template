@@ -52,15 +52,15 @@ function BottomNavContent({
     const { toggleSidebar } = useSidebar();
     const [mounted, setMounted] = React.useState(false);
 
-    const teamSlug = typeof params?.teamSlug === 'string' ? params.teamSlug : undefined;
+    const workspaceSlug = typeof params?.workspaceSlug === 'string' ? params.workspaceSlug : undefined;
 
     React.useEffect(() => {
         setMounted(true);
     }, []);
 
     const items = React.useMemo(() => {
-        return normalizeBottomNav(portalId, teamSlug);
-    }, [portalId, teamSlug]);
+        return normalizeBottomNav(portalId, workspaceSlug);
+    }, [portalId, workspaceSlug]);
 
     if (!mounted) {
         return <BottomNavSkeleton className={className} />;

@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createTeamRef } from "@/shared/convex/teams";
+import { createWorkspaceRef } from "@/shared/convex/workspaces";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
@@ -36,8 +36,8 @@ import * as z from "zod";
 // Hook instead of a component because we need to wrap
 // the dialog around the popover, see Notes in
 // https://ui.shadcn.com/docs/components/dialog.
-export function useCreateTeamDialog() {
-  const createTeam = useMutation(createTeamRef);
+export function useCreateWorkspaceDialog() {
+  const createWorkspace = useMutation(createWorkspaceRef);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -45,10 +45,10 @@ export function useCreateTeamDialog() {
     },
   });
 
-  const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
-  const handleShowNewTeamDialog = (state: boolean) => {
+  const [showNewWorkspaceDialog, setShowNewWorkspaceDialog] = useState(false);
+  const handleShowNewWorkspaceDialog = (state: boolean) => {
     form.reset();
-    setShowNewTeamDialog(state);
+    setShowNewWorkspaceDialog(state);
   };
 
   const router = useRouter();
@@ -60,16 +60,16 @@ export function useCreateTeamDialog() {
           className="flex flex-col gap-4"
           onSubmit={handleFailure(
             form.handleSubmit(async ({ name }) => {
-              const teamSlug = await createTeam({ name });
-              handleShowNewTeamDialog(false);
-              router.push(`/dashboard/${teamSlug}`);
+              const workspaceSlug = await createWorkspace({ name });
+              handleShowNewWorkspaceDialog(false);
+              router.push(`/dashboard/${workspaceSlug}`);
             })
           )}
         >
           <DialogHeader>
-            <DialogTitle>Create team</DialogTitle>
+            <DialogTitle>Create workspace</DialogTitle>
             <DialogDescription>
-              Add a new team to manage products and customers.
+              Add a new workspace to manage products and customers.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-2">
@@ -78,7 +78,7 @@ export function useCreateTeamDialog() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Team name</FormLabel>
+                  <FormLabel>Workspace name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Acme Inc."
@@ -115,7 +115,7 @@ export function useCreateTeamDialog() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => handleShowNewTeamDialog(false)}
+              onClick={() => handleShowNewWorkspaceDialog(false)}
             >
               Cancel
             </Button>
@@ -125,11 +125,11 @@ export function useCreateTeamDialog() {
       </Form>
     </DialogContent>
   );
-  return [showNewTeamDialog, handleShowNewTeamDialog, content] as const;
+  return [showNewWorkspaceDialog, handleShowNewWorkspaceDialog, content] as const;
 }
 
 const FormSchema = z.object({
-  name: z.string().min(4, "Team name must be at least 4 characters long."),
+  name: z.string().min(4, "Workspace name must be at least 4 characters long."),
   // todo: Connect plan to zod schema or remove the selector
   // plan: z.enum(["free", "pro"]),
 });

@@ -1,17 +1,17 @@
 "use client";
 
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 export function SettingsMenu() {
-  const team = useCurrentTeam();
+  const workspace = useCurrentWorkspace();
   return (
     <div className="flex flex-col gap-2 items-stretch">
       <NavLink relativeHref="">General</NavLink>
-      {team?.isPersonal ? null : (
+      {workspace?.isPersonal ? null : (
         <NavLink relativeHref="/members">Members</NavLink>
       )}
     </div>
@@ -26,8 +26,8 @@ function NavLink({
   children: ReactNode;
 }) {
   const currentPath = usePathname();
-  const { teamSlug } = useParams();
-  const linkPath = `/dashboard/${teamSlug as string}/settings${relativeHref}`;
+  const { workspaceSlug } = useParams();
+  const linkPath = `/dashboard/${workspaceSlug as string}/settings${relativeHref}`;
   const active =
     relativeHref === ""
       ? currentPath === linkPath

@@ -28,7 +28,7 @@ export default function Home() {
           <Link href="https://authjs.dev" target="_blank">
             NextAuth.js
           </Link>
-          , and team/organization management built on{" "}
+          , and workspace/organization management built on{" "}
           <Link href="https://convex.dev" target="_blank">
             Convex
           </Link>{" "}

@@ -6,8 +6,8 @@ import {
   PlusCircledIcon,
 } from "@radix-ui/react-icons";
 
-import { useCreateTeamDialog } from "@/features/teams/components/CreateTeamDialog";
-import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
+import { useCreateWorkspaceDialog } from "@/features/workspaces/components/CreateWorkspaceDialog";
+import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,66 +27,70 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { listTeamsRef } from "@/shared/convex/teams";
-import type { TeamDisplayInfo, TeamSummary } from "@/shared/types/teams";
+import { listWorkspacesRef } from "@/shared/convex/workspaces";
+import type { WorkspaceDisplayInfo, WorkspaceSummary } from "@/shared/types/workspaces";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export function TeamSwitcher() {
+export function WorkspaceSwitcher() {
   const pathname = usePathname();
-  const teams = useQuery(listTeamsRef);
-  const selectedTeam = useCurrentTeam();
+  const workspaces = useQuery(listWorkspacesRef);
+  const selectedWorkspace = useCurrentWorkspace();
 
   const [open, setOpen] = useState(false);
 
-  const [showNewTeamDialog, handleShowNewTeamDialog, createTeamDialogContent] =
-    useCreateTeamDialog();
+  const [showNewWorkspaceDialog, handleShowNewWorkspaceDialog, createWorkspaceDialogContent] =
+    useCreateWorkspaceDialog();
 
-  if (teams == null || selectedTeam == null) {
-    return <Skeleton className="w-40 h-9" />;
-  }
+  const displayWorkspace = selectedWorkspace ?? {
+    _id: "default-main",
+    name: "Main",
+    slug: "main",
+    isPersonal: true,
+  } as any;
 
-  const personalTeams = teams.filter((team: TeamSummary) => team.isPersonal);
-  const nonPersonalTeams = teams.filter(
-    (team: TeamSummary) => !team.isPersonal
+  const safeWorkspaces = workspaces ?? [];
+  const personalWorkspaces = safeWorkspaces.filter((workspace: WorkspaceSummary) => workspace.isPersonal);
+  const nonPersonalWorkspaces = safeWorkspaces.filter(
+    (workspace: WorkspaceSummary) => !workspace.isPersonal
   );
   const groups = [
-    { label: "Personal Account", teams: personalTeams },
-    ...(nonPersonalTeams.length > 0
-      ? [{ label: "Teams", teams: nonPersonalTeams }]
+    { label: "Personal Account", workspaces: personalWorkspaces },
+    ...(nonPersonalWorkspaces.length > 0
+      ? [{ label: "Workspaces", workspaces: nonPersonalWorkspaces }]
       : []),
   ];
 
   return (
-    <Dialog open={showNewTeamDialog} onOpenChange={handleShowNewTeamDialog}>
+    <Dialog open={showNewWorkspaceDialog} onOpenChange={handleShowNewWorkspaceDialog}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            aria-label="Select a team"
+            aria-label="Select a workspace"
             className="w-[200px] justify-between"
           >
-            <TeamDisplay team={selectedTeam} />
+            <WorkspaceDisplay workspace={displayWorkspace} />
             <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandList>
-              <CommandInput placeholder="Search team..." />
-              <CommandEmpty>No team found.</CommandEmpty>
+              <CommandInput placeholder="Search workspace..." />
+              <CommandEmpty>No workspace found.</CommandEmpty>
               {groups.map((group) => (
                 <CommandGroup key={group.label} heading={group.label}>
-                  {group.teams.map((team: TeamSummary) => (
-                    <CommandItem key={team._id} className="text-sm p-0">
+                  {group.workspaces.map((workspace: WorkspaceSummary) => (
+                    <CommandItem key={workspace._id} className="text-sm p-0">
                       <Link
                         className="flex justify-between items-center px-2 py-1.5"
                         href={{
-                          pathname: `/dashboard/${team.slug}/${pathname
+                          pathname: `/dashboard/${workspace.slug}/${pathname
                             .split("/")
                             .slice(3)
                             .join("/")}`,
@@ -96,11 +100,11 @@ export function TeamSwitcher() {
                           setOpen(false);
                         }}
                       >
-                        <TeamDisplay team={team} />
+                        <WorkspaceDisplay workspace={workspace} />
                         <CheckIcon
                           className={cn(
                             "ml-auto h-4 w-4",
-                            selectedTeam.slug === team.slug
+                            displayWorkspace.slug === workspace.slug
                               ? "opacity-100"
                               : "opacity-0"
                           )}
@@ -119,11 +123,11 @@ export function TeamSwitcher() {
                     className="cursor-pointer"
                     onSelect={() => {
                       setOpen(false);
-                      handleShowNewTeamDialog(true);
+                      handleShowNewWorkspaceDialog(true);
                     }}
                   >
                     <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Team
+                    Create Workspace
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -131,26 +135,26 @@ export function TeamSwitcher() {
           </Command>
         </PopoverContent>
       </Popover>
-      {createTeamDialogContent}
+      {createWorkspaceDialogContent}
     </Dialog>
   );
 }
 
-function TeamDisplay({
-  team,
+function WorkspaceDisplay({
+  workspace,
 }: {
-  team: TeamDisplayInfo;
+  workspace: WorkspaceDisplayInfo;
 }) {
   return (
     <>
       <Avatar className="mr-2 h-5 w-5">
         <AvatarImage
-          src={team.pictureUrl ?? `https://avatar.vercel.sh/${team.slug}.png`}
-          alt={team.name}
+          src={workspace.pictureUrl ?? `https://avatar.vercel.sh/${workspace.slug}.png`}
+          alt={workspace.name}
         />
-        <AvatarFallback>{team.name[0].toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{workspace.name[0].toUpperCase()}</AvatarFallback>
       </Avatar>
-      {team.name}
+      {workspace.name}
     </>
   );
 }

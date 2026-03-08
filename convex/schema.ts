@@ -2,13 +2,13 @@ import { defineEnt, defineEntSchema, getEntDefinitions } from "convex-ents";
 import { v } from "convex/values";
 import { vPermission, vRole } from "./permissions_schema";
 
-// Example: 7 day soft deletion period for teams
+// Example: 7 day soft deletion period for workspaces
 // todo: Unused constant in schema - remove or implement scheduled deletion
-const TEAM_DELETION_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
+const WORKSPACE_DELETION_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
 
 const schema = defineEntSchema(
   {
-    teams: defineEnt({
+    workspaces: defineEnt({
       name: v.string(),
       isPersonal: v.boolean(),
     })
@@ -34,13 +34,13 @@ const schema = defineEntSchema(
     members: defineEnt({
       searchable: v.string(),
     })
-      .edge("team")
+      .edge("workspace")
       .edge("user")
       .edge("role")
-      .index("teamUser", ["teamId", "userId"])
+      .index("workspaceUser", ["workspaceId", "userId"])
       .searchIndex("searchable", {
         searchField: "searchable",
-        filterFields: ["teamId"],
+        filterFields: ["workspaceId"],
       })
       .edges("messages", { ref: true }),
 
@@ -49,7 +49,7 @@ const schema = defineEntSchema(
     })
       .field("email", v.string())
       .index("email", ["email"])
-      .edge("team")
+      .edge("workspace")
       .edge("role"),
 
     roles: defineEnt({
@@ -75,13 +75,13 @@ const schema = defineEntSchema(
       groupIds: v.optional(v.array(v.string())),
       projectId: v.optional(v.string()),
     })
-      .edge("team")
-      .index("teamFeature", ["teamId", "featureId"]),
+      .edge("workspace")
+      .index("workspaceFeature", ["workspaceId", "featureId"]),
 
     messages: defineEnt({
       text: v.string(),
     })
-      .edge("team")
+      .edge("workspace")
       .edge("member"),
   }
 );

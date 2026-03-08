@@ -12,17 +12,17 @@ export default function CatchAllPage() {
 
     // params.catchAll is string[] e.g. ['tasks', 'my'] or ['tasks'] or ['dashboard', 'overview']
     const catchAll = params?.catchAll;
-    const teamSlug = params?.teamSlug;
+    const workspaceSlug = params?.workspaceSlug;
 
     const segments = Array.isArray(catchAll) ? catchAll : [];
 
     // Reconstruct the path to match against registry
-    // The path is relative to /dashboard/[teamSlug]/...
+    // The path is relative to /dashboard/[workspaceSlug]/...
     const pathSuffix = segments.join("/");
-    const fullPath = `/dashboard/${teamSlug}/${pathSuffix}`;
+    const fullPath = `/dashboard/${workspaceSlug}/${pathSuffix}`;
 
     const { Component, isFound } = useMemo(() => {
-        if (!teamSlug || segments.length === 0) return { Component: null, isFound: false };
+        if (!workspaceSlug || segments.length === 0) return { Component: null, isFound: false };
 
         // 1. Resolve which feature maps to this path using our robust matcher
         // We use getActiveTab because it finds the specific leaf node (tab) matching the route
@@ -43,7 +43,7 @@ export default function CatchAllPage() {
         }
 
         return { Component, isFound: true };
-    }, [fullPath, teamSlug, segments]);
+    }, [fullPath, workspaceSlug, segments]);
 
     if (!isFound || !Component) {
         notFound();
