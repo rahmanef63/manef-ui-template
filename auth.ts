@@ -1,23 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import type { JWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   interface Session {
-    user: {
+    user: DefaultSession["user"] & {
       id: string;
-    } & Session["user"];
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string;
+    };
   }
 }
 
 const adminEmail = process.env.AUTH_ADMIN_EMAIL ?? "admin@example.com";
-const adminPassword = process.env.AUTH_ADMIN_PASSWORD ?? "admin123456";
+const adminPassword = process.env.AUTH_ADMIN_PASSWORD ?? "changeme";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -47,15 +40,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: { id?: string } | null }) {
+    async jwt({ token, user }) {
       if (user?.id !== undefined) {
-        token.id = user.id;
+        (token as { id?: string }).id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user !== undefined) {
-        session.user.id = (token.id as string | undefined) ?? session.user.email ?? "";
+        session.user.id =
+          (token as { id?: string }).id ?? session.user.email ?? "";
       }
       return session;
     },
