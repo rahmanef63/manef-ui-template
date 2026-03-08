@@ -99,7 +99,7 @@ export function SidebarNavTreeBlock({
 
                                         return (
                                             <SidebarMenuItem key={item.id}>
-                                                <SidebarMenuButton asChild isActive={menuActive}>
+                                                <SidebarMenuButton asChild isActive={menuActive} tooltip={item.label}>
                                                     <Link href={item.href}>
                                                         {Icon ? <Icon /> : null}
                                                         <span>{item.label}</span>
@@ -149,19 +149,18 @@ function CollapsibleMenuItem({
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton
+                        tooltip={item.label}
                         className={cn(
                             "w-full justify-between",
                             isActive && "font-medium"
                         )}
                         isActive={isActive}
                     >
-                        <span className="flex items-center gap-2 truncate">
-                            {Icon ? <Icon /> : null}
-                            <span>{item.label}</span>
-                        </span>
+                        {Icon ? <Icon /> : null}
+                        <span>{item.label}</span>
                         <ChevronRight
                             className={cn(
-                                "h-4 w-4 transition-transform duration-200",
+                                "ml-auto transition-transform duration-200",
                                 isOpen && "rotate-90"
                             )}
                         />

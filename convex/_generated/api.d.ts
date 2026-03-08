@@ -8,6 +8,18 @@
  * @module
  */
 
+import type * as features_agents_api from "../features/agents/api.js";
+import type * as features_calendar_api from "../features/calendar/api.js";
+import type * as features_core_api from "../features/core/api.js";
+import type * as features_dashboard_api from "../features/dashboard/api.js";
+import type * as features_inbox_api from "../features/inbox/api.js";
+import type * as features_knowledge_api from "../features/knowledge/api.js";
+import type * as features_projects_api from "../features/projects/api.js";
+import type * as features_sessions_api from "../features/sessions/api.js";
+import type * as features_tasks_api from "../features/tasks/api.js";
+import type * as features_users_api from "../features/users/api.js";
+import type * as features_workspace_api from "../features/workspace/api.js";
+import type * as features_workspace_tasks_api from "../features/workspace_tasks/api.js";
 import type * as functions from "../functions.js";
 import type * as init from "../init.js";
 import type * as menu from "../menu.js";
@@ -30,6 +42,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "features/agents/api": typeof features_agents_api;
+  "features/calendar/api": typeof features_calendar_api;
+  "features/core/api": typeof features_core_api;
+  "features/dashboard/api": typeof features_dashboard_api;
+  "features/inbox/api": typeof features_inbox_api;
+  "features/knowledge/api": typeof features_knowledge_api;
+  "features/projects/api": typeof features_projects_api;
+  "features/sessions/api": typeof features_sessions_api;
+  "features/tasks/api": typeof features_tasks_api;
+  "features/users/api": typeof features_users_api;
+  "features/workspace/api": typeof features_workspace_api;
+  "features/workspace_tasks/api": typeof features_workspace_tasks_api;
   functions: typeof functions;
   init: typeof init;
   menu: typeof menu;

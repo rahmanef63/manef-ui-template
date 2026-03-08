@@ -25,6 +25,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { listWorkspacesRef } from "@/shared/convex/workspaces";
@@ -64,79 +69,94 @@ export function WorkspaceSwitcher() {
   ];
 
   return (
-    <Dialog open={showNewWorkspaceDialog} onOpenChange={handleShowNewWorkspaceDialog}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            aria-label="Select a workspace"
-            className="w-[200px] justify-between"
-          >
-            <WorkspaceDisplay workspace={displayWorkspace} />
-            <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandList>
-              <CommandInput placeholder="Search workspace..." />
-              <CommandEmpty>No workspace found.</CommandEmpty>
-              {groups.map((group) => (
-                <CommandGroup key={group.label} heading={group.label}>
-                  {group.workspaces.map((workspace: WorkspaceSummary) => (
-                    <CommandItem key={workspace._id} className="text-sm p-0">
-                      <Link
-                        className="flex justify-between items-center px-2 py-1.5"
-                        href={{
-                          pathname: `/dashboard/${workspace.slug}/${pathname
-                            .split("/")
-                            .slice(3)
-                            .join("/")}`,
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation();
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <Dialog open={showNewWorkspaceDialog} onOpenChange={handleShowNewWorkspaceDialog}>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage
+                    src={displayWorkspace.pictureUrl ?? `https://avatar.vercel.sh/${displayWorkspace.slug}.png`}
+                    alt={displayWorkspace.name}
+                  />
+                  <AvatarFallback className="rounded-lg">{displayWorkspace.name[0]?.toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-medium">{displayWorkspace.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">Workspace</span>
+                </div>
+                <CaretSortIcon className="ml-auto size-4 shrink-0 opacity-50 group-data-[collapsible=icon]:hidden" />
+              </SidebarMenuButton>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[--radix-popover-trigger-width] min-w-56 p-0 rounded-lg"
+              align="start"
+              sideOffset={4}
+            >
+              <Command>
+                <CommandList>
+                  <CommandInput placeholder="Search workspace..." />
+                  <CommandEmpty>No workspace found.</CommandEmpty>
+                  {groups.map((group) => (
+                    <CommandGroup key={group.label} heading={group.label}>
+                      {group.workspaces.map((workspace: WorkspaceSummary) => (
+                        <CommandItem key={workspace._id} className="text-sm p-0">
+                          <Link
+                            className="flex justify-between items-center px-2 py-1.5 w-full"
+                            href={{
+                              pathname: `/dashboard/${workspace.slug}/${pathname
+                                .split("/")
+                                .slice(3)
+                                .join("/")}`,
+                            }}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpen(false);
+                            }}
+                          >
+                            <WorkspaceDisplay workspace={workspace} />
+                            <CheckIcon
+                              className={cn(
+                                "ml-auto h-4 w-4",
+                                displayWorkspace.slug === workspace.slug
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                          </Link>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  ))}
+                </CommandList>
+                <CommandSeparator />
+                <CommandList>
+                  <CommandGroup>
+                    <DialogTrigger asChild>
+                      <CommandItem
+                        className="cursor-pointer font-medium"
+                        onSelect={() => {
                           setOpen(false);
+                          handleShowNewWorkspaceDialog(true);
                         }}
                       >
-                        <WorkspaceDisplay workspace={workspace} />
-                        <CheckIcon
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            displayWorkspace.slug === workspace.slug
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                      </Link>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              ))}
-            </CommandList>
-            <CommandSeparator />
-            <CommandList>
-              <CommandGroup>
-                <DialogTrigger asChild>
-                  <CommandItem
-                    className="cursor-pointer"
-                    onSelect={() => {
-                      setOpen(false);
-                      handleShowNewWorkspaceDialog(true);
-                    }}
-                  >
-                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Workspace
-                  </CommandItem>
-                </DialogTrigger>
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      {createWorkspaceDialogContent}
-    </Dialog>
+                        <PlusCircledIcon className="mr-2 h-5 w-5" />
+                        Create Workspace
+                      </CommandItem>
+                    </DialogTrigger>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {createWorkspaceDialogContent}
+        </Dialog>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
 
