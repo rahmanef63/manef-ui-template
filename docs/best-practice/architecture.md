@@ -1,30 +1,26 @@
-# Integration Architecture: Next.js + Clerk + Convex
+# Integration Architecture: Next.js + NextAuth + Convex
 
-This document describes how to weave Next.js, Clerk, and Convex together into a cohesive, secure, and type-safe architecture.
+This document describes how to weave Next.js, NextAuth (Auth.js v5), and Convex together into a cohesive, secure, and type-safe architecture.
 
 ## 1. Authentication Flow
 
-The authentication "source of truth" is Clerk, but Convex needs to know about the user to secure data.
+The authentication "source of truth" is NextAuth running locally on your Next.js server, while Convex stores extended application state.
 
-1.  **Login**: User logs in via Clerk components (`<SignIn />`) in Next.js Client.
-2.  **Token**: Clerk generates a JWT.
-3.  **Convex Provider**: `ConvexProviderWithClerk` (in `shared/providers/ConvexClientProvider.tsx`) grabs this token automatically using `useAuth`.
-4.  **Request**: When a generic Convex query matches, the token is sent in the Authorization header.
-5.  **Validation**: Convex validates the token against the Clerk Issuer URL (configured in Convex Dashboard).
-6.  **Identity**: Inside Convex functions, `ctx.auth.getUserIdentity()` returns the parsed user details (sub, email, etc.).
+1.  **Login**: User logs in via NextAuth components (`<SignIn />` or standard Submit handlers) in Next.js Client.
+2.  **Session**: NextAuth generates a session (Cookie/JWT based).
+3.  **Convex Provider**: `ConvexProvider` (in `shared/providers/ConvexClientProvider.tsx`) wraps the application.
+4.  **Convex Identity**: For proper verification and security boundaries inside Convex, you handle Identity by either adopting `convex-auth` or passing customized JWTs into Convex headers. In this template's simplified version, `users.store` handles graceful fallback authentication handling until a rigid JWT approach is defined.
 
 ## 2. User Data Synchronization
 
-You often need user data (like "role" or "credits") inside Convex that isn't in the default Clerk JWT.
+Because NextAuth is handled in the same Next.js app backend, you do not need external webhooks like you would with SaaS monolithic auth providers.
 
-**Pattern: Webhook Sync**
-1.  **Clerk**: Trigger unrelated to the user session (e.g. user updates profile).
-2.  **Next.js API Route**: `/api/webhooks/clerk` receives the event.
-3.  **Verification**: Verify Svix signature.
-4.  **Convex Mutation**: The API route calls `await fetchMutation(api.users.syncUser, { ... })` using `fetchMutation` from `convex/nextjs`.
-5.  **Database**: The `users` table in Convex is updated.
+**Pattern: Inline DB Operations**
+1.  **NextAuth Callback**: During the `jwt()` or `signIn()` callback inside `auth.ts`, check if the user is new or needs updating.
+2.  **Convex Mutation**: Call `await fetchMutation(api.users.syncUser, { ... })` using `fetchMutation` from `convex/nextjs`.
+3.  **Database**: The `users` table in Convex is updated synchronously or asynchronously as needed.
 
-**Result**: You can now directy join `messages.authorId` with `users._id` in your Convex queries efficiently.
+**Result**: You can directy join any `authorId` with `users._id` in your Convex queries efficiently.
 
 ## 3. Folder & file Structure
 
@@ -32,19 +28,17 @@ Recommended structure for cleanliness and scalability:
 
 ```text
 /app
-  layout.tsx          <-- Wraps app in ConvexClientProvider
+  layout.tsx          <-- Wraps app in ConvexClientProvider + NextAuth SessionProvider
   (auth)/             <-- Route group for login/signup
   dashboard/
     layout.tsx        <-- Dashboard shell (Sidebar, etc.)
     page.tsx          <-- Main dashboard
     _components/      <-- Dashboard-specific components
 /convex
-  auth.config.ts      <-- Clerk Issuer mapping
   schema.ts           <-- Database schema
   users.ts            <-- User-related mutations/queries
-  http.ts             <-- (Optional) HTTP actions for webhooks
 /shared
-  providers/          <-- App providers (Clerk + Convex)
+  providers/          <-- App providers (NextAuth + Convex)
 /components
   ui/                 <-- Shadcn/Shared UI
 /lib
@@ -56,6 +50,6 @@ Recommended structure for cleanliness and scalability:
 | Layer | Responsibility | Tool |
 | :--- | :--- | :--- |
 | **Edge / Network** | DDOS protection, SSL | Vercel / Next.js |
-| **Page Access** | Prevent unauthenticated users from visiting routes | `clerkMiddleware` |
-| **Data Access** | Prevent unauthorized reading/writing of data | Convex RLS (`ctx.auth`) |
+| **Page Access** | Prevent unauthenticated users from visiting routes | `proxy.ts` (NextAuth Middleware) |
+| **Data Access** | Prevent unauthorized reading/writing of data | Convex |
 | **Input Validation** | Ensure data integrity | Zod (Next.js Actions) / Validators (Convex) |

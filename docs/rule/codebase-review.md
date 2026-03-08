@@ -22,7 +22,7 @@
 
 ## Best practices already applied
 - Next.js App Router and metadata usage (app/layout.tsx, app/manifest.ts).
-- Route protection via Clerk middleware (middleware.ts).
+- Route protection via NextAuth proxy.ts middleware (proxy.ts).
 - Data model definitions in Convex schema with explicit indexes.
 - Shared function references for Convex calls (shared/convex/*).
 - Form validation via zod where used (e.g., CreateTeamDialog).

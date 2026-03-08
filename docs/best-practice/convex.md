@@ -46,7 +46,7 @@ This guide outlines best practices for using Convex as your realtime backend and
 - Do not manually type interfaces that mirror your schema; import them.
 
 ## 5. Production
-- **Environment Variables**: Use the Convex Dashboard to set `CLERK_ISSUER_URL`, `OPENAI_API_KEY`, etc.
+- **Environment Variables**: Use the Convex Dashboard to set `AUTH_SECRET`, `OPENAI_API_KEY`, etc.
 - **Dev vs Prod**: Development happens in `dev` deployment. Deploy to `prod` when ready. Data is isolated.
 
 ## 6. Advanced Features to Maximize
@@ -63,5 +63,5 @@ This guide outlines best practices for using Convex as your realtime backend and
 
 ### HTTP Actions
 - **What it is**: Expose Convex functions as standard HTTP endpoints.
-- **Why use it**: To receive webhooks from Stripe/Clerk directly into Convex, or to build a public REST API for other developers.
+- **Why use it**: To receive webhooks from Stripe directly into Convex, or to build a public REST API for other developers.
 - **How**: Define functions in `convex/http.ts` and route them.

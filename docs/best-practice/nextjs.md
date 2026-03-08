@@ -56,7 +56,7 @@ This guide outlines the best practices for building scalable and performant appl
 - **error.tsx**: Use error boundaries to handle runtime errors gracefully without crashing the entire app.
 
 ## 5. Middleware
-- Use middleware for authentication checks (Clerk) and internationalization routing.
+- Use middleware for authentication checks (Auth.js proxy.ts) and internationalization routing.
 - Keep middleware lightweight to avoid stalling request processing.
 
 ## 6. Advanced Features to Maximize
