@@ -1,14 +1,10 @@
 "use client";
 
-import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithAuth } from "convex/react";
-import { useSession } from "next-auth/react";
+import { ConvexReactClient, ConvexProviderWithAuth } from "convex/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { useMemo } from "react";
-import { SessionProvider } from "next-auth/react";
 import type { ReactNode } from "react";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
-
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 function useAuthFromSession() {
   const { data: session, status } = useSession();
@@ -16,23 +12,34 @@ function useAuthFromSession() {
     () => ({
       isLoading: status === "loading",
       isAuthenticated: status === "authenticated",
-      fetchAccessToken: async () => {
-        // For self-hosted Convex without Clerk JWT,
-        // we use a simple token derived from session
-        return session ? `session:${session.user?.email}` : null;
-      },
+      fetchAccessToken: async () =>
+        session?.user?.email ? `session:${session.user.email}` : null,
     }),
     [session, status]
   );
+}
+
+function ConvexProviderMaybe({ children }: { children: ReactNode }) {
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+
+  // Avoid build-time crash when env is missing in CI/Nixpacks.
+  if (!url) {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn("NEXT_PUBLIC_CONVEX_URL is missing. Rendering without Convex provider.");
+    }
+    return <>{children}</>;
+  }
+
+  const client = new ConvexReactClient(url);
+  return <ConvexProviderWithAuth client={client} useAuth={useAuthFromSession}>{children}</ConvexProviderWithAuth>;
 }
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <SessionProvider>
-        <ConvexProviderWithAuth client={convex} useAuth={useAuthFromSession}>
-          {children}
-        </ConvexProviderWithAuth>
+        <ConvexProviderMaybe>{children}</ConvexProviderMaybe>
       </SessionProvider>
     </ErrorBoundary>
   );
