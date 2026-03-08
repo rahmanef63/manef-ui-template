@@ -12,8 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { deleteTeamRef } from "@/shared/convex/teams";
-import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export function DeleteTeamDialog({
@@ -23,7 +23,6 @@ export function DeleteTeamDialog({
   open: boolean;
   setOpen: (open: boolean) => void;
 }) {
-  const { user: clerkUser } = useUser();
   const router = useRouter();
   const deleteTeam = useMutation(deleteTeamRef);
   const team = useCurrentTeam();
@@ -33,9 +32,10 @@ export function DeleteTeamDialog({
   const handleDelete = handleFailure(async () => {
     await deleteTeam({ teamId: team._id });
     if (team.isPersonal) {
-      await clerkUser!.delete();
-      router.push("/");
+      await signOut({ callbackUrl: "/" });
+      return;
     }
+    router.push("/");
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>

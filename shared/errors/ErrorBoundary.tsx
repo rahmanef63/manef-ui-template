@@ -21,7 +21,6 @@ function getErrorText(error: unknown): string {
   return String(error);
 }
 
-// NOTE: Once you get Clerk working you can remove this error boundary
 export class ErrorBoundary extends Component<
   { children: ReactNode },
   ErrorBoundaryState
@@ -33,46 +32,13 @@ export class ErrorBoundary extends Component<
 
   static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
     const errorText = getErrorText(error);
-    if (
-      errorText.includes("@clerk/clerk-react") &&
-      errorText.includes("publishableKey")
-    ) {
-      const [clerkDashboardUrl] = errorText.match(/https:\S+/) ?? [];
-      return {
-        error: (
-          <>
-            <p>
-              Add{" "}
-              <code className="font-mono text-sm bg-muted px-1 py-0.5 rounded">
-                NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY={'"<your publishable key>"'}
-              </code>{" "}
-              to the{" "}
-              <code className="font-mono text-sm bg-muted px-1 py-0.5 rounded">
-                .env.local
-              </code>{" "}
-              file
-            </p>
-            {clerkDashboardUrl ? (
-              <p>
-                You can find it at{" "}
-                <a
-                  href={clerkDashboardUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-primary underline underline-offset-4 hover:no-underline"
-                >
-                  {clerkDashboardUrl}
-                </a>
-              </p>
-            ) : null}
-            <p className="pl-8 text-muted-foreground">Raw error: {errorText}</p>
-          </>
-        ),
-      };
-    }
-
-    // propagate error to Next.js provided error boundary
-    throw error;
+    return {
+      error: (
+        <p>
+          {errorText}
+        </p>
+      ),
+    };
   }
 
   render() {

@@ -1,4 +1,27 @@
-# SaaS Starter: Convex + TypeScript + Next.js + Clerk + Tailwind + shadcn/ui
+# SaaS Starter: Convex + TypeScript + Next.js + NextAuth + Tailwind + shadcn/ui
+
+## Auth Setup (No Clerk Required)
+
+This template now uses `next-auth@5` credentials auth with a simple admin
+fallback:
+
+- `AUTH_SECRET`
+- `AUTH_ADMIN_EMAIL`
+- `AUTH_ADMIN_PASSWORD`
+
+Quick start:
+
+1. Copy `.env.example` to `.env.local` and fill the auth + Convex values.
+2. Run `npm install`.
+3. Run `npm run dev`.
+4. Login at `/login` with your configured admin credentials.
+
+Extending auth:
+
+- Replace credentials auth in `auth.ts` with OAuth/email providers as needed.
+- Keep middleware route protection in `middleware.ts`.
+- Keep Convex token wiring in `shared/providers/ConvexClientProvider.tsx` and
+  `shared/auth/getAuthToken.ts`.
 
 Build your SaaS website in no time! Included:
 
@@ -7,7 +30,7 @@ Build your SaaS website in no time! Included:
   - Team/organization management
   - Configurable roles and permissions
 - Member invite emails using [Resend](https://resend.com)
-- User sign-in and sign-up with [Clerk](https://clerk.com)
+- User sign-in with [NextAuth.js](https://authjs.dev)
 - Website router with [Next.js](https://nextjs.org/)
 - Slick UX with [shadcn/ui](https://ui.shadcn.com/)
 
@@ -39,16 +62,5 @@ npm create convex@latest -- -t xixixao/saas-starter
 
 Then:
 
-1. Run `npm run dev`
-   - It will ask you to set up `CLERK_JWT_ISSUER_DOMAIN`, Follow steps 1 to 3 in
-     the
-     [Convex Clerk onboarding guide](https://docs.convex.dev/auth/clerk#get-started)
-2. Follow step 3 from the
-   [Clerk Next.js quickstart](https://clerk.com/docs/quickstarts/nextjs#set-environment-keys),
-   setting up both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` in
-   your `.env.local` file
-3. Run `npx convex run init:init` to initialize the permissions and roles in the
-   database
-
-If you want to sync Clerk user data via webhooks, check out this
-[example repo](https://github.com/thomasballinger/convex-clerk-users-table/).
+1. Run `npm run dev`.
+2. Run `npx convex run init:init` to initialize permissions and roles in Convex.

@@ -1,12 +1,9 @@
 "use client";
 
-import { ClerkProvider, useAuth, useUser } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
-import { Authenticated, ConvexReactClient, useMutation } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { useEffect } from "react";
+import { Authenticated, ConvexProviderWithAuth, ConvexReactClient, useMutation } from "convex/react";
+import { SessionProvider, useSession } from "next-auth/react";
+import { useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
-import { useMediaQuery } from "usehooks-ts";
 import { storeUserRef } from "@/shared/convex/users";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
@@ -14,35 +11,52 @@ import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   return (
     <ErrorBoundary>
-      <ClerkProvider
-        publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        appearance={{ baseTheme: prefersDarkMode ? dark : undefined }}
-      >
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+      <SessionProvider>
+        <ConvexProviderWithAuth client={convex} useAuth={useConvexAuth}>
           <Authenticated>
             <StoreUserInDatabase />
           </Authenticated>
           {children}
-        </ConvexProviderWithClerk>
-      </ClerkProvider>
+        </ConvexProviderWithAuth>
+      </SessionProvider>
     </ErrorBoundary>
   );
 }
 
+function useConvexAuth() {
+  const { data: session, status } = useSession();
+  const email = session?.user?.email;
+
+  const fetchAccessToken = useCallback(async () => {
+    if (email === undefined || email.length === 0) {
+      return null;
+    }
+    return `session:${email}`;
+  }, [email]);
+
+  return {
+    isLoading: status === "loading",
+    isAuthenticated: email !== undefined && email.length > 0,
+    fetchAccessToken,
+  };
+}
+
 function StoreUserInDatabase() {
-  const { user } = useUser();
+  const { data: session, status } = useSession();
+  const email = session?.user?.email;
   const storeUser = useMutation(storeUserRef);
+
   useEffect(() => {
-    if (!user?.id) {
+    if (status !== "authenticated" || email === undefined || email.length === 0) {
       return;
     }
     storeUser().catch((error: unknown) => {
       // eslint-disable-next-line no-console
       console.error("Failed to store user", error);
     });
-  }, [storeUser, user?.id]);
+  }, [email, status, storeUser]);
+
   return null;
 }

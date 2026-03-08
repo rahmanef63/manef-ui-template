@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "UI Template",
     short_name: "UI Template",
-    description: "Modular multi-tenant template with Convex + Clerk.",
+    description: "Modular multi-tenant template with Convex + NextAuth.",
     start_url: "/dashboard",
     scope: "/",
     display: "standalone",

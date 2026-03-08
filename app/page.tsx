@@ -16,7 +16,7 @@ export default function Home() {
       </StickyHeader>
       <main className="container max-w-2xl flex flex-col gap-8">
         <h1 className="text-4xl font-extrabold my-8 text-center leading-relaxed">
-          Convex + Next.js + Clerk Auth SaaS Starter Template
+          Convex + Next.js + NextAuth SaaS Starter Template
         </h1>
         <p>
           Here you{"'"}ll do a great job selling your product through clear
@@ -24,9 +24,9 @@ export default function Home() {
         </p>
         <hr />
         <p>
-          This template includes sign-up and sign-in with{" "}
-          <Link href="https://clerk.com" target="_blank">
-            Clerk
+          This template includes sign-in with{" "}
+          <Link href="https://authjs.dev" target="_blank">
+            NextAuth.js
           </Link>
           , and team/organization management built on{" "}
           <Link href="https://convex.dev" target="_blank">

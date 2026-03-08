@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 
 import { useCurrentTeam } from "@/features/teams/hooks/useTeamState";
 import { buildSidebarTree, resolveIcon } from "@/shared/config";
@@ -42,7 +42,7 @@ export function SidebarNavTreeBlock({
     ...props
 }: SidebarNavTreeBlockProps) {
     const team = useCurrentTeam();
-    const { user } = useUser();
+    const { data: session } = useSession();
     const pathname = usePathname();
     const params = useParams();
 
@@ -54,9 +54,9 @@ export function SidebarNavTreeBlock({
     );
 
     const userPayload = {
-        name: user?.fullName || "User",
-        email: user?.emailAddresses?.[0]?.emailAddress || "",
-        avatar: user?.imageUrl || "",
+        name: session?.user?.name || "User",
+        email: session?.user?.email || "",
+        avatar: session?.user?.image || "",
     };
 
     const isActive = (href: string) => pathname.startsWith(href);

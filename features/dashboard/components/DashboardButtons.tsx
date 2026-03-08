@@ -2,28 +2,28 @@
 
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 import { Button } from "@/components/ui/button";
-import { ClerkLoading, SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export function DashboardButtons() {
+  const { status } = useSession();
+
   return (
     <ErrorBoundary>
-      <ClerkLoading>
+      {status === "loading" ? (
         <div className="w-40 h-9" />
-      </ClerkLoading>
-      <SignedIn>
+      ) : status === "authenticated" ? (
         <OpenDashboardLinkButton />
-      </SignedIn>
-      <SignedOut>
+      ) : (
         <div className="flex gap-4 animate-[fade-in_0.2s]">
-          <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+          <Link href="/login">
             <Button variant="ghost">Sign in</Button>
-          </SignInButton>
-          <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
-            <Button>Sign up</Button>
-          </SignUpButton>
+          </Link>
+          <Link href="/dashboard">
+            <Button>Dashboard</Button>
+          </Link>
         </div>
-      </SignedOut>
+      )}
     </ErrorBoundary>
   );
 }
