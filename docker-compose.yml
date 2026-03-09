@@ -5,14 +5,26 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ui-template-web
+    container_name: openclaw-ui-web
     ports:
       - "3000:3000"
     environment:
-      # Inject necessary environment variables, modify as needed
       - NODE_ENV=production
+      - PORT=3000
+      - HOSTED_URL=${HOSTED_URL}
+      - CONVEX_DEPLOYMENT=${CONVEX_DEPLOYMENT}
       - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
       - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL}
+      - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD}
+      - AUTH_ADMIN_NAME=${AUTH_ADMIN_NAME}
+      - AUTH_ADMIN_ROLES=${AUTH_ADMIN_ROLES}
+      - AUTH_DEVICE_SALT=${AUTH_DEVICE_SALT}
+      - OPENCLAW_SHARED_SECRET=${OPENCLAW_SHARED_SECRET}
+      - OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS=${OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS}
+      - OPENCLAW_NONCE_TTL_SECONDS=${OPENCLAW_NONCE_TTL_SECONDS}
+      - OPENCLAW_WORKFLOW_URL=${OPENCLAW_WORKFLOW_URL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     restart: always
 
 # Convex runs as a managed service on the cloud so a local container is not strictly needed.

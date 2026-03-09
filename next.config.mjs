@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    output: "standalone",
+
     // Turbopack is now stable in Next.js 16
     turbopack: {},
 
