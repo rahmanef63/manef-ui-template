@@ -1,25 +1,36 @@
 "use client";
 
-import { ConvexReactClient } from "convex/react";
-import { ConvexProvider } from "convex/react";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { SessionProvider } from "next-auth/react";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
-function ConvexProviderMaybe({ children }: { children: ReactNode }) {
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+const DEFAULT_CONVEX_URL = "https://api.rahmanef.com";
 
-  // Avoid build-time crash when env is missing in CI/Nixpacks.
-  if (!url) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn("NEXT_PUBLIC_CONVEX_URL is missing. Rendering without Convex provider.");
+function ConvexProviderSafe({ children }: { children: ReactNode }) {
+  const configuredUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+  const url = configuredUrl && configuredUrl.length > 0 ? configuredUrl : DEFAULT_CONVEX_URL;
+
+  const client = useMemo(() => {
+    try {
+      return new ConvexReactClient(url);
+    } catch (error) {
+      console.error("[ConvexClientProvider] Failed to create Convex client", {
+        url,
+        error,
+      });
+      return null;
     }
-    return <>{children}</>;
+  }, [url]);
+
+  if (!client) {
+    return (
+      <div className="m-4 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+        Gagal menginisialisasi koneksi data (Convex). Cek NEXT_PUBLIC_CONVEX_URL.
+      </div>
+    );
   }
 
-  const client = new ConvexReactClient(url);
-  // Do NOT use ConvexProviderWithAuth because this project doesn't fully configure Convex Auth.
   return <ConvexProvider client={client}>{children}</ConvexProvider>;
 }
 
@@ -27,7 +38,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <SessionProvider>
-        <ConvexProviderMaybe>{children}</ConvexProviderMaybe>
+        <ConvexProviderSafe>{children}</ConvexProviderSafe>
       </SessionProvider>
     </ErrorBoundary>
   );
