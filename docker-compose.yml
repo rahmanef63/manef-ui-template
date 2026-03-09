@@ -1,31 +1,63 @@
-version: '3.8'
-
 services:
   web:
+    image: ${APP_IMAGE:-openclaw-dashbaord-manef-obeant:latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: openclaw-ui-web
-    ports:
-      - "3000:3000"
+      target: runner
+      args:
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://api.rahmanef.com}
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - HOSTED_URL=${HOSTED_URL}
-      - CONVEX_DEPLOYMENT=${CONVEX_DEPLOYMENT}
-      - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
-      - AUTH_SECRET=${AUTH_SECRET}
-      - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL}
-      - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD}
-      - AUTH_ADMIN_NAME=${AUTH_ADMIN_NAME}
-      - AUTH_ADMIN_ROLES=${AUTH_ADMIN_ROLES}
-      - AUTH_DEVICE_SALT=${AUTH_DEVICE_SALT}
-      - OPENCLAW_SHARED_SECRET=${OPENCLAW_SHARED_SECRET}
-      - OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS=${OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS}
-      - OPENCLAW_NONCE_TTL_SECONDS=${OPENCLAW_NONCE_TTL_SECONDS}
-      - OPENCLAW_WORKFLOW_URL=${OPENCLAW_WORKFLOW_URL}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-    restart: always
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
 
-# Convex runs as a managed service on the cloud so a local container is not strictly needed.
-# If you want to run `convex dev` locally you can do so outside of this docker compose.
+      # Public/base URLs
+      HOSTED_URL: ${HOSTED_URL:-https://gg.rahmanef.com}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://gg.rahmanef.com}
+      NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://api.rahmanef.com}
+      CONVEX_DEPLOYMENT: ${CONVEX_DEPLOYMENT:-}
+
+      # Auth & security
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
+      AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-rahmanef63@gmail.com}
+      AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-}
+      AUTH_ADMIN_NAME: ${AUTH_ADMIN_NAME:-Rahman}
+      AUTH_ADMIN_ROLES: ${AUTH_ADMIN_ROLES:-admin}
+      AUTH_DEVICE_SALT: ${AUTH_DEVICE_SALT:-}
+
+      # OpenClaw integration
+      OPENCLAW_SHARED_SECRET: ${OPENCLAW_SHARED_SECRET:-}
+      OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS: ${OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS:-300}
+      OPENCLAW_NONCE_TTL_SECONDS: ${OPENCLAW_NONCE_TTL_SECONDS:-300}
+      OPENCLAW_WORKFLOW_URL: ${OPENCLAW_WORKFLOW_URL:-}
+
+      # Optional integrations
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+
+    networks:
+      - dokploy-network
+
+    # Keep Traefik routing on the service spec so it survives redeploys.
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=dokploy-network
+
+        # Main app router
+        - traefik.http.routers.gg-dashboard.rule=Host(`gg.rahmanef.com`)
+        - traefik.http.routers.gg-dashboard.entrypoints=websecure
+        - traefik.http.routers.gg-dashboard.tls=true
+        - traefik.http.routers.gg-dashboard.tls.certresolver=letsencrypt
+        - traefik.http.services.gg-dashboard.loadbalancer.server.port=3000
+
+    # Works for non-swarm compose flows as well.
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true
