@@ -53,9 +53,12 @@ export function SidebarNavTreeBlock({
         [portalId, workspaceSlug]
     );
 
+    const sessionEmail = session?.user?.email ?? "";
     const userPayload = {
-        name: session?.user?.name || "User",
-        email: session?.user?.email || "",
+        name:
+            session?.user?.name ||
+            (sessionEmail ? sessionEmail.split("@")[0] : "User"),
+        email: sessionEmail,
         avatar: session?.user?.image || "",
     };
 

@@ -153,6 +153,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         appToken.roles = authorizedUser.roles ?? [];
         appToken.sessionId = authorizedUser.sessionId;
         appToken.sessionVersion = authorizedUser.sessionVersion;
+
+        // Persist identity fields for client session rendering (sidebar/user menu).
+        token.email = authorizedUser.email;
+        token.name = authorizedUser.name;
       }
       return token;
     },
@@ -165,6 +169,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.roles = appToken.roles ?? [];
         session.user.sessionId = appToken.sessionId;
         session.user.sessionVersion = appToken.sessionVersion;
+
+        // Ensure name/email are always available in sidebar after page reload.
+        session.user.email = token.email ?? session.user.email ?? "";
+        session.user.name =
+          token.name ??
+          session.user.name ??
+          (session.user.email ? session.user.email.split("@")[0] : "User");
       }
       return session;
     },
