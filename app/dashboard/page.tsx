@@ -13,11 +13,31 @@ export default async function DashboardPage({
   const invite = params[INVITE_PARAM];
   const queryString = invite !== undefined ? `?${INVITE_PARAM}=${invite}` : "";
   const session = await auth();
-  const workspaceSlug = session?.user?.email
-    ? await fetchMutation(storeUserFromSessionRef, {
-        email: session.user.email,
-        name: session.user.name ?? undefined,
-      })
-    : await fetchMutation(storeUserRef);
+
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+
+  let workspaceSlug: string;
+  try {
+    workspaceSlug = await fetchMutation(storeUserFromSessionRef, {
+      email: session.user.email,
+      name: session.user.name ?? undefined,
+    });
+  } catch (error) {
+    console.error("[DashboardPage] Failed to resolve workspace:", error);
+    // Fallback: try with the generic store (identity-based)
+    try {
+      workspaceSlug = await fetchMutation(storeUserRef);
+    } catch {
+      // Ultimate fallback — redirect to a "main" workspace slug
+      workspaceSlug = "main";
+    }
+  }
+
+  if (!workspaceSlug) {
+    workspaceSlug = "main";
+  }
+
   redirect(`/dashboard/${workspaceSlug}${queryString}`);
 }
