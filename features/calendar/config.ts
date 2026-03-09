@@ -6,7 +6,7 @@ export const calendarTasksFeature = defineFeature({
     label: "Calendar",
     route: "/dashboard/[workspaceSlug]/tasks/calendar",
     order: 30,
-    menuGroupIds: [PARENT_FEATURES.tasks],
+    menuGroupIds: [PARENT_FEATURES.collaboration],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

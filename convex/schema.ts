@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { vPermission, vRole } from "./permissions_schema";
 
 import { agentsSchema } from "./features/agents/schema";
+import { authSchema } from "./features/auth/schema";
 import { coreSchema } from "./features/core/schema";
 import { knowledgeSchema } from "./features/knowledge/schema";
 import { projectsSchema } from "./features/projects/schema";
@@ -13,6 +14,15 @@ import { usersSchema } from "./features/users/schema";
 import { workspaceSchema } from "./features/workspace/schema";
 import { calendarSchema } from "./features/calendar/schema";
 import { inboxSchema } from "./features/inbox/schema";
+import { channelsSchema } from "./features/channels/schema";
+import { instancesSchema } from "./features/instances/schema";
+import { cronsSchema } from "./features/crons/schema";
+import { skillsSchema } from "./features/skills/schema";
+import { nodesSchema } from "./features/nodes/schema";
+import { configSchema } from "./features/config/schema";
+import { debugSchema } from "./features/debug/schema";
+import { logsSchema } from "./features/logs/schema";
+import { usageSchema } from "./features/usage/schema";
 
 // Example: 7 day soft deletion period for workspaces
 // todo: Unused constant in schema - remove or implement scheduled deletion
@@ -103,6 +113,7 @@ export const entDefinitions = getEntDefinitions(entSchema);
 const schema = defineSchema({
   ...entSchema.tables,
   ...agentsSchema,
+  ...authSchema,
   ...coreSchema,
   ...knowledgeSchema,
   ...projectsSchema,
@@ -112,6 +123,15 @@ const schema = defineSchema({
   ...workspaceSchema,
   ...calendarSchema,
   ...inboxSchema,
+  ...channelsSchema,
+  ...instancesSchema,
+  ...cronsSchema,
+  ...skillsSchema,
+  ...nodesSchema,
+  ...configSchema,
+  ...debugSchema,
+  ...logsSchema,
+  ...usageSchema,
 });
 
 export default schema;

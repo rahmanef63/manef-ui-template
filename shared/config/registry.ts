@@ -29,6 +29,31 @@ import { tasksFeature } from "@/features/tasks/config";
 import { chatFeature } from "@/features/chat/config";
 import { adminFeature } from "@/features/admin/config";
 import { helpFeature } from "@/features/help/config";
+
+// --- NEW EXTENSIONS FOR OPENCLAW BLUEPRINT ---
+import { controlFeature } from "@/features/control/config";
+import { channelsFeature } from "@/features/channels/config";
+import { instancesFeature } from "@/features/instances/config";
+import { sessionsFeature } from "@/features/sessions-list/config";
+import { usageFeature } from "@/features/usage/config";
+import { cronsFeature } from "@/features/crons/config";
+
+import { agentFeature } from "@/features/agent-parent/config";
+import { skillsFeature } from "@/features/skills/config";
+import { nodesFeature } from "@/features/nodes/config";
+
+import { collaborationFeature } from "@/features/collaboration/config";
+import { teamTasksFeature } from "@/features/team-tasks/config";
+
+import { settingsFeature as settingsParentFeature } from "@/features/settings-parent/config";
+import { configFeature } from "@/features/config/config";
+import { debugFeature } from "@/features/debug/config";
+import { logsFeature } from "@/features/logs/config";
+
+import { resourcesFeature } from "@/features/resources/config";
+import { chatSessionFeature } from "@/features/chat-session/config";
+// ---------------------------------------------
+
 import type { FeatureManifest, MenuGroupManifest } from "./types";
 
 export const menuGroupRegistry = [
@@ -71,4 +96,21 @@ export const featureRegistry = [
   supportFeature,
   membersFeature,
   settingsFeature,
+  controlFeature,
+  channelsFeature,
+  instancesFeature,
+  sessionsFeature,
+  usageFeature,
+  cronsFeature,
+  agentFeature,
+  skillsFeature,
+  nodesFeature,
+  collaborationFeature,
+  teamTasksFeature,
+  settingsParentFeature,
+  configFeature,
+  debugFeature,
+  logsFeature,
+  resourcesFeature,
+  chatSessionFeature,
 ] satisfies FeatureManifest[];

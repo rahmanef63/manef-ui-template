@@ -22,10 +22,10 @@ export const PORTAL_CONFIG: Record<string, PortalConfigItem> = {
     default: {
         label: "Default Portal",
         sidebar: {
-            main: ["dashboard", "tasks", "chat"],
-            admin: ["help"],
+            main: ["chat", "control", "agent", "settings-parent", "resources"],
+            admin: ["collaboration", "admin"],
         },
-        bottomNav: ["dashboard", "tasks", "chat", "notifications", "profile"],
+        bottomNav: ["chat", "control", "agent", "notifications", "profile"],
     },
 
     "zian-inn:staff": {

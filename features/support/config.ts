@@ -6,7 +6,7 @@ export const supportFeature = defineFeature({
     label: "Support",
     route: "/dashboard/[workspaceSlug]/help/support",
     order: 30,
-    menuGroupIds: [PARENT_FEATURES.help],
+    menuGroupIds: [PARENT_FEATURES.resources],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

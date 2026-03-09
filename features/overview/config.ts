@@ -7,7 +7,7 @@ export const overviewFeature = defineFeature({
     // icon: "dashboard", // Icon might be defined in parent or registry
     route: "/dashboard/[workspaceSlug]", // Sub-routes usually map to tabs
     order: 10,
-    menuGroupIds: [PARENT_FEATURES.dashboard], // Grouping by parent
+    menuGroupIds: [PARENT_FEATURES.control], // Grouping by parent
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

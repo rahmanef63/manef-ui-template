@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import { internalMutation, mutation } from "./functions";
 import { getRole } from "./permissions";
 import { defaultToAccessWorkspaceSlug, getUniqueSlug } from "./users/workspaces";
@@ -29,11 +30,61 @@ export const store = mutation({
     };
     if (user !== null) {
       await user.patch(userFields);
+      // Return their default workspace since they already exist
+      return defaultToAccessWorkspaceSlug(user);
     } else {
       user = await ctx.table("users").insert(userFields).get();
+      const name = `${user.firstName ?? nameFallback}'s Workspace`;
+      const slug = await getUniqueSlug(ctx, identity?.nickname ?? name);
+      const workspaceId = await ctx
+        .table("workspaces")
+        .insert({ name, slug, isPersonal: true });
+      await createMember(ctx, {
+        workspaceId,
+        user,
+        roleId: (await getRole(ctx, "Admin"))._id,
+      });
+      return slug;
     }
-    const name = `${user.firstName ?? nameFallback}'s Workspace`;
-    const slug = await getUniqueSlug(ctx, identity?.nickname ?? name);
+  },
+});
+
+export const storeFromSession = mutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<string> => {
+    const email = args.email.trim().toLowerCase();
+    const tokenIdentifier = `session:${email}`;
+
+    const existingUser = await ctx
+      .table("users")
+      .get("tokenIdentifier", tokenIdentifier);
+    if (existingUser !== null) {
+      await existingUser.patch({
+        email,
+        fullName: args.name ?? existingUser.fullName,
+      });
+      return defaultToAccessWorkspaceSlug(existingUser);
+    }
+
+    let user = await ctx.table("users").get("email", email);
+    const nameFallback = emailUserName(email);
+    const fullName = args.name ?? nameFallback;
+    const userFields = {
+      fullName,
+      tokenIdentifier,
+      email,
+    };
+    if (user !== null) {
+      await user.patch(userFields);
+      return defaultToAccessWorkspaceSlug(user);
+    }
+
+    user = await ctx.table("users").insert(userFields).get();
+    const name = `${fullName}'s Workspace`;
+    const slug = await getUniqueSlug(ctx, fullName);
     const workspaceId = await ctx
       .table("workspaces")
       .insert({ name, slug, isPersonal: true });

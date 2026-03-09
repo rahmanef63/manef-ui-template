@@ -1,11 +1,29 @@
 import { signIn } from "@/auth";
+import { emitDevicePendingEvent } from "@/lib/auth/openclaw";
+import { buildDeviceContext } from "@/lib/auth/device";
+import { authorizePasswordLoginRef } from "@/shared/convex/auth";
+import { fetchMutation } from "convex/nextjs";
 import { AuthError } from "next-auth";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+const errorMessages: Record<string, string> = {
+  device_approval_required: "Perangkat ini masih menunggu approval admin.",
+  device_revoked: "Perangkat ini sudah direvoke. Minta approval perangkat baru.",
+  email_domain_not_allowed: "Domain email ini tidak diizinkan oleh policy.",
+  user_blocked: "Akun ini diblokir.",
+  "1": "Email atau password tidak valid.",
+};
+
 export default async function LoginPage(props: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; error?: string; code?: string }>;
 }) {
   const searchParams = await props.searchParams;
+  const errorKey = searchParams.code ?? searchParams.error;
+  const errorMessage =
+    (errorKey ? errorMessages[errorKey] : undefined) ??
+    (searchParams.error ? "Email atau password tidak valid." : undefined);
+
   return (
     <main className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-sm rounded-xl bg-card text-card-foreground shadow-md p-8 space-y-6">
@@ -13,15 +31,57 @@ export default async function LoginPage(props: {
           <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
           <p className="text-sm text-muted-foreground mt-1">Access your dashboard</p>
         </div>
-        {searchParams.error && (
+        {errorMessage && (
           <p className="text-sm text-destructive bg-destructive/10 rounded px-3 py-2">
-            Invalid credentials. Please try again.
+            {errorMessage}
           </p>
         )}
         <form
           action={async (formData: FormData) => {
             "use server";
             try {
+              const requestHeaders = await headers();
+              const device = buildDeviceContext(requestHeaders);
+              const preflight = await fetchMutation(
+                authorizePasswordLoginRef,
+                {
+                  createSession: false,
+                  deviceHash: device.deviceHash,
+                  email: String(formData.get("email") ?? ""),
+                  ip: device.ip,
+                  label: device.label,
+                  password: String(formData.get("password") ?? ""),
+                  userAgent: device.userAgent,
+                }
+              );
+
+              if (preflight.code !== "APPROVED") {
+                if (preflight.code === "DEVICE_APPROVAL_REQUIRED" && preflight.deviceId) {
+                  await emitDevicePendingEvent({
+                    device: {
+                      id: preflight.deviceId,
+                      label: device.label,
+                      lastSeenIp: device.ip,
+                      riskScore: 0,
+                    },
+                    policy: {
+                      policyVersion: preflight.policyVersion ?? 1,
+                      requireDeviceApproval: true,
+                    },
+                    requestContext: {
+                      ip: device.ip,
+                      userAgent: device.userAgent,
+                    },
+                    user: {
+                      email: String(formData.get("email") ?? ""),
+                      id: preflight.userId,
+                      name: undefined,
+                    },
+                  });
+                }
+                redirect(`/login?code=${preflight.code.toLowerCase()}&callbackUrl=${encodeURIComponent(searchParams.callbackUrl ?? "/dashboard")}`);
+              }
+
               await signIn("credentials", {
                 email: formData.get("email"),
                 password: formData.get("password"),
@@ -29,7 +89,14 @@ export default async function LoginPage(props: {
               });
             } catch (error) {
               if (error instanceof AuthError) {
-                redirect(`/login?error=1`);
+                const code =
+                  typeof error.cause === "object" &&
+                  error.cause !== null &&
+                  "code" in error.cause &&
+                  typeof error.cause.code === "string"
+                    ? error.cause.code
+                    : "1";
+                redirect(`/login?code=${code}`);
               }
               throw error;
             }

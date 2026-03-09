@@ -6,7 +6,7 @@ export const faqFeature = defineFeature({
     label: "FAQ",
     route: "/dashboard/[workspaceSlug]/help/faq",
     order: 20,
-    menuGroupIds: [PARENT_FEATURES.help],
+    menuGroupIds: [PARENT_FEATURES.resources],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

@@ -2,41 +2,55 @@ import { defineFeature } from "@/shared/config/feature";
 
 // Core Parent Features
 export const PARENT_FEATURES = {
-    dashboard: "dashboard",
-    tasks: "tasks",
-    chat: "chat",
-    admin: "admin",
-    help: "help",
+    chat: "chat",            // Chat
+    control: "control",      // Control 
+    agent: "agent",          // Agent
+    collaboration: "collaboration", // Extra features (tasks, teams, calendar)
+    settings: "settings-parent",    // Settings
+    admin: "admin",          // Extra features (users, roles, audit)
+    resources: "resources",  // Resources
 } as const;
 
 // Navigation Registry defining hierarchies
 export const NAVIGATION_REGISTRY = {
-    // Dashboard Children
-    [PARENT_FEATURES.dashboard]: {
-        children: ["overview", "kpi", "activity"],
+    // Chat 
+    [PARENT_FEATURES.chat]: {
+        children: ["chat-session", "inbox"],
+        defaultChild: "chat-session",
+    },
+
+    // Control
+    [PARENT_FEATURES.control]: {
+        children: ["overview", "channels", "instances", "sessions", "usage", "crons"],
         defaultChild: "overview",
     },
 
-    // Tasks Children
-    [PARENT_FEATURES.tasks]: {
+    // Agent
+    [PARENT_FEATURES.agent]: {
+        children: ["agents", "skills", "nodes"],
+        defaultChild: "agents",
+    },
+
+    // Collaboration Extensions (Previously Tasks)
+    [PARENT_FEATURES.collaboration]: {
         children: ["my-tasks", "team-tasks", "calendar"],
         defaultChild: "my-tasks",
     },
 
-    // Chat Children
-    [PARENT_FEATURES.chat]: {
-        children: ["inbox", "agents", "chat-history"],
-        defaultChild: "inbox",
+    // Settings
+    [PARENT_FEATURES.settings]: {
+        children: ["config", "debug", "logs"],
+        defaultChild: "config",
     },
 
-    // Admin Children
+    // Admin
     [PARENT_FEATURES.admin]: {
         children: ["users", "roles", "audit"],
         defaultChild: "users",
     },
 
-    // Help Children
-    [PARENT_FEATURES.help]: {
+    // Resources
+    [PARENT_FEATURES.resources]: {
         children: ["docs", "faq", "support"],
         defaultChild: "docs",
     },

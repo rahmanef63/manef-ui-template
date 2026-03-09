@@ -1,5 +1,6 @@
 import { INVITE_PARAM } from "@/shared/constants/invite";
-import { storeUserRef } from "@/shared/convex/users";
+import { storeUserFromSessionRef, storeUserRef } from "@/shared/convex/users";
+import { auth } from "@/auth";
 import { fetchMutation } from "convex/nextjs";
 import { redirect } from "next/navigation";
 
@@ -11,7 +12,12 @@ export default async function DashboardPage({
   const params = await searchParams;
   const invite = params[INVITE_PARAM];
   const queryString = invite !== undefined ? `?${INVITE_PARAM}=${invite}` : "";
-  // Do not pass the fake auth token. users.store will fallback to admin@example.com
-  const workspaceSlug = await fetchMutation(storeUserRef);
+  const session = await auth();
+  const workspaceSlug = session?.user?.email
+    ? await fetchMutation(storeUserFromSessionRef, {
+        email: session.user.email,
+        name: session.user.name ?? undefined,
+      })
+    : await fetchMutation(storeUserRef);
   redirect(`/dashboard/${workspaceSlug}${queryString}`);
 }

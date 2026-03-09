@@ -6,7 +6,7 @@ export const kpiFeature = defineFeature({
     label: "KPI",
     route: "/dashboard/[workspaceSlug]/kpi",
     order: 20,
-    menuGroupIds: [PARENT_FEATURES.dashboard],
+    menuGroupIds: [PARENT_FEATURES.control],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

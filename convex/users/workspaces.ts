@@ -6,10 +6,10 @@ import { slugify } from "../utils";
 import { createMember } from "./workspaces/members";
 
 export async function defaultToAccessWorkspaceSlug(viewer: Ent<"users">) {
-  return (
-    await viewer.edge("members").map((member: any) => member.edge("workspace").doc())
-  ).filter((workspace) => workspace.isPersonal)[0]!
-    .slug;
+  const workspaces = await viewer.edge("members").map((member: any) => member.edge("workspace").doc());
+  const personal = workspaces.find((workspace) => workspace.isPersonal);
+  if (personal) return personal.slug;
+  return workspaces[0]?.slug ?? "main";
 }
 
 export const list = query({

@@ -11,6 +11,20 @@ import {
   Users,
   Wallet,
   Wrench,
+  Bot,
+  Link as LinkIcon,
+  Briefcase,
+  Kanban,
+  Radio,
+  FileText,
+  BarChart2,
+  Clock,
+  Monitor,
+  BookOpen,
+  Bug,
+  FileClock,
+  SlidersHorizontal,
+  Zap
 } from "lucide-react";
 
 export const iconRegistry = {
@@ -25,6 +39,21 @@ export const iconRegistry = {
   Shield,
   CircleHelp,
   Menu,
+  Bot,
+  Link: LinkIcon,
+  Briefcase,
+  Kanban,
+  Radio,
+  FileText,
+  BarChart2,
+  Clock,
+  Monitor,
+  BookOpen,
+  Bug,
+  FileClock,
+  SlidersHorizontal,
+  Zap,
+  Settings,
 
   // Legacy / other icons (lowercase aliases for backward compatibility)
   dashboard: LayoutDashboard,
@@ -37,7 +66,11 @@ export type IconId = keyof typeof iconRegistry;
 
 export function resolveIcon(icon?: IconId | string) {
   if (!icon) return undefined;
-  return iconRegistry[icon as IconId];
+  // Let the registry handle explicit IDs
+  if (icon in iconRegistry) {
+    return iconRegistry[icon as IconId];
+  }
+  return undefined;
 }
 
 export function isIconId(value: string): value is IconId {

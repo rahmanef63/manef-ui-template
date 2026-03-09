@@ -5,6 +5,7 @@ import { MessageBoard } from "@/features/messages/components/MessageBoard";
 import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { SectionCards } from "@/components/layout/sections/section-cards";
 import { ChartAreaInteractive } from "@/components/layout/chart-area-interactive";
+import { PageTabsBlock } from "@/shared/block/ui/layout/PageTabsBlock";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { DataTable, schema as dataTableSchema } from "@/components/layout/data-table";
 import { z } from "zod";
@@ -42,17 +43,23 @@ const sampleData: z.infer<typeof dataTableSchema>[] = [
 export default function Home() {
   const workspace = useCurrentWorkspace();
   if (workspace == null) {
-    return <DashboardSkeleton />;
+    return (
+      <div className="flex flex-col gap-6">
+        <PageTabsBlock />
+        <DashboardSkeleton />
+      </div>
+    );
   }
   return (
-    <>
+    <div className="flex flex-col gap-6">
+      <PageTabsBlock />
       <SectionCards />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <ChartAreaInteractive />
         <MessageBoard />
       </div>
       <DataTable data={sampleData} />
-    </>
+    </div>
   );
 }
 

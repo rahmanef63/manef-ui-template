@@ -30,6 +30,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useToast } from "@/components/ui/use-toast"
+import { signOut } from "next-auth/react"
 
 export function NavUser({
   user,
@@ -41,6 +43,23 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { toast } = useToast()
+
+  const handleLogout = async () => {
+    try {
+      toast({
+        title: "Logging out...",
+        description: "Ending your session.",
+      })
+      await signOut({ callbackUrl: "/login" })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: "An error occurred while logging out.",
+      })
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -86,21 +105,27 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                toast({ title: "Account", description: "Navigating to account settings..." })
+              }}>
                 <UserCircleIcon />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                toast({ title: "Billing", description: "Feature coming soon." })
+              }}>
                 <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                toast({ title: "Notifications", description: "Checking notifications..." })
+              }}>
                 <BellIcon />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon />
               Log out
             </DropdownMenuItem>

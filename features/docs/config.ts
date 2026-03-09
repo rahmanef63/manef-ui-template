@@ -6,7 +6,7 @@ export const docsFeature = defineFeature({
     label: "Documentation",
     route: "/dashboard/[workspaceSlug]/help/docs",
     order: 10,
-    menuGroupIds: [PARENT_FEATURES.help],
+    menuGroupIds: [PARENT_FEATURES.resources],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

@@ -6,7 +6,7 @@ export const activityFeature = defineFeature({
     label: "Activity",
     route: "/dashboard/[workspaceSlug]/activity",
     order: 30,
-    menuGroupIds: [PARENT_FEATURES.dashboard],
+    menuGroupIds: [PARENT_FEATURES.control],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });

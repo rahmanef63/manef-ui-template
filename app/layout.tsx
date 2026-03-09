@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { ConvexClientProvider } from "@/shared/providers/ConvexClientProvider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ServiceWorker } from "@/components/pwa/service-worker";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster />
             <ServiceWorker />
           </ThemeProvider>
         </ConvexClientProvider>

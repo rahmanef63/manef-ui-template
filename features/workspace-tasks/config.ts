@@ -6,7 +6,7 @@ export const workspaceTasksFeature = defineFeature({
     label: "Workspace Tasks",
     route: "/dashboard/[workspaceSlug]/tasks/workspace",
     order: 20,
-    menuGroupIds: [PARENT_FEATURES.tasks],
+    menuGroupIds: [PARENT_FEATURES.collaboration],
     requiredRoles: ["Admin", "Member"],
     projectId: "core",
 });
