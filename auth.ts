@@ -68,6 +68,7 @@ type AuthorizedUser = {
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: process.env.AUTH_TRUST_HOST !== "false",
   session: {
     strategy: "jwt",
   },
