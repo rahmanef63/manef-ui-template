@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "My App Title",
   description: "My app description",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {
