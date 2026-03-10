@@ -84,6 +84,8 @@ Repo: `rahmanef63/manef-ui`
 | `NEXTAUTH_URL` | ya | `https://gg.rahmanef.com` |
 | `NEXT_PUBLIC_CONVEX_URL` | ya | `https://dbgg.rahmanef.com` |
 | `CONVEX_SERVER_URL` | opsional | kosongkan atau samakan dengan `NEXT_PUBLIC_CONVEX_URL` |
+| `CONVEX_AUTH_AUDIENCE` | ya | `manef-ui` |
+| `CONVEX_AUTH_PRIVATE_KEY` | ya | `<RSA private key PEM>` |
 | `AUTH_SECRET` | ya | `<strong random secret>` |
 | `AUTH_TRUST_HOST` | ya | `true` |
 | `AUTH_DEVICE_SALT` | ya | `<random salt>` |
@@ -105,6 +107,22 @@ Jangan jadikan ini source of truth di frontend:
 - `OVERRIDE_INVITE_EMAIL`
 - `CONVEX_DEPLOYMENT`
 - `CONVEX_DEPLOY_KEY`
+
+### Env backend/runtime untuk `manef-db`
+
+Jika `manef-db` masih memakai Convex Cloud, env ini harus ada di deployment Convex:
+
+| Variable | Wajib | Nilai contoh |
+| --- | --- | --- |
+| `HOSTED_URL` | ya | `https://gg.rahmanef.com` |
+| `CONVEX_AUTH_AUDIENCE` | ya | `manef-ui` |
+
+Catatan:
+
+- `manef-db` sekarang mengandalkan custom JWT issuer dari `manef-ui` di
+  `https://gg.rahmanef.com/api/convex-auth`
+- setelah mengubah `convex/auth.config.ts`, Anda wajib jalankan `npm run deploy:ci`
+  di repo `manef-db`; redeploy container saja tidak cukup
 
 ## 5. Smoke test setelah kedua app hidup
 

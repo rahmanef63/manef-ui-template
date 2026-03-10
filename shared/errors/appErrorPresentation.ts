@@ -230,7 +230,7 @@ export function resolveErrorPresentation(
         ...fallback,
         description:
           options.description ??
-          "Koneksi ke backend manef-db sedang bermasalah. Periksa domain ggdb, sertifikat TLS, dan status deploy Dokploy sebelum mencoba lagi.",
+          "Koneksi ke backend manef-db sedang bermasalah. Periksa domain dbgg, sertifikat TLS, dan status deploy Dokploy sebelum mencoba lagi.",
         title: options.title ?? "Layanan backend belum bisa dijangkau",
       };
     }

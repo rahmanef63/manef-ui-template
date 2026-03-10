@@ -1,10 +1,11 @@
 "use client";
 
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { SessionProvider } from "next-auth/react";
 import { useMemo, type ReactNode } from "react";
 import { resolveConvexUrl } from "@/lib/convex/url";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
+import { useNextAuthConvexAuth } from "@/shared/providers/useNextAuthConvexAuth";
 
 function ConvexProviderSafe({ children }: { children: ReactNode }) {
   const url = resolveConvexUrl(process.env.NEXT_PUBLIC_CONVEX_URL);
@@ -29,7 +30,11 @@ function ConvexProviderSafe({ children }: { children: ReactNode }) {
     );
   }
 
-  return <ConvexProvider client={client}>{children}</ConvexProvider>;
+  return (
+    <ConvexProviderWithAuth client={client} useAuth={useNextAuthConvexAuth}>
+      {children}
+    </ConvexProviderWithAuth>
+  );
 }
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {

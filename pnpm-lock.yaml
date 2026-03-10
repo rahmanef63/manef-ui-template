@@ -149,6 +149,9 @@ importers:
       jabber:
         specifier: ^1.5.3
         version: 1.5.3
+      jose:
+        specifier: ^6.2.0
+        version: 6.2.0
       lucide-react:
         specifier: ^0.563.0
         version: 0.563.0(react@19.2.3)
