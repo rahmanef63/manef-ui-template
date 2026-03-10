@@ -9,6 +9,7 @@ import {
 import { useCreateWorkspaceDialog } from "@/features/workspaces/components/CreateWorkspaceDialog";
 import {
   useCurrentWorkspace,
+  useStaleValue,
   useWorkspaceRouteState,
 } from "@/features/workspaces/hooks/useWorkspaceState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,23 +43,37 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+function formatWorkspaceLabelFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export function WorkspaceSwitcher() {
   const pathname = usePathname();
   const workspaces = useQuery(listWorkspacesRef);
   const selectedWorkspace = useCurrentWorkspace();
   const { fallbackWorkspace } = useWorkspaceRouteState();
+  const stableSelectedWorkspace = useStaleValue(selectedWorkspace).value;
+  const stableFallbackWorkspace = useStaleValue(fallbackWorkspace).value;
+  const selectedOrFallbackWorkspace =
+    stableSelectedWorkspace ?? stableFallbackWorkspace;
 
   const [open, setOpen] = useState(false);
 
   const [showNewWorkspaceDialog, handleShowNewWorkspaceDialog, createWorkspaceDialogContent] =
     useCreateWorkspaceDialog();
 
-  const displayWorkspace = selectedWorkspace ?? fallbackWorkspace ?? {
-    _id: "default-main",
-    name: "Workspace",
-    slug: "main",
-    isPersonal: true,
-  } as any;
+  const displayWorkspace =
+    selectedOrFallbackWorkspace ??
+    ({
+      _id: "default-main",
+      name: formatWorkspaceLabelFromSlug("main"),
+      slug: "main",
+      isPersonal: true,
+    } as any);
 
   const safeWorkspaces = workspaces ?? [];
   const personalWorkspaces = safeWorkspaces.filter((workspace: WorkspaceSummary) => workspace.isPersonal);
