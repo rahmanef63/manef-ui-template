@@ -80,11 +80,39 @@ function assertCompletePem(value: string) {
   }
 }
 
+function decodeWrappedPemBody(value: string) {
+  const match = value.match(
+    /^-----BEGIN ([^-]+)-----\s*([A-Za-z0-9+/=\s]+?)\s*-----END \1-----$/s,
+  );
+  if (!match) {
+    return null;
+  }
+
+  const [, , body] = match;
+  const decoded = decodeBase64(body);
+  if (decoded === null) {
+    return null;
+  }
+
+  const decodedText = decoded.toString("utf8").trim();
+  if (decodedText.includes("BEGIN ")) {
+    const normalizedDecoded = normalizePem(decodedText);
+    assertCompletePem(normalizedDecoded);
+    return { format: "pem" as const, key: normalizedDecoded };
+  }
+
+  return { format: "der" as const, key: decoded };
+}
+
 function parsePrivateKeyMaterial(value: string) {
   const normalized = normalizePem(value);
   assertCompletePem(normalized);
 
   if (normalized.includes("BEGIN ")) {
+    const wrappedBody = decodeWrappedPemBody(normalized);
+    if (wrappedBody !== null) {
+      return wrappedBody;
+    }
     return { format: "pem" as const, key: normalized };
   }
 
