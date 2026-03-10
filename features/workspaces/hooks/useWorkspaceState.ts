@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import type { UsePaginatedQueryResult } from "convex/react";
 import { useParams } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { listWorkspacesRef, viewerPermissionsRef } from "@/shared/convex/workspaces";
 import type { WorkspaceSummary } from "@/shared/types/workspaces";
 
@@ -9,7 +9,8 @@ export function useWorkspaceRouteState() {
   const params = useParams();
   const workspaceSlug =
     typeof params?.workspaceSlug === "string" ? params.workspaceSlug : undefined;
-  const workspaces = useQuery(listWorkspacesRef);
+  const rawWorkspaces = useQuery(listWorkspacesRef);
+  const { value: workspaces } = useStaleValue(rawWorkspaces);
   const fallbackWorkspace =
     workspaces?.find((workspace: WorkspaceSummary) => workspace.isPersonal) ??
     workspaces?.[0];
@@ -21,7 +22,7 @@ export function useWorkspaceRouteState() {
     currentWorkspace,
     fallbackWorkspace,
     isEmpty: Array.isArray(workspaces) && workspaces.length === 0,
-    isLoading: workspaces === undefined,
+    isLoading: rawWorkspaces === undefined && workspaces === undefined,
     isMissing:
       workspaces !== undefined &&
       Array.isArray(workspaces) &&
@@ -39,8 +40,13 @@ export function useCurrentWorkspace(): WorkspaceSummary | undefined {
 
 export function useViewerPermissions() {
   const workspace = useCurrentWorkspace();
-  const permissions = useQuery(viewerPermissionsRef, { workspaceId: workspace?._id });
-  return permissions == null ? null : new Set(permissions);
+  const permissions = useQuery(
+    viewerPermissionsRef,
+    workspace == null ? "skip" : { workspaceId: workspace._id },
+  );
+  return useMemo(() => {
+    return permissions == null ? null : new Set(permissions);
+  }, [permissions]);
 }
 
 export function useStaleValue<T>(value: T | undefined) {

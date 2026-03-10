@@ -44,9 +44,10 @@ export function MembersList() {
     workspace === undefined ? "skip" : { workspaceId: workspace._id, search },
     { initialNumItems: 40 }
   );
-  const invites = useQuery(listMemberInvitesRef, {
-    workspaceId: workspace?._id,
-  });
+  const invites = useQuery(
+    listMemberInvitesRef,
+    workspace == null ? "skip" : { workspaceId: workspace._id },
+  );
 
   if (workspace == null || viewerPermissions == null || invites == null) {
     return null;
