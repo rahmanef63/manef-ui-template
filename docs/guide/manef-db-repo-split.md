@@ -40,11 +40,11 @@ That means a repo split needs an exported backend package, not only a copied
 
 ## Remaining work
 
-1. Verify `manef-ui` typecheck/build against the exported package.
+1. Verify `manef-ui` typecheck/build after removing legacy files that still point to deleted local Convex code.
 2. Decide whether `@manef/db` stays as local `file:../manef-db` dependency or
    moves to git/package-registry distribution.
-3. Keep deploy docs and env values aligned with `gg.rahmanef.com` and
-   `ggdb.rahmanef.com`.
+3. Finalize Dokploy deploy and TLS for `ggdb.rahmanef.com` so `CONVEX_SERVER_URL`
+   is not needed outside local/dev fallback.
 
 ## Recommended final state
 
@@ -56,6 +56,7 @@ That means a repo split needs an exported backend package, not only a copied
   - UI code
   - typed function refs in `shared/convex` if desired
   - runtime Convex URL config
+  - optional server-side override env `CONVEX_SERVER_URL` for local/dev only
 
 For a true remote split beyond side-by-side local repos, replace
 `file:../manef-db` with either:

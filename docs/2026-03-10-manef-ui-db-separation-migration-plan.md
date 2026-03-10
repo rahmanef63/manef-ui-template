@@ -46,6 +46,7 @@ Status dokumen per 2026-03-10:
 - `docs/VALIDATION_CHECKLIST.md` siap
 - Compose/env frontend ke domain backend baru: selesai di repo ini
 - Runtime env frontend ke endpoint baru: selesai di repo ini
+- Override server-side URL untuk local dev: selesai lewat `CONVEX_SERVER_URL`
 
 ---
 
@@ -53,14 +54,16 @@ Status dokumen per 2026-03-10:
 
 ### Temuan penting
 1. Tidak ditemukan hardcoded `api.rahmanef.com` atau `db.rahmanef.com` di source app runtime.
-2. Runtime frontend sekarang hanya bergantung pada env `NEXT_PUBLIC_CONVEX_URL`.
-3. Ada default fallback frontend ke domain backend target:
+2. Runtime frontend client bergantung pada env `NEXT_PUBLIC_CONVEX_URL`.
+3. Runtime frontend server bisa memakai `CONVEX_SERVER_URL` sebagai override jika
+   `ggdb.rahmanef.com` belum punya TLS yang trusted di local/dev environment.
+4. Ada default fallback frontend ke domain backend target:
    - file: `shared/providers/ConvexClientProvider.tsx`
    - nilai: `https://ggdb.rahmanef.com`
-4. Container web meneruskan env Convex dari runtime:
+5. Container web meneruskan env Convex dari runtime:
    - file: `docker-compose.yml`
-   - variable: `NEXT_PUBLIC_CONVEX_URL`
-5. Template env saat ini sudah diarahkan ke backend baru:
+   - variable: `NEXT_PUBLIC_CONVEX_URL`, `CONVEX_SERVER_URL`
+6. Template env saat ini sudah diarahkan ke backend baru:
    - file: `.env.example`
    - nilai default: `https://ggdb.rahmanef.com`
 
@@ -82,6 +85,7 @@ Output discovery yang sudah tervalidasi di repo:
 | Variable / dependency | Source | File pemakaian | Status |
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_CONVEX_URL` | env runtime | `.env.example`, `docker-compose.yml`, `shared/providers/ConvexClientProvider.tsx` | aktif |
+| `CONVEX_SERVER_URL` | env runtime server | `.env.example`, `docker-compose.yml`, `lib/convex/server.ts` | opsional untuk local/dev |
 | Default Convex URL | kode | `shared/providers/ConvexClientProvider.tsx` | diarahkan ke `ggdb.rahmanef.com` |
 | `api.rahmanef.com` | pencarian repo | tidak ditemukan di runtime app | tidak aktif di source code |
 | `db.rahmanef.com` | pencarian repo | tidak ditemukan di runtime app | tidak aktif di source code |
@@ -102,6 +106,7 @@ Output discovery yang sudah tervalidasi di repo:
 
 ### Phase 4 - Cutover
 - Ubah `NEXT_PUBLIC_CONVEX_URL` ke `https://ggdb.rahmanef.com`.
+- Biarkan `CONVEX_SERVER_URL` kosong di production, kecuali memang perlu override sementara.
 - Redeploy frontend.
 - Smoke test auth/query/mutation.
 - Pastikan frontend tidak lagi mengarah ke endpoint shared lama.
@@ -115,7 +120,8 @@ Output discovery yang sudah tervalidasi di repo:
 ## Definition of Done
 - `manef-ui` full jalan di backend terpisah.
 - Tidak ada request `manef-ui` ke endpoint shared lama.
-- Tidak ada dependency runtime frontend ke repo backend lokal.
+- Dependency build lokal `file:../manef-db` masih boleh ada sementara, tapi runtime production
+  tidak boleh bergantung ke checkout lokal repo backend.
 - GG/OpenClaw tetap sehat.
 - Dokumen runbook + rollback lengkap.
 

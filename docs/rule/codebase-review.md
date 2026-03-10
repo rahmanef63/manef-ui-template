@@ -3,14 +3,17 @@
 ## Current structure (top-level)
 - app/: Next.js App Router pages, layouts, and route components
 - components/: shared UI, layout, typography, helpers
-- convex/: backend schema and functions
 - features/: feature manifests and config
 - shared/: shared types, config, and Convex function references
 - hooks/: reusable hooks
 - docs/: documentation (best-practice + rule)
 
+Note: backend Convex ownership has moved to the separate repo `manef-db`. Any
+remaining `convex/` files in this repo should be treated as legacy cleanup work,
+not as the active backend source of truth.
+
 ## Pros (current structure)
-- Clear split between frontend (app/components) and backend (convex).
+- Clear split between frontend (`manef-ui`) and backend (`manef-db`).
 - Feature manifests are centralized in features/ with shared config as SSOT.
 - Shared types and Convex function references live in shared/, reducing imports from backend.
 - Auth and permissions are centralized (middleware + Convex checks).
@@ -40,10 +43,10 @@
    - Risk: non-reproducible installs across teams/CI.
    - Fix: pick one package manager and remove the other lockfile.
 
-2) Backend dev typecheck disabled
-   - File: package.json
-   - Risk: Convex type errors can slip into runtime.
-   - Fix: enable typecheck in dev or add a separate CI typecheck script.
+2) Legacy Convex files still exist in UI repo
+   - Files: `convex/*`
+   - Risk: stale references break lint/typecheck and confuse ownership.
+   - Fix: remove or archive the leftover files once all imports are confirmed detached.
 
 3) TypeScript target is legacy
    - File: tsconfig.json
@@ -65,12 +68,7 @@
    - Risk: confusing UX and incomplete form state.
    - Fix: connect plan to zod schema or remove the selector.
 
-7) Unused constant in schema
-   - File: convex/schema.ts
-   - Risk: dead code and confusion about deletion behavior.
-   - Fix: remove the constant or implement scheduled deletion.
-
-8) PWA service worker is a stub
+7) PWA service worker is a stub
    - File: public/sw.js
    - Risk: misleading PWA behavior (no offline cache).
    - Fix: implement caching strategy or remove PWA registration until ready.

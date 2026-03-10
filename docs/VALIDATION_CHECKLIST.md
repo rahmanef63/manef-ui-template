@@ -6,9 +6,9 @@ Updated: 2026-03-10
 Gunakan checklist ini sebelum, saat, dan setelah cutover.
 
 ## A. Discovery
-- [ ] Seluruh dokumen `2026-03-09-*` diperlakukan sebagai historical reference.
-- [ ] Source of truth aktif hanya dokumen `2026-03-10-*`.
+- [ ] Source of truth aktif sudah diringkas di `docs/README.md`.
 - [ ] Nilai lama `NEXT_PUBLIC_CONVEX_URL` sudah dicatat.
+- [ ] Nilai `CONVEX_SERVER_URL` production diputuskan secara eksplisit: kosong atau override sementara.
 - [ ] Repo/domain backend `manef-db` sudah dicatat.
 - [ ] Default URL di `shared/providers/ConvexClientProvider.tsx` sudah diverifikasi.
 
@@ -32,6 +32,7 @@ Gunakan checklist ini sebelum, saat, dan setelah cutover.
 
 ## E. Cutover frontend
 - [ ] `NEXT_PUBLIC_CONVEX_URL` production diubah ke `https://ggdb.rahmanef.com`.
+- [ ] `CONVEX_SERVER_URL` production dikosongkan atau diset sengaja bila ada kebutuhan TLS sementara.
 - [ ] `HOSTED_URL` tetap `https://gg.rahmanef.com`.
 - [ ] `NEXTAUTH_URL` tetap `https://gg.rahmanef.com`.
 - [ ] Default frontend tidak lagi menunjuk endpoint shared lama.

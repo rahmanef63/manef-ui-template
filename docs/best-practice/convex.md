@@ -5,7 +5,7 @@ This guide outlines best practices for using Convex as your realtime backend and
 ## 1. Schema & Data Modeling
 
 ### Strict Schema Validation
-- Always use `defineSchema` and `defineTable` in `convex/schema.ts`.
+- Always use `defineSchema` and `defineTable` in the backend repo `manef-db/convex/schema.ts`.
 - Use specific validators (`v`) to enforce types. `v.id("tableName")` is critical for foreign keys.
 - **System Fields**: Remember `_id` and `_creationTime` are automatic. Do not define them.
 - **Null Safety**: Use `v.optional(v.string())` for fields that might be missing, or `v.union(v.string(), v.null())` if you strictly value null.
@@ -42,7 +42,8 @@ This guide outlines best practices for using Convex as your realtime backend and
 ## 4. Type Safety
 
 ### Generated Types
-- Rely on `Doc<"tableName">` and `Id<"tableName">` from `_generated/dataModel`.
+- Rely on `Doc<"tableName">` and `Id<"tableName">` from the generated data model owned by `manef-db`.
+- In `manef-ui`, prefer types re-exported through `@manef/db` or `shared/types/convex`.
 - Do not manually type interfaces that mirror your schema; import them.
 
 ## 5. Production
@@ -64,4 +65,4 @@ This guide outlines best practices for using Convex as your realtime backend and
 ### HTTP Actions
 - **What it is**: Expose Convex functions as standard HTTP endpoints.
 - **Why use it**: To receive webhooks from Stripe directly into Convex, or to build a public REST API for other developers.
-- **How**: Define functions in `convex/http.ts` and route them.
+- **How**: Define functions in `manef-db/convex/http.ts` and route them.

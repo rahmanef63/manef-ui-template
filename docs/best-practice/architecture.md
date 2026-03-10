@@ -17,7 +17,7 @@ Because NextAuth is handled in the same Next.js app backend, you do not need ext
 
 **Pattern: Inline DB Operations**
 1.  **NextAuth Callback**: During the `jwt()` or `signIn()` callback inside `auth.ts`, check if the user is new or needs updating.
-2.  **Convex Mutation**: Call `await fetchMutation(api.users.syncUser, { ... })` using `fetchMutation` from `convex/nextjs`.
+2.  **Convex Mutation**: Call `await fetchMutation(api.users.syncUser, { ... })` using the server helper in `lib/convex/server.ts` so server-side calls can optionally honor `CONVEX_SERVER_URL`.
 3.  **Database**: The `users` table in Convex is updated synchronously or asynchronously as needed.
 
 **Result**: You can directy join any `authorId` with `users._id` in your Convex queries efficiently.
@@ -34,15 +34,14 @@ Recommended structure for cleanliness and scalability:
     layout.tsx        <-- Dashboard shell (Sidebar, etc.)
     page.tsx          <-- Main dashboard
     _components/      <-- Dashboard-specific components
-/convex
-  schema.ts           <-- Database schema
-  users.ts            <-- User-related mutations/queries
 /shared
+  convex/             <-- Typed function refs used by the UI
   providers/          <-- App providers (NextAuth + Convex)
+/lib
+  convex/server.ts    <-- Server-side Convex fetch wrapper
+  utils.ts
 /components
   ui/                 <-- Shadcn/Shared UI
-/lib
-  utils.ts
 ```
 
 ## 4. Security Boundaries
@@ -51,5 +50,5 @@ Recommended structure for cleanliness and scalability:
 | :--- | :--- | :--- |
 | **Edge / Network** | DDOS protection, SSL | Vercel / Next.js |
 | **Page Access** | Prevent unauthenticated users from visiting routes | `proxy.ts` (NextAuth Middleware) |
-| **Data Access** | Prevent unauthorized reading/writing of data | Convex |
+| **Data Access** | Prevent unauthorized reading/writing of data | Convex in `manef-db` |
 | **Input Validation** | Ensure data integrity | Zod (Next.js Actions) / Validators (Convex) |

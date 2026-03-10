@@ -28,6 +28,7 @@ Memindahkan trafik runtime `manef-ui` ke backend terpisah tanpa mengubah stack G
 
 ### 2. Set env production ke backend baru
 - Ubah `NEXT_PUBLIC_CONVEX_URL` menjadi `https://ggdb.rahmanef.com`.
+- Kosongkan `CONVEX_SERVER_URL` kecuali memang butuh override sementara ke endpoint Convex yang TLS-nya valid.
 - Pastikan `HOSTED_URL` tetap `https://gg.rahmanef.com`.
 - Pastikan `NEXTAUTH_URL` tetap `https://gg.rahmanef.com`.
 

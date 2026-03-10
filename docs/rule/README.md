@@ -7,7 +7,7 @@ Purpose: keep the UI template consistent, secure, and maintainable as features g
 - components/ : shared UI, layout, typography, and helpers.
 - features/ : feature manifests and configuration only (no UI rendering).
 - shared/ : shared config, types, and Convex function references.
-- convex/ : backend schema, mutations, queries, and auth/permissions.
+- backend schema/functions now live in the separate repo `manef-db`.
 
 ## Conventions
 - Prefer feature-level boundaries: feature config in features/, shared data contracts in shared/.
@@ -52,5 +52,5 @@ Purpose: keep the UI template consistent, secure, and maintainable as features g
 - components/ can import components/, shared/, shared/types/, hooks/, lib/.
 - features/* can import only same feature, shared/, shared/types/, lib/.
 - shared/ can import shared/, shared/types/, features/, lib/.
-- shared/types can import convex/ (type re-exports only).
+- shared/types can import backend-generated types only through approved re-exports such as `@manef/db` or local adapters.
 - shared/errors can import components/ for UI error surfaces.

@@ -20,6 +20,7 @@ Critical vars for production:
 - `HOSTED_URL=https://gg.rahmanef.com`
 - `NEXTAUTH_URL=https://gg.rahmanef.com`
 - `NEXT_PUBLIC_CONVEX_URL=https://ggdb.rahmanef.com`
+- `CONVEX_SERVER_URL=` (leave blank in normal production)
 - `OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS=300`
 - `OPENCLAW_NONCE_TTL_SECONDS=300`
 - `AUTH_SECRET=<strong random secret>`
@@ -34,7 +35,9 @@ Critical vars for production:
 4. Attach `gg.rahmanef.com` to the `manef-ui` deployment.
 5. Confirm the backend `ggdb.rahmanef.com` route is already active from the `manef-db` deployment.
 6. Redeploy and confirm TLS is active.
-7. Verify:
+7. If `ggdb.rahmanef.com` TLS is still not valid, stop here and fix backend TLS first
+   instead of keeping a long-term production override.
+8. Verify:
    - `https://gg.rahmanef.com/login`
    - `https://gg.rahmanef.com/api/auth/device/pending`
    - frontend requests resolve to `https://ggdb.rahmanef.com`

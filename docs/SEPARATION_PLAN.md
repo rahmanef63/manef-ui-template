@@ -4,7 +4,7 @@
 Updated: 2026-03-10
 Source of truth:
 - `docs/2026-03-10-manef-ui-db-separation-migration-plan.md`
-- `docs/2026-03-10-alignment-review-2026-03-09-docs.md`
+- `docs/README.md`
 
 ## Scope
 Tujuan dokumen ini adalah memberi rencana eksekusi operasional untuk memindahkan `manef-ui` ke backend Convex yang terpisah, tanpa mengubah stack GG/OpenClaw existing selain observasi read-only.
@@ -25,20 +25,19 @@ Out of scope:
 | Variable / dependency | Source saat ini | Lokasi pemakaian | Catatan |
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_CONVEX_URL` | `.env.example`, runtime container | `docker-compose.yml`, `shared/providers/ConvexClientProvider.tsx` | Saklar utama frontend ke backend baru. |
+| `CONVEX_SERVER_URL` | `.env.example`, runtime container | `docker-compose.yml`, `lib/convex/server.ts` | Override opsional untuk server-side fetch saat local/dev butuh TLS-valid endpoint. |
 | Default Convex URL | kode frontend | `shared/providers/ConvexClientProvider.tsx` | Default ke `https://ggdb.rahmanef.com`; env production tetap harus eksplisit. |
 | `HOSTED_URL` | `.env.example`, runtime container | `docker-compose.yml` | Harus konsisten dengan hostname frontend production aktif. |
 | `NEXTAUTH_URL` | `.env.example`, runtime container | `docker-compose.yml` | Harus sama dengan domain frontend production. |
 
 ### Hasil pencarian endpoint lama
 - Tidak ditemukan hardcoded runtime `api.rahmanef.com` atau `db.rahmanef.com` di source app.
-- Dokumen historis `2026-03-09-*` masih menyebut endpoint shared; dokumen tersebut hanya referensi sejarah.
 - Risiko aktual di repo saat ini adalah drift konfigurasi antara frontend `gg.rahmanef.com` dan backend `ggdb.rahmanef.com`.
 
 ## Rencana Eksekusi
 
 ### Phase 0. Freeze konteks
-- Pakai hanya dokumen `2026-03-10-*` sebagai source of truth.
-- Perlakukan `2026-03-09-*` sebagai historical reference.
+- Pakai hanya dokumen aktif yang terdaftar di `docs/README.md`.
 - Pastikan nilai lama berikut dicatat sebelum perubahan:
   - `NEXT_PUBLIC_CONVEX_URL`
   - hostname frontend production aktif
@@ -72,6 +71,7 @@ Out of scope:
   - `HOSTED_URL=https://gg.rahmanef.com`
   - `NEXTAUTH_URL=https://gg.rahmanef.com`
   - `NEXT_PUBLIC_CONVEX_URL=https://ggdb.rahmanef.com`
+  - `CONVEX_SERVER_URL=` kosongkan di production kecuali perlu override sementara
 - Pastikan frontend hanya memakai endpoint backend baru.
 - Redeploy frontend.
 - Smoke test login, dashboard load, query, mutation, dan alur invite/session.

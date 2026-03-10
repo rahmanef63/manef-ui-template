@@ -14,6 +14,7 @@ Mengembalikan `manef-ui` ke backend sebelumnya jika cutover menyebabkan gangguan
 
 ## Data yang Harus Sudah Tersimpan Sebelum Cutover
 - `NEXT_PUBLIC_CONVEX_URL` lama
+- `CONVEX_SERVER_URL` lama jika dipakai
 - revision/image frontend terakhir yang diketahui sehat
 - catatan waktu mulai cutover
 
@@ -25,6 +26,7 @@ Mengembalikan `manef-ui` ke backend sebelumnya jika cutover menyebabkan gangguan
 
 ### 2. Kembalikan env runtime
 - Set `NEXT_PUBLIC_CONVEX_URL` ke nilai lama yang dipakai sebelum cutover.
+- Kembalikan `CONVEX_SERVER_URL` ke nilai lama jika sebelumnya memang dipakai.
 - Jangan ubah secret lain kecuali memang ikut berubah saat cutover.
 
 ### 3. Redeploy frontend ke state sehat terakhir
