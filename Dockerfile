@@ -6,7 +6,8 @@ RUN apk add --no-cache libc6-compat && corepack enable
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY vendor/manef-db ./vendor/manef-db
+RUN pnpm install --no-frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
