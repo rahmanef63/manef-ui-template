@@ -417,6 +417,7 @@ The extractor scripts should run on the same host that has access to:
 - Add Convex mutations for upsert + outbox tracking
 - Add local exporter script for sessions/status
 - Build n8n pull workflow
+- **Implementation status:** initial Convex schema + API foundations for `syncOutbox`, `syncRuns`, and `syncState` have been added; exporter script and n8n workflow JSON are next
 
 ### Phase B
 - Add dashboard mutations that emit outbox events
