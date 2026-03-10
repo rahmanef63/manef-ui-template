@@ -121,6 +121,7 @@ Catatan:
 
 - `manef-db` sekarang mengandalkan custom JWT issuer dari `manef-ui` di
   `https://gg.rahmanef.com/api/convex-auth`
+- issuer diambil dari `HOSTED_URL`, jadi Anda tidak perlu set `CONVEX_AUTH_ISSUER`
 - setelah mengubah `convex/auth.config.ts`, Anda wajib jalankan `npm run deploy:ci`
   di repo `manef-db`; redeploy container saja tidak cukup
 
