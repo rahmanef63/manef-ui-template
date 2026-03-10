@@ -8,6 +8,8 @@ import {
 } from "jose";
 
 const DEFAULT_AUDIENCE = "manef-ui";
+const PRIVATE_KEY_PARSE_HINT =
+  "Set CONVEX_AUTH_PRIVATE_KEY as a complete RSA private key in PEM, PEM with \\n escapes, base64 PEM, or base64 DER PKCS8.";
 const DEV_ONLY_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHF6UUiujKzl4h
 8zkIVtrfhFWqUNfSCcYxjyzO0vEc3eIu1qHweX5fW65gqAOcAe6kFE56r1sISROx
@@ -47,19 +49,58 @@ function normalizePem(value: string) {
   }
 
   normalized = normalized.replace(/\\n/g, "\n").trim();
+  return normalized;
+}
 
-  if (!normalized.includes("BEGIN ")) {
-    try {
-      const decoded = Buffer.from(normalized, "base64").toString("utf8").trim();
-      if (decoded.includes("BEGIN ")) {
-        normalized = decoded;
-      }
-    } catch {
-      // Keep original value; createPrivateKey will throw a clearer error below.
-    }
+function isBase64(value: string) {
+  return /^[A-Za-z0-9+/=\s]+$/.test(value);
+}
+
+function decodeBase64(value: string) {
+  if (!isBase64(value)) {
+    return null;
   }
 
-  return normalized;
+  try {
+    return Buffer.from(value.replace(/\s+/g, ""), "base64");
+  } catch {
+    return null;
+  }
+}
+
+function assertCompletePem(value: string) {
+  if (!value.includes("BEGIN ")) {
+    return;
+  }
+
+  if (!value.includes("END ")) {
+    throw new Error(
+      "CONVEX_AUTH_PRIVATE_KEY appears truncated after decoding. Re-copy the full key or use `base64 -w 0 private-key.pem`.",
+    );
+  }
+}
+
+function parsePrivateKeyMaterial(value: string) {
+  const normalized = normalizePem(value);
+  assertCompletePem(normalized);
+
+  if (normalized.includes("BEGIN ")) {
+    return { format: "pem" as const, key: normalized };
+  }
+
+  const decoded = decodeBase64(normalized);
+  if (decoded === null) {
+    return { format: "pem" as const, key: normalized };
+  }
+
+  const decodedText = decoded.toString("utf8").trim();
+  if (decodedText.includes("BEGIN ")) {
+    const normalizedDecoded = normalizePem(decodedText);
+    assertCompletePem(normalizedDecoded);
+    return { format: "pem" as const, key: normalizedDecoded };
+  }
+
+  return { format: "der" as const, key: decoded };
 }
 
 export function getConvexJwtIssuer() {
@@ -78,7 +119,7 @@ export function getConvexJwtAudience() {
 function getPrivateKeyPem() {
   const configured = process.env.CONVEX_AUTH_PRIVATE_KEY;
   if (configured) {
-    return normalizePem(configured);
+    return configured;
   }
 
   if (process.env.NODE_ENV !== "production") {
@@ -91,10 +132,35 @@ function getPrivateKeyPem() {
 }
 
 function getPrivateKey() {
-  return createPrivateKey({
-    format: "pem",
-    key: getPrivateKeyPem(),
-  });
+  const material = parsePrivateKeyMaterial(getPrivateKeyPem());
+
+  try {
+    if (material.format === "pem") {
+      return createPrivateKey({
+        format: "pem",
+        key: material.key,
+      });
+    }
+
+    try {
+      return createPrivateKey({
+        format: "der",
+        type: "pkcs8",
+        key: material.key,
+      });
+    } catch {
+      return createPrivateKey({
+        format: "der",
+        type: "pkcs1",
+        key: material.key,
+      });
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to parse CONVEX_AUTH_PRIVATE_KEY. ${PRIVATE_KEY_PARSE_HINT}`,
+      { cause: error as Error },
+    );
+  }
 }
 
 export async function getConvexJwk() {

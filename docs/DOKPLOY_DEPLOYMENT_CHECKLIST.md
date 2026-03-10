@@ -60,7 +60,15 @@ Convex itu sendiri.
 
 ### Penting
 
+- Jika app `manef-db` dibuat di Dokploy dengan mode `Dockerfile`, set
+  `Domains -> Container Port = 8080`.
+- Jangan mengandalkan label Traefik di `manef-db/docker-compose.yml` untuk app
+  Dokploy mode `Dockerfile`; routing aktif datang dari konfigurasi domain
+  Dokploy.
 - Tanpa `UPSTREAM_CONVEX_URL`, proxy tidak berguna.
+- Jika `UPSTREAM_CONVEX_URL` mengarah ke `https://...convex.cloud`, pastikan
+  image `manef-db` yang terdeploy sudah membawa fix SNI/`Host` upstream.
+  Tanpa itu, container bisa `healthy` tetapi request publik tetap `502`.
 - Env `AUTH_ADMIN_*`, `HOSTED_URL`, `RESEND_API_KEY`, `OVERRIDE_INVITE_EMAIL`
   bukan milik container proxy.
 - Env backend tersebut harus ada di runtime/deployment Convex backend.
@@ -85,7 +93,7 @@ Repo: `rahmanef63/manef-ui`
 | `NEXT_PUBLIC_CONVEX_URL` | ya | `https://dbgg.rahmanef.com` |
 | `CONVEX_SERVER_URL` | opsional | kosongkan atau samakan dengan `NEXT_PUBLIC_CONVEX_URL` |
 | `CONVEX_AUTH_AUDIENCE` | ya | `manef-ui` |
-| `CONVEX_AUTH_PRIVATE_KEY` | ya | `<RSA private key PEM>` |
+| `CONVEX_AUTH_PRIVATE_KEY` | ya | `<RSA private key PEM atau base64 PEM lengkap>` |
 | `AUTH_SECRET` | ya | `<strong random secret>` |
 | `AUTH_TRUST_HOST` | ya | `true` |
 | `AUTH_DEVICE_SALT` | ya | `<random salt>` |
@@ -94,6 +102,14 @@ Repo: `rahmanef63/manef-ui`
 | `OPENCLAW_NONCE_TTL_SECONDS` | opsional | `300` |
 | `OPENCLAW_WORKFLOW_URL` | opsional | `<workflow url>` |
 | `APP_IMAGE` | opsional | override image tag |
+
+Catatan format key frontend:
+
+- Untuk menghindari key PEM kepotong di UI Dokploy, format paling aman untuk
+  `CONVEX_AUTH_PRIVATE_KEY` adalah `base64 -w 0 private-key.pem`.
+- Jika route `/.well-known/jwks.json` mengembalikan `convex_auth_unavailable`,
+  cek dulu apakah hasil decode env masih punya `BEGIN PRIVATE KEY` dan
+  `END PRIVATE KEY` lengkap.
 
 ### Tidak perlu di Dokploy `manef-ui`
 
