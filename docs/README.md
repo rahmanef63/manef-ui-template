@@ -4,6 +4,7 @@ Updated: 2026-03-10
 
 Dokumen aktif yang perlu dipakai untuk operasional repo ini:
 
+- `docs/2026-03-11-login-deploy-status.md`
 - `docs/2026-03-10-manef-ui-db-separation-migration-plan.md`
 - `docs/SEPARATION_PLAN.md`
 - `docs/CUTOVER_RUNBOOK.md`
@@ -24,9 +25,10 @@ Ringkasan status:
 Remaining tasks yang masih relevan:
 
 1. Verifikasi deploy Dokploy end-to-end untuk `manef-ui` dan `manef-db`.
-2. Pastikan TLS `dbgg.rahmanef.com` valid sehingga local/production tidak perlu fallback URL.
-3. Rapikan sisa legacy frontend yang masih mengganggu lint/typecheck, terutama file lama di `convex/`.
-4. Putuskan distribusi final `@manef/db`: tetap `file:../manef-db`, git dependency, atau private package registry.
+2. Pastikan `dbgg.rahmanef.com` tidak lagi `502` dan `gg.rahmanef.com/api/convex-auth/.well-known/jwks.json` tidak lagi `500`.
+3. Putuskan mode deploy `manef-db`: tetap `Convex Cloud + proxy` atau pindah penuh ke self-hosted, jangan campur env keduanya.
+4. Rapikan sisa legacy frontend yang masih mengganggu lint/typecheck, terutama file lama di `convex/`.
+5. Putuskan distribusi final `@manef/db`: tetap `file:../manef-db`, git dependency, atau private package registry.
 
 Dokumen yang sudah dihapus dari repo ini adalah dokumen fase dual-sync/shared Convex
 tanggal 2026-03-09. Dokumen tersebut tidak lagi dipakai sebagai source of truth
