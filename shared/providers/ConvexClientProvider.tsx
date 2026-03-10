@@ -3,13 +3,11 @@
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { SessionProvider } from "next-auth/react";
 import { useMemo, type ReactNode } from "react";
+import { resolveConvexUrl } from "@/lib/convex/url";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
-const DEFAULT_CONVEX_URL = "https://ggdb.rahmanef.com";
-
 function ConvexProviderSafe({ children }: { children: ReactNode }) {
-  const configuredUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
-  const url = configuredUrl && configuredUrl.length > 0 ? configuredUrl : DEFAULT_CONVEX_URL;
+  const url = resolveConvexUrl(process.env.NEXT_PUBLIC_CONVEX_URL);
 
   const client = useMemo(() => {
     try {

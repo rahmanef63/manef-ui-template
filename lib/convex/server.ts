@@ -9,18 +9,26 @@ import type {
   FunctionReference,
   FunctionReturnType,
 } from "convex/server";
+import {
+  resolveConvexUrl,
+  shouldSkipConvexDeploymentUrlCheck,
+} from "@/lib/convex/url";
 
 function getServerConvexUrl() {
-  const configured = process.env.CONVEX_SERVER_URL?.trim();
-  return configured && configured.length > 0 ? configured : undefined;
+  return resolveConvexUrl(
+    process.env.CONVEX_SERVER_URL,
+    process.env.NEXT_PUBLIC_CONVEX_URL,
+  );
 }
 
 function withServerUrl(options?: NextjsOptions): NextjsOptions {
   const url = getServerConvexUrl();
-  if (!url) {
-    return options ?? {};
-  }
-  return { ...(options ?? {}), url };
+  return {
+    ...(options ?? {}),
+    skipConvexDeploymentUrlCheck:
+      options?.skipConvexDeploymentUrlCheck ?? shouldSkipConvexDeploymentUrlCheck(url),
+    url,
+  };
 }
 
 export async function fetchQuery<Query extends FunctionReference<"query">>(
