@@ -15,7 +15,8 @@ export default function SessionsListPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Attempt to load sessions from Convex
-// @ts-ignore`n    // @ts-ignore`n    const dbSessions: any = (useQuery as any)((api as any).features.sessions.api.getSessions as any, {});
+    const dbSessions: any =
+        (useQuery as any)((api as any).features.sessions.api.getSessions as any, { limit: 50 });
 
     const handleRefresh = () => {
         setIsRefreshing(true);
@@ -31,8 +32,8 @@ export default function SessionsListPage() {
         );
     }
 
-    let displaySessions: SessionData[] = dbSessions.length > 0
-        ? dbSessions.map(s => ({
+    const displaySessions: SessionData[] = dbSessions.length > 0
+        ? dbSessions.map((s: any) => ({
             id: s.sessionKey,
             key: s.sessionKey,
             sub: "Unknown / Legacy",
@@ -63,4 +64,3 @@ export default function SessionsListPage() {
         </div>
     );
 }
-

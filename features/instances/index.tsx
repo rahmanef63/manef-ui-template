@@ -15,7 +15,8 @@ export default function InstancesPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Attempt to load instances from Convex
-// @ts-ignore`n    // @ts-ignore`n    const dbInstances: any = (useQuery as any)((api as any).features.instances.api.listInstances as any, {});
+    const dbInstances: any =
+        (useQuery as any)((api as any).features.instances.api.listInstances as any, {});
     const refreshInstances = useAction(api.features.instances.api.refreshInstances);
 
     const handleRefresh = async () => {
@@ -36,8 +37,8 @@ export default function InstancesPage() {
         );
     }
 
-    let displayInstances: InstanceData[] = dbInstances.length > 0
-        ? dbInstances.map(i => ({
+    const displayInstances: InstanceData[] = dbInstances.length > 0
+        ? dbInstances.map((i: any) => ({
             id: i._id.toString(),
             name: i.name,
             role: i.role === "gateway" || i.role === "node" || i.role === "client" ? i.role : "client",
@@ -68,4 +69,3 @@ export default function InstancesPage() {
         </div>
     );
 }
-

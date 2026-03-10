@@ -39,6 +39,26 @@ interface SidebarNavTreeBlockProps extends React.ComponentProps<typeof Sidebar> 
     portalId?: string;
 }
 
+function deriveDisplayName(args: {
+    authProfileName?: string | null;
+    sessionEmail?: string;
+    sessionName?: string | null;
+}) {
+    const normalize = (value?: string | null) => value?.trim() || "";
+    const preferredName = normalize(args.authProfileName) || normalize(args.sessionName);
+
+    if (preferredName && preferredName.toLowerCase() !== "user") {
+        return preferredName;
+    }
+
+    const localPart = args.sessionEmail?.split("@")[0]?.trim();
+    if (!localPart) {
+        return "User";
+    }
+
+    return localPart;
+}
+
 export function SidebarNavTreeBlock({
     portalId = "default",
     ...props
@@ -61,10 +81,11 @@ export function SidebarNavTreeBlock({
         sessionEmail ? { email: sessionEmail } : "skip"
     );
     const userPayload = {
-        name:
-            authProfile?.name ||
-            session?.user?.name ||
-            (sessionEmail ? sessionEmail.split("@")[0] : "User"),
+        name: deriveDisplayName({
+            authProfileName: authProfile?.name,
+            sessionEmail,
+            sessionName: session?.user?.name,
+        }),
         email: authProfile?.email || sessionEmail,
         avatar: session?.user?.image || "",
     };

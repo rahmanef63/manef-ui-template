@@ -19,6 +19,8 @@ const History = lazy(() => import("@/features/chat-history"));
 const Users = lazy(() => import("@/features/users"));
 const Roles = lazy(() => import("@/features/roles"));
 const Audit = lazy(() => import("@/features/audit"));
+const Instances = lazy(() => import("@/features/instances"));
+const Sessions = lazy(() => import("@/features/sessions-list"));
 const Nodes = lazy(() => import("@/features/nodes"));
 
 // Help Features
@@ -48,6 +50,8 @@ export const FEATURE_REGISTRY: Record<string, React.ComponentType<any>> = {
     users: Users,
     roles: Roles,
     audit: Audit,
+    instances: Instances,
+    sessions: Sessions,
     nodes: Nodes,
 
     // Help
