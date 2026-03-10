@@ -1,28 +1,40 @@
 import { useQuery } from "convex/react";
 import type { UsePaginatedQueryResult } from "convex/react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useRef } from "react";
 import { listWorkspacesRef, viewerPermissionsRef } from "@/shared/convex/workspaces";
 import type { WorkspaceSummary } from "@/shared/types/workspaces";
 
-export function useCurrentWorkspace(): WorkspaceSummary | undefined {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { workspaceSlug } = useParams();
+export function useWorkspaceRouteState() {
+  const params = useParams();
+  const workspaceSlug =
+    typeof params?.workspaceSlug === "string" ? params.workspaceSlug : undefined;
   const workspaces = useQuery(listWorkspacesRef);
-  const currentWorkspace =
-    workspaces?.find((workspace: WorkspaceSummary) => workspace.slug === workspaceSlug) ?? workspaces?.[0];
-  useEffect(() => {
-    if (currentWorkspace !== undefined && currentWorkspace.slug !== workspaceSlug) {
-      router.push(
-        `/dashboard/${currentWorkspace.slug}/${pathname
-          .split("/")
-          .slice(3)
-          .join("/")}`
-      );
-    }
-  }, [currentWorkspace, pathname, router, workspaceSlug]);
-  return currentWorkspace;
+  const fallbackWorkspace =
+    workspaces?.find((workspace: WorkspaceSummary) => workspace.isPersonal) ??
+    workspaces?.[0];
+  const currentWorkspace = workspaces?.find(
+    (workspace: WorkspaceSummary) => workspace.slug === workspaceSlug,
+  );
+
+  return {
+    currentWorkspace,
+    fallbackWorkspace,
+    isEmpty: Array.isArray(workspaces) && workspaces.length === 0,
+    isLoading: workspaces === undefined,
+    isMissing:
+      workspaces !== undefined &&
+      Array.isArray(workspaces) &&
+      workspaces.length > 0 &&
+      workspaceSlug !== undefined &&
+      currentWorkspace === undefined,
+    workspaces,
+    workspaceSlug,
+  };
+}
+
+export function useCurrentWorkspace(): WorkspaceSummary | undefined {
+  return useWorkspaceRouteState().currentWorkspace;
 }
 
 export function useViewerPermissions() {

@@ -7,7 +7,10 @@ import {
 } from "@radix-ui/react-icons";
 
 import { useCreateWorkspaceDialog } from "@/features/workspaces/components/CreateWorkspaceDialog";
-import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
+import {
+  useCurrentWorkspace,
+  useWorkspaceRouteState,
+} from "@/features/workspaces/hooks/useWorkspaceState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,15 +46,16 @@ export function WorkspaceSwitcher() {
   const pathname = usePathname();
   const workspaces = useQuery(listWorkspacesRef);
   const selectedWorkspace = useCurrentWorkspace();
+  const { fallbackWorkspace } = useWorkspaceRouteState();
 
   const [open, setOpen] = useState(false);
 
   const [showNewWorkspaceDialog, handleShowNewWorkspaceDialog, createWorkspaceDialogContent] =
     useCreateWorkspaceDialog();
 
-  const displayWorkspace = selectedWorkspace ?? {
+  const displayWorkspace = selectedWorkspace ?? fallbackWorkspace ?? {
     _id: "default-main",
-    name: "Main",
+    name: "Workspace",
     slug: "main",
     isPersonal: true,
   } as any;

@@ -36,6 +36,11 @@ export function DeleteWorkspaceDialog({
       return;
     }
     router.push("/");
+  }, {
+    feature: "workspaces",
+    title: workspace.isPersonal
+      ? "Akun personal belum berhasil dihapus"
+      : "Workspace belum berhasil dihapus",
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>

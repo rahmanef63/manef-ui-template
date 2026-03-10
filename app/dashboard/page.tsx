@@ -1,7 +1,7 @@
-import { INVITE_PARAM } from "@/shared/constants/invite";
-import { storeUserFromSessionRef, storeUserRef } from "@/shared/convex/users";
 import { auth } from "@/auth";
 import { fetchMutation } from "@/lib/convex/server";
+import { INVITE_PARAM } from "@/shared/constants/invite";
+import { storeUserFromSessionRef, storeUserRef } from "@/shared/convex/users";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage({
@@ -12,6 +12,7 @@ export default async function DashboardPage({
   const params = await searchParams;
   const invite = params[INVITE_PARAM];
   const queryString = invite !== undefined ? `?${INVITE_PARAM}=${invite}` : "";
+  const callbackUrl = `/dashboard${queryString}`;
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -26,17 +27,23 @@ export default async function DashboardPage({
     });
   } catch (error) {
     console.error("[DashboardPage] Failed to resolve workspace:", error);
-    // Fallback: try with the generic store (identity-based)
     try {
       workspaceSlug = await fetchMutation(storeUserRef);
-    } catch {
-      // Ultimate fallback — redirect to a "main" workspace slug
-      workspaceSlug = "main";
+    } catch (fallbackError) {
+      console.error(
+        "[DashboardPage] Fallback identity workspace lookup failed:",
+        fallbackError,
+      );
+      redirect(
+        `/login?code=service_unavailable&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+      );
     }
   }
 
   if (!workspaceSlug) {
-    workspaceSlug = "main";
+    redirect(
+      `/login?code=service_unavailable&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+    );
   }
 
   redirect(`/dashboard/${workspaceSlug}${queryString}`);

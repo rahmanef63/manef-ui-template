@@ -15,9 +15,17 @@
       "types": "./dataModel.d.ts",
       "default": "./api.js"
     },
+    "./errors": {
+      "types": "./errors.d.ts",
+      "default": "./errors.js"
+    },
     "./permissions": {
       "types": "./permissions.d.ts",
       "default": "./api.js"
+    },
+    "./workspaces": {
+      "types": "./workspaces.d.ts",
+      "default": "./workspaces.js"
     }
   },
   "dependencies": {

@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/layout/header/site-header";
 import { Notifications } from "@/features/notifications/components/Notifications";
 import { Toaster } from "@/components/ui/toaster";
 import { AcceptInviteDialog } from "@/features/workspaces/components/AcceptInviteDialog";
+import { WorkspaceRouteGuard } from "@/features/workspaces/components/WorkspaceRouteGuard";
 
 interface AppShellBlockProps {
     children: React.ReactNode;
@@ -24,7 +25,7 @@ export function AppShellBlock({ children }: AppShellBlockProps) {
                     </div>
                 </SiteHeader>
                 <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    {children}
+                    <WorkspaceRouteGuard>{children}</WorkspaceRouteGuard>
                 </main>
                 <BottomNavBlock />
             </SidebarInset>

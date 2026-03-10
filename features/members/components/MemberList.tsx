@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import {
   useMutation,
@@ -24,7 +23,6 @@ import {
   useQuery,
 } from "convex/react";
 import type { UsePaginatedQueryReturnType } from "convex/react";
-import { ConvexError } from "convex/values";
 import { useState } from "react";
 import {
   deleteMemberInviteRef,
@@ -33,6 +31,7 @@ import {
   listMembersRef,
   updateMemberRef,
 } from "@/shared/convex/members";
+import { showErrorToast } from "@/shared/errors/appErrorPresentation";
 import type { MemberInviteSummary } from "@/shared/types/members";
 
 export function MembersList() {
@@ -125,12 +124,9 @@ function MembersTable({
                     onChange={(roleId) => {
                       updateMember({ memberId: member._id, roleId }).catch(
                         (error: unknown) => {
-                          toast({
-                            title:
-                              error instanceof ConvexError
-                                ? (error.data as string)
-                                : "Could not update role",
-                            variant: "destructive",
+                          showErrorToast(error, {
+                            feature: "members",
+                            title: "Role anggota belum berhasil diperbarui",
                           });
                         }
                       );
@@ -154,12 +150,9 @@ function MembersTable({
                       onSelect={() => {
                         deleteMember({ memberId: member._id }).catch(
                           (error: unknown) => {
-                            toast({
-                              title:
-                                error instanceof ConvexError
-                                  ? (error.data as string)
-                                  : "Could not delete member",
-                              variant: "destructive",
+                            showErrorToast(error, {
+                              feature: "members",
+                              title: "Anggota belum berhasil dihapus",
                             });
                           }
                         );
@@ -246,12 +239,9 @@ function InvitesTable({
                       onSelect={() => {
                         deleteInvite({ inviteId: invite._id }).catch(
                           (error: unknown) => {
-                            toast({
-                              title:
-                                error instanceof ConvexError
-                                  ? (error.data as string)
-                                  : "Could not delete invite",
-                              variant: "destructive",
+                            showErrorToast(error, {
+                              feature: "members",
+                              title: "Undangan belum berhasil dihapus",
                             });
                           }
                         );

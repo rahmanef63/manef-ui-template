@@ -63,7 +63,11 @@ export function useCreateWorkspaceDialog() {
               const workspaceSlug = await createWorkspace({ name });
               handleShowNewWorkspaceDialog(false);
               router.push(`/dashboard/${workspaceSlug}`);
-            })
+            }),
+            {
+              feature: "workspaces",
+              title: "Workspace baru belum berhasil dibuat",
+            },
           )}
         >
           <DialogHeader>
@@ -129,7 +133,7 @@ export function useCreateWorkspaceDialog() {
 }
 
 const FormSchema = z.object({
-  name: z.string().min(4, "Workspace name must be at least 4 characters long."),
+  name: z.string().min(3, "Workspace name must be at least 3 characters long."),
   // todo: Connect plan to zod schema or remove the selector
   // plan: z.enum(["free", "pro"]),
 });

@@ -43,6 +43,9 @@ export function Notifications() {
               onSelect={handleFailure(async () => {
                 const workspaceSlug = await acceptInvite({ inviteId: invite._id });
                 router.push(`/dashboard/${workspaceSlug}`);
+              }, {
+                feature: "members",
+                title: "Undangan belum berhasil diterima",
               })}
             >
               <div>

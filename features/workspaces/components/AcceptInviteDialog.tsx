@@ -71,6 +71,9 @@ export function AcceptInviteDialog() {
             onClick={handleFailure(async () => {
               await deleteInvite({ inviteId: invite._id });
               setInviteId(null);
+            }, {
+              feature: "members",
+              title: "Undangan belum berhasil ditolak",
             })}
             variant="destructive"
           >
@@ -81,6 +84,9 @@ export function AcceptInviteDialog() {
               const workspaceSlug = await acceptInvite({ inviteId: invite._id });
               setInviteId(null);
               router.push(`/dashboard/${workspaceSlug}`);
+            }, {
+              feature: "members",
+              title: "Undangan belum berhasil diterima",
             })}
           >
             Confirm

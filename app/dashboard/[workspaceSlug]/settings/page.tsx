@@ -13,13 +13,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { showErrorToast } from "@/shared/errors/appErrorPresentation";
 import { useMutation } from "convex/react";
 import { makeFunctionReference } from "convex/server";
-import { api } from "@manef/db/api";
+import { buildPersonalWorkspaceName } from "@manef/db/workspaces";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import type { Id } from "@/shared/types/convex";
+import { useSession } from "next-auth/react";
 
 const updateWorkspaceRef = makeFunctionReference<
   "mutation",
@@ -30,6 +32,7 @@ const updateWorkspaceRef = makeFunctionReference<
 export default function GeneralSettingsPage() {
   const workspace = useCurrentWorkspace();
   const permissions = useViewerPermissions();
+  const { data: session } = useSession();
   const updateWorkspace = useMutation(updateWorkspaceRef);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [newName, setNewName] = useState("");
@@ -45,6 +48,10 @@ export default function GeneralSettingsPage() {
     return null;
   }
 
+  const defaultPersonalWorkspaceName = buildPersonalWorkspaceName(
+    session?.user?.email ?? workspace.slug,
+  );
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || newName === workspace.name) return;
@@ -54,8 +61,10 @@ export default function GeneralSettingsPage() {
       await updateWorkspace({ workspaceId: workspace._id, name: newName });
       toast.success("Workspace name updated successfully");
     } catch (error) {
-      toast.error("Failed to update workspace name");
-      console.error(error);
+      showErrorToast(error, {
+        feature: "workspaces",
+        title: "Nama workspace belum berhasil diperbarui",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -81,7 +90,7 @@ export default function GeneralSettingsPage() {
           <CardTitle>{workspace.isPersonal ? "Account Name" : "Workspace Name"}</CardTitle>
           <CardDescription>
             {workspace.isPersonal
-              ? "This is your personal account name."
+              ? `Workspace pribadi Anda otomatis dibuat dari email login, default-nya seperti "${defaultPersonalWorkspaceName}". Nama ini bisa Anda ganti kapan saja.`
               : "This is your workspace's visible name. It can be changed at any time."}
           </CardDescription>
         </CardHeader>

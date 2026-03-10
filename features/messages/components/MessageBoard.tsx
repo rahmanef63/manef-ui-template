@@ -43,6 +43,9 @@ export function MessageBoard() {
     }
     await sendMessage({ text: message, workspaceId: workspace._id });
     setMessage("");
+  }, {
+    feature: "messages",
+    title: "Pesan belum berhasil dikirim",
   });
 
   return (

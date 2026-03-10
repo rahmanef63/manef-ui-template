@@ -78,7 +78,11 @@ function AddMemberForm({
                 await sendInvite({ email, roleId: role, workspaceId: workspace._id });
                 form.reset();
                 toast({ title: "Member invite created." });
-              })
+              }),
+              {
+                feature: "members",
+                title: "Undangan anggota belum berhasil dibuat",
+              },
             )}
             className="flex flex-col sm:flex-row gap-6 sm:items-end hide-lastpass-icon"
           >

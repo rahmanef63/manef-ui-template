@@ -3,28 +3,22 @@ import { emitDevicePendingEvent } from "@/lib/auth/openclaw";
 import { buildDeviceContext } from "@/lib/auth/device";
 import { isConvexNetworkError } from "@/lib/convex/errors";
 import { fetchMutation } from "@/lib/convex/server";
+import { getErrorPresentationFromCode } from "@/shared/errors/appErrorPresentation";
 import { authorizePasswordLoginRef } from "@/shared/convex/auth";
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-const errorMessages: Record<string, string> = {
-  device_approval_required: "Perangkat ini masih menunggu approval admin.",
-  device_revoked: "Perangkat ini sudah direvoke. Minta approval perangkat baru.",
-  email_domain_not_allowed: "Domain email ini tidak diizinkan oleh policy.",
-  service_unavailable: "Layanan login sedang tidak tersedia. Coba lagi beberapa saat lagi.",
-  user_blocked: "Akun ini diblokir.",
-  "1": "Email atau password tidak valid.",
-};
 
 export default async function LoginPage(props: {
   searchParams: Promise<{ callbackUrl?: string; error?: string; code?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const errorKey = searchParams.code ?? searchParams.error;
-  const errorMessage =
-    (errorKey ? errorMessages[errorKey] : undefined) ??
-    (searchParams.error ? "Email atau password tidak valid." : undefined);
+  const errorPresentation = errorKey
+    ? getErrorPresentationFromCode(errorKey, "auth")
+    : searchParams.error
+      ? getErrorPresentationFromCode("1", "auth")
+      : undefined;
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -33,10 +27,11 @@ export default async function LoginPage(props: {
           <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
           <p className="text-sm text-muted-foreground mt-1">Access your dashboard</p>
         </div>
-        {errorMessage && (
-          <p className="text-sm text-destructive bg-destructive/10 rounded px-3 py-2">
-            {errorMessage}
-          </p>
+        {errorPresentation && (
+          <div className="space-y-1 rounded bg-destructive/10 px-3 py-3 text-sm text-destructive">
+            <p className="font-medium">{errorPresentation.title}</p>
+            <p>{errorPresentation.description}</p>
+          </div>
         )}
         <form
           action={async (formData: FormData) => {
