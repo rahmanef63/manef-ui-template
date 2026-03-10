@@ -20,10 +20,6 @@ services:
       # Auth & security
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
-      AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-rahmanef63@gmail.com}
-      AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-}
-      AUTH_ADMIN_NAME: ${AUTH_ADMIN_NAME:-Rahman}
-      AUTH_ADMIN_ROLES: ${AUTH_ADMIN_ROLES:-admin}
       AUTH_DEVICE_SALT: ${AUTH_DEVICE_SALT:-}
 
       # OpenClaw integration
@@ -31,9 +27,6 @@ services:
       OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS: ${OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS:-300}
       OPENCLAW_NONCE_TTL_SECONDS: ${OPENCLAW_NONCE_TTL_SECONDS:-300}
       OPENCLAW_WORKFLOW_URL: ${OPENCLAW_WORKFLOW_URL:-}
-
-      # Optional integrations
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
 
     networks:
       - dokploy-network

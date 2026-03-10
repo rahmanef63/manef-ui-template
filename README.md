@@ -11,15 +11,14 @@ This template now uses `next-auth@5` credentials auth with a simple admin
 fallback:
 
 - `AUTH_SECRET`
-- `AUTH_ADMIN_EMAIL`
-- `AUTH_ADMIN_PASSWORD`
-- `AUTH_ADMIN_NAME`
-- `AUTH_ADMIN_ROLES`
 - `AUTH_DEVICE_SALT`
 - `OPENCLAW_SHARED_SECRET`
 - `OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS`
 - `OPENCLAW_NONCE_TTL_SECONDS`
 - `OPENCLAW_WORKFLOW_URL`
+
+Admin bootstrap credentials and invite-email envs now live in the backend repo
+`manef-db`, not in `manef-ui`.
 
 Quick start:
 
