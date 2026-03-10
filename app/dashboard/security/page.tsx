@@ -1,11 +1,11 @@
 import { auth } from "@/auth";
+import { fetchMutation, fetchQuery } from "@/lib/convex/server";
 import {
   approveDeviceRef,
   listPendingDevicesRef,
   revokeDeviceRef,
 } from "@/shared/convex/auth";
 import type { Id } from "@/shared/types/convex";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 

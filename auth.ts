@@ -3,8 +3,8 @@ import {
   authorizePasswordLoginRef,
   revokeSessionRef,
 } from "@/shared/convex/auth";
+import { fetchMutation } from "@/lib/convex/server";
 import type { Id } from "@/shared/types/convex";
-import { fetchMutation } from "convex/nextjs";
 import NextAuth, {
   CredentialsSignin,
   type DefaultSession,

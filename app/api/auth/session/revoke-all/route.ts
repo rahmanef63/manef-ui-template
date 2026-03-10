@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import { authenticateActionRequest } from "@/lib/auth/openclaw";
+import { fetchMutation } from "@/lib/convex/server";
 import { revokeAllUserSessionsRef } from "@/shared/convex/auth";
 import type { Id } from "@/shared/types/convex";
-import { fetchMutation } from "convex/nextjs";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

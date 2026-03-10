@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import { buildDeviceContext } from "@/lib/auth/device";
+import { fetchQuery } from "@/lib/convex/server";
 import { getDeviceStatusRef } from "@/shared/convex/auth";
 import type { Id } from "@/shared/types/convex";
-import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

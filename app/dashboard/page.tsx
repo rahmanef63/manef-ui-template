@@ -1,7 +1,7 @@
 import { INVITE_PARAM } from "@/shared/constants/invite";
 import { storeUserFromSessionRef, storeUserRef } from "@/shared/convex/users";
 import { auth } from "@/auth";
-import { fetchMutation } from "convex/nextjs";
+import { fetchMutation } from "@/lib/convex/server";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage({

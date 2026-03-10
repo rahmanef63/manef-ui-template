@@ -1,8 +1,8 @@
 import { signIn } from "@/auth";
 import { emitDevicePendingEvent } from "@/lib/auth/openclaw";
 import { buildDeviceContext } from "@/lib/auth/device";
+import { fetchMutation } from "@/lib/convex/server";
 import { authorizePasswordLoginRef } from "@/shared/convex/auth";
-import { fetchMutation } from "convex/nextjs";
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
+import { fetchQuery } from "@/lib/convex/server";
 import { listPendingDevicesRef } from "@/shared/convex/auth";
-import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 
 export async function GET() {

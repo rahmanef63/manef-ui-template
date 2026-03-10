@@ -16,6 +16,7 @@ services:
       HOSTED_URL: ${HOSTED_URL:-https://gg.rahmanef.com}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-https://gg.rahmanef.com}
       NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://ggdb.rahmanef.com}
+      CONVEX_SERVER_URL: ${CONVEX_SERVER_URL:-}
 
       # Auth & security
       AUTH_SECRET: ${AUTH_SECRET}

@@ -1,5 +1,5 @@
 import { createHash, createHmac, timingSafeEqual, randomUUID } from "crypto";
-import { fetchMutation } from "convex/nextjs";
+import { fetchMutation } from "@/lib/convex/server";
 import { consumeOpenClawNonceRef } from "@/shared/convex/auth";
 
 const EMPTY_BODY_SHA256 =

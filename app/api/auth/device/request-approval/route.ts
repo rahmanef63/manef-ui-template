@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 import { buildDeviceContext } from "@/lib/auth/device";
 import { emitDevicePendingEvent } from "@/lib/auth/openclaw";
+import { fetchMutation } from "@/lib/convex/server";
 import { requestDeviceApprovalRef } from "@/shared/convex/auth";
 import type { Id } from "@/shared/types/convex";
-import { fetchMutation } from "convex/nextjs";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

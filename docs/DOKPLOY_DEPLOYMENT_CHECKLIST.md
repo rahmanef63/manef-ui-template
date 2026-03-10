@@ -83,6 +83,7 @@ Repo: `rahmanef63/manef-ui`
 | `HOSTED_URL` | ya | `https://gg.rahmanef.com` |
 | `NEXTAUTH_URL` | ya | `https://gg.rahmanef.com` |
 | `NEXT_PUBLIC_CONVEX_URL` | ya | `https://ggdb.rahmanef.com` |
+| `CONVEX_SERVER_URL` | opsional | kosongkan atau samakan dengan `NEXT_PUBLIC_CONVEX_URL` |
 | `AUTH_SECRET` | ya | `<strong random secret>` |
 | `AUTH_TRUST_HOST` | ya | `true` |
 | `AUTH_DEVICE_SALT` | ya | `<random salt>` |

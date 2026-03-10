@@ -19,6 +19,7 @@ Domain: `https://gg.rahmanef.com`
 | `HOSTED_URL` | ya | Docker/runtime deploy | Base URL frontend |
 | `NEXTAUTH_URL` | ya | Docker/runtime deploy | Base URL NextAuth |
 | `NEXT_PUBLIC_CONVEX_URL` | ya | client + deploy | Endpoint backend `manef-db` |
+| `CONVEX_SERVER_URL` | opsional | server runtime | Override endpoint Convex untuk server-side fetch saat local/dev butuh URL TLS yang valid |
 | `AUTH_SECRET` | ya | `auth.ts` | Secret NextAuth |
 | `AUTH_TRUST_HOST` | ya | `auth.ts` | Trust host untuk Auth.js |
 | `AUTH_DEVICE_SALT` | ya | `lib/auth/device.ts` | Salt fingerprint device |
@@ -33,6 +34,7 @@ Sama dengan daftar runtime di atas:
 - `HOSTED_URL`
 - `NEXTAUTH_URL`
 - `NEXT_PUBLIC_CONVEX_URL`
+- `CONVEX_SERVER_URL`
 - `AUTH_SECRET`
 - `AUTH_TRUST_HOST`
 - `AUTH_DEVICE_SALT`
