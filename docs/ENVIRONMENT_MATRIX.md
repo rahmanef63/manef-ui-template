@@ -20,6 +20,8 @@ Domain: `https://gg.rahmanef.com`
 | `NEXTAUTH_URL` | ya | Docker/runtime deploy | Base URL NextAuth |
 | `NEXT_PUBLIC_CONVEX_URL` | ya | client + deploy | Endpoint backend `manef-db` |
 | `CONVEX_SERVER_URL` | opsional | server runtime | Override endpoint Convex untuk server-side fetch saat local/dev butuh URL TLS yang valid |
+| `CONVEX_AUTH_AUDIENCE` | ya | `convex/auth.config.ts` backend + frontend JWT bridge | Audience untuk custom JWT Convex |
+| `CONVEX_AUTH_PRIVATE_KEY` | ya | `app/api/convex-auth/*` | Private key untuk sign JWT browser ke Convex |
 | `AUTH_SECRET` | ya | `auth.ts` | Secret NextAuth |
 | `AUTH_TRUST_HOST` | ya | `auth.ts` | Trust host untuk Auth.js |
 | `AUTH_DEVICE_SALT` | ya | `lib/auth/device.ts` | Salt fingerprint device |
@@ -35,6 +37,8 @@ Sama dengan daftar runtime di atas:
 - `NEXTAUTH_URL`
 - `NEXT_PUBLIC_CONVEX_URL`
 - `CONVEX_SERVER_URL`
+- `CONVEX_AUTH_AUDIENCE`
+- `CONVEX_AUTH_PRIVATE_KEY`
 - `AUTH_SECRET`
 - `AUTH_TRUST_HOST`
 - `AUTH_DEVICE_SALT`
@@ -58,6 +62,12 @@ Variable berikut jangan lagi dijadikan source of truth di frontend:
 Catatan:
 - `.env.local` lokal Anda masih boleh menyimpan variable legacy untuk referensi,
   tetapi runtime `manef-ui` saat ini tidak membutuhkannya.
+- `CONVEX_AUTH_PRIVATE_KEY` bukan env deploy/admin biasa. Env ini wajib karena
+  arsitektur sekarang memakai `customJwt` untuk browser-side `convex/react`.
+- `Deployment URL`, `HTTP Actions URL`, dan `CONVEX_DEPLOY_KEY` tidak cukup
+  untuk menggantikan key ini.
+- Untuk Dokploy, format paling aman adalah satu baris:
+  `openssl pkcs8 -topk8 -nocrypt -in private-key.pem -outform DER | base64 -w 0`
 
 ## 2. Backend repo: `manef-db`
 

@@ -105,8 +105,22 @@ Repo: `rahmanef63/manef-ui`
 
 Catatan format key frontend:
 
+- `CONVEX_AUTH_PRIVATE_KEY` memang wajib untuk arsitektur auth saat ini.
+  `manef-ui` menerbitkan JWT browser untuk Convex, dan `manef-db` memverifikasi
+  JWT itu via provider `customJwt` + JWKS dari `gg.rahmanef.com`.
+- `Deployment URL`, `HTTP Actions URL`, dan `CONVEX_DEPLOY_KEY` dari Convex
+  tidak menggantikan `CONVEX_AUTH_PRIVATE_KEY`. Value tersebut dipakai untuk
+  endpoint backend, HTTP actions, dan deploy/admin workflow, bukan untuk
+  menandatangani token user browser.
 - Untuk menghindari key PEM kepotong di UI Dokploy, format paling aman untuk
   `CONVEX_AUTH_PRIVATE_KEY` adalah `base64 -w 0 private-key.pem`.
+- Format yang lebih aman lagi untuk UI Dokploy yang sering memotong value panjang
+  adalah `base64 DER PKCS8` satu baris:
+
+```bash
+openssl pkcs8 -topk8 -nocrypt -in private-key.pem -outform DER | base64 -w 0
+```
+
 - Jika route `/.well-known/jwks.json` mengembalikan `convex_auth_unavailable`,
   cek dulu apakah hasil decode env masih punya `BEGIN PRIVATE KEY` dan
   `END PRIVATE KEY` lengkap.
