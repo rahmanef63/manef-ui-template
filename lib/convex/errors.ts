@@ -3,7 +3,16 @@ export function isConvexNetworkError(error: unknown): boolean {
     return false;
   }
 
-  if (error.message === "fetch failed") {
+  const normalizedMessage = error.message.trim().toLowerCase();
+
+  if (
+    normalizedMessage === "fetch failed" ||
+    normalizedMessage.includes("bad gateway") ||
+    normalizedMessage.includes("gateway timeout") ||
+    normalizedMessage.includes("service unavailable") ||
+    normalizedMessage.includes("upstream connect error") ||
+    normalizedMessage.includes("upstream request timeout")
+  ) {
     return true;
   }
 
