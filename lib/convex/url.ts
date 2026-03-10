@@ -1,4 +1,4 @@
-const DEFAULT_CONVEX_URL = "https://ggdb.rahmanef.com";
+const DEFAULT_CONVEX_URL = "https://dbgg.rahmanef.com";
 
 function normalizeUrl(value?: string | null) {
   const trimmed = value?.trim();

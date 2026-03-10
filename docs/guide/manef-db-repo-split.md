@@ -14,7 +14,7 @@ references.
 - Frontend repo: `rahmanef63/manef-ui`
 - Frontend domain: `https://gg.rahmanef.com`
 - Backend repo: `rahmanef63/manef-db`
-- Backend domain: `https://ggdb.rahmanef.com`
+- Backend domain: `https://dbgg.rahmanef.com`
 
 ## Current transition
 
@@ -26,7 +26,7 @@ references.
 - `manef-ui` now imports generated Convex API/types from `@manef/db` instead of
   `@/convex/_generated/*`.
 - `manef-ui` no longer starts local Convex in its default `npm run dev`.
-- `manef-ui` runtime defaults now point to `ggdb.rahmanef.com`.
+- `manef-ui` runtime defaults now point to `dbgg.rahmanef.com`.
 
 ## Why this shape
 
@@ -43,7 +43,7 @@ That means a repo split needs an exported backend package, not only a copied
 1. Verify `manef-ui` typecheck/build after removing legacy files that still point to deleted local Convex code.
 2. Decide whether `@manef/db` stays as local `file:../manef-db` dependency or
    moves to git/package-registry distribution.
-3. Finalize Dokploy deploy and TLS for `ggdb.rahmanef.com` so `CONVEX_SERVER_URL`
+3. Finalize Dokploy deploy and TLS for `dbgg.rahmanef.com` so `CONVEX_SERVER_URL`
    is not needed outside local/dev fallback.
 
 ## Recommended final state

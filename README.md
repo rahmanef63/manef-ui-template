@@ -3,7 +3,7 @@
 Frontend repo for Manef, served on `https://gg.rahmanef.com`.
 
 Backend ownership has moved to the separate `manef-db` repo, served on
-`https://ggdb.rahmanef.com`.
+`https://dbgg.rahmanef.com`.
 
 ## Auth Setup 
 
@@ -60,4 +60,4 @@ Check out [Convex docs](https://docs.convex.dev/home), and
 - Frontend repo: `rahmanef63/manef-ui`
 - Backend repo: `rahmanef63/manef-db`
 - Frontend domain: `gg.rahmanef.com`
-- Backend domain: `ggdb.rahmanef.com`
+- Backend domain: `dbgg.rahmanef.com`

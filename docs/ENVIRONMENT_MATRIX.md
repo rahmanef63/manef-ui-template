@@ -5,7 +5,7 @@ Updated: 2026-03-10
 
 Tujuan dokumen ini adalah memisahkan dengan jelas env mana yang milik frontend
 `manef-ui`, mana yang milik backend `manef-db`, dan mana yang hanya milik proxy
-Docker `ggdb.rahmanef.com`.
+Docker `dbgg.rahmanef.com`.
 
 ## 1. Frontend repo: `manef-ui`
 
@@ -62,7 +62,7 @@ Catatan:
 ## 2. Backend repo: `manef-db`
 
 Repo: `rahmanef63/manef-db`
-Domain: `https://ggdb.rahmanef.com`
+Domain: `https://dbgg.rahmanef.com`
 
 ### Wajib di backend/Convex env
 
@@ -88,7 +88,7 @@ Container proxy hanya butuh env ini:
 
 | Variable | Wajib | Tujuan |
 | --- | --- | --- |
-| `PUBLIC_DB_DOMAIN` | ya | Host public untuk proxy, default `ggdb.rahmanef.com` |
+| `PUBLIC_DB_DOMAIN` | ya | Host public untuk proxy, default `dbgg.rahmanef.com` |
 | `UPSTREAM_CONVEX_URL` | ya | Upstream actual Convex deployment |
 
 Penting:
@@ -101,7 +101,7 @@ Penting:
 | Komponen | Repo | Domain |
 | --- | --- | --- |
 | Frontend | `manef-ui` | `gg.rahmanef.com` |
-| Backend/public endpoint | `manef-db` | `ggdb.rahmanef.com` |
+| Backend/public endpoint | `manef-db` | `dbgg.rahmanef.com` |
 
 ## 5. Ringkas keputusan
 

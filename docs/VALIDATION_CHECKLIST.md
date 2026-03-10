@@ -15,7 +15,7 @@ Gunakan checklist ini sebelum, saat, dan setelah cutover.
 ## B. Provisioning deployment baru
 - [ ] Backend `manef-db` sudah siap.
 - [ ] `gg.rahmanef.com` resolve dengan benar.
-- [ ] `ggdb.rahmanef.com` resolve dengan benar.
+- [ ] `dbgg.rahmanef.com` resolve dengan benar.
 - [ ] Secret names untuk deployment baru tidak reuse stack shared.
 
 ## C. Deploy schema dan functions
@@ -31,7 +31,7 @@ Gunakan checklist ini sebelum, saat, dan setelah cutover.
 - [ ] Sample check lulus.
 
 ## E. Cutover frontend
-- [ ] `NEXT_PUBLIC_CONVEX_URL` production diubah ke `https://ggdb.rahmanef.com`.
+- [ ] `NEXT_PUBLIC_CONVEX_URL` production diubah ke `https://dbgg.rahmanef.com`.
 - [ ] `CONVEX_SERVER_URL` production dikosongkan atau diset sengaja bila ada kebutuhan TLS sementara.
 - [ ] `HOSTED_URL` tetap `https://gg.rahmanef.com`.
 - [ ] `NEXTAUTH_URL` tetap `https://gg.rahmanef.com`.

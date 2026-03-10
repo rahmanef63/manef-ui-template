@@ -11,7 +11,7 @@ Tujuan dokumen ini adalah memberi rencana eksekusi operasional untuk memindahkan
 
 Target endpoint final:
 - Frontend: `https://gg.rahmanef.com`
-- Backend/public Convex endpoint: `https://ggdb.rahmanef.com`
+- Backend/public Convex endpoint: `https://dbgg.rahmanef.com`
 
 Out of scope:
 - Refactor product feature
@@ -26,13 +26,13 @@ Out of scope:
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_CONVEX_URL` | `.env.example`, runtime container | `docker-compose.yml`, `shared/providers/ConvexClientProvider.tsx` | Saklar utama frontend ke backend baru. |
 | `CONVEX_SERVER_URL` | `.env.example`, runtime container | `docker-compose.yml`, `lib/convex/server.ts` | Override opsional untuk server-side fetch saat local/dev butuh TLS-valid endpoint. |
-| Default Convex URL | kode frontend | `shared/providers/ConvexClientProvider.tsx` | Default ke `https://ggdb.rahmanef.com`; env production tetap harus eksplisit. |
+| Default Convex URL | kode frontend | `shared/providers/ConvexClientProvider.tsx` | Default ke `https://dbgg.rahmanef.com`; env production tetap harus eksplisit. |
 | `HOSTED_URL` | `.env.example`, runtime container | `docker-compose.yml` | Harus konsisten dengan hostname frontend production aktif. |
 | `NEXTAUTH_URL` | `.env.example`, runtime container | `docker-compose.yml` | Harus sama dengan domain frontend production. |
 
 ### Hasil pencarian endpoint lama
 - Tidak ditemukan hardcoded runtime `api.rahmanef.com` atau `db.rahmanef.com` di source app.
-- Risiko aktual di repo saat ini adalah drift konfigurasi antara frontend `gg.rahmanef.com` dan backend `ggdb.rahmanef.com`.
+- Risiko aktual di repo saat ini adalah drift konfigurasi antara frontend `gg.rahmanef.com` dan backend `dbgg.rahmanef.com`.
 
 ## Rencana Eksekusi
 
@@ -45,7 +45,7 @@ Out of scope:
 ### Phase 1. Provision stack backend baru
 - Gunakan repo `rahmanef63/manef-db` sebagai backend terpisah.
 - Buat atau pertahankan routing/domain backend:
-  - `ggdb.rahmanef.com`
+  - `dbgg.rahmanef.com`
 - Pastikan seluruh resource unik:
   - project name
   - service name
@@ -70,7 +70,7 @@ Out of scope:
 - Update runtime env:
   - `HOSTED_URL=https://gg.rahmanef.com`
   - `NEXTAUTH_URL=https://gg.rahmanef.com`
-  - `NEXT_PUBLIC_CONVEX_URL=https://ggdb.rahmanef.com`
+  - `NEXT_PUBLIC_CONVEX_URL=https://dbgg.rahmanef.com`
   - `CONVEX_SERVER_URL=` kosongkan di production kecuali perlu override sementara
 - Pastikan frontend hanya memakai endpoint backend baru.
 - Redeploy frontend.

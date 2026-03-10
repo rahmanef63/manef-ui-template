@@ -11,7 +11,7 @@ Dokumen ini adalah checklist praktis untuk deploy dua repo berikut:
 Domain target:
 
 - frontend: `https://gg.rahmanef.com`
-- backend/public endpoint: `https://ggdb.rahmanef.com`
+- backend/public endpoint: `https://dbgg.rahmanef.com`
 
 ## 1. Fix error `Github Provider not found`
 
@@ -39,10 +39,10 @@ Checklist perbaikan:
 ## 2. Urutan deploy yang benar
 
 1. Siapkan upstream backend/Convex terlebih dulu.
-2. Deploy `manef-db` proxy untuk `ggdb.rahmanef.com`.
-3. Verifikasi `ggdb.rahmanef.com` hidup.
+2. Deploy `manef-db` proxy untuk `dbgg.rahmanef.com`.
+3. Verifikasi `dbgg.rahmanef.com` hidup.
 4. Deploy `manef-ui`.
-5. Verifikasi `gg.rahmanef.com` mengarah ke `ggdb.rahmanef.com`.
+5. Verifikasi `gg.rahmanef.com` mengarah ke `dbgg.rahmanef.com`.
 
 ## 3. Deploy `manef-db`
 
@@ -55,7 +55,7 @@ Convex itu sendiri.
 
 | Variable | Wajib | Nilai contoh |
 | --- | --- | --- |
-| `PUBLIC_DB_DOMAIN` | ya | `ggdb.rahmanef.com` |
+| `PUBLIC_DB_DOMAIN` | ya | `dbgg.rahmanef.com` |
 | `UPSTREAM_CONVEX_URL` | ya | `https://<actual-convex-endpoint>` |
 
 ### Penting
@@ -67,10 +67,10 @@ Convex itu sendiri.
 
 ### Validasi `manef-db`
 
-1. Domain `ggdb.rahmanef.com` sudah attach ke app `manef-db`.
+1. Domain `dbgg.rahmanef.com` sudah attach ke app `manef-db`.
 2. TLS aktif.
 3. Health check proxy hidup.
-4. Request ke `ggdb.rahmanef.com` benar-benar diteruskan ke upstream Convex.
+4. Request ke `dbgg.rahmanef.com` benar-benar diteruskan ke upstream Convex.
 
 ## 4. Deploy `manef-ui`
 
@@ -82,7 +82,7 @@ Repo: `rahmanef63/manef-ui`
 | --- | --- | --- |
 | `HOSTED_URL` | ya | `https://gg.rahmanef.com` |
 | `NEXTAUTH_URL` | ya | `https://gg.rahmanef.com` |
-| `NEXT_PUBLIC_CONVEX_URL` | ya | `https://ggdb.rahmanef.com` |
+| `NEXT_PUBLIC_CONVEX_URL` | ya | `https://dbgg.rahmanef.com` |
 | `CONVEX_SERVER_URL` | opsional | kosongkan atau samakan dengan `NEXT_PUBLIC_CONVEX_URL` |
 | `AUTH_SECRET` | ya | `<strong random secret>` |
 | `AUTH_TRUST_HOST` | ya | `true` |
@@ -110,7 +110,7 @@ Jangan jadikan ini source of truth di frontend:
 
 ### Backend
 
-1. `ggdb.rahmanef.com` resolve.
+1. `dbgg.rahmanef.com` resolve.
 2. Tidak ada error routing upstream.
 
 ### Frontend
@@ -127,7 +127,7 @@ Jangan jadikan ini source of truth di frontend:
 Deployment dianggap siap dipakai jika:
 
 - Dokploy sudah punya GitHub provider aktif
-- `manef-db` hidup di `ggdb.rahmanef.com`
+- `manef-db` hidup di `dbgg.rahmanef.com`
 - `manef-ui` hidup di `gg.rahmanef.com`
-- frontend memakai `NEXT_PUBLIC_CONVEX_URL=https://ggdb.rahmanef.com`
+- frontend memakai `NEXT_PUBLIC_CONVEX_URL=https://dbgg.rahmanef.com`
 - smoke test lulus

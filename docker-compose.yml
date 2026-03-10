@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
       target: runner
       args:
-        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://ggdb.rahmanef.com}
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://dbgg.rahmanef.com}
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -15,7 +15,7 @@ services:
       # Public/base URLs
       HOSTED_URL: ${HOSTED_URL:-https://gg.rahmanef.com}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-https://gg.rahmanef.com}
-      NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://ggdb.rahmanef.com}
+      NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://dbgg.rahmanef.com}
       CONVEX_SERVER_URL: ${CONVEX_SERVER_URL:-}
 
       # Auth & security
