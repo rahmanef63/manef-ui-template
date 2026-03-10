@@ -4,6 +4,7 @@ import { useCurrentWorkspace, useViewerPermissions } from "@/features/workspaces
 import { DeleteWorkspaceDialog } from "@/features/settings/components/DeleteWorkspaceDialog";
 import { SettingsMenuButton } from "@/features/settings/components/SettingsMenuButton";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardDescription,
@@ -45,7 +46,7 @@ export default function GeneralSettingsPage() {
   }, [workspace]);
 
   if (workspace == null || permissions == null) {
-    return null;
+    return <SettingsSkeleton />;
   }
 
   const defaultPersonalWorkspaceName = buildPersonalWorkspaceName(
@@ -168,5 +169,24 @@ export default function GeneralSettingsPage() {
       </Card>
       <DeleteWorkspaceDialog open={showDeleteDialog} setOpen={setShowDeleteDialog} />
     </>
+  );
+}
+
+function SettingsSkeleton() {
+  return (
+    <div className="space-y-6 py-8">
+      <Skeleton className="h-10 w-64" />
+      <div className="rounded-xl border p-6 space-y-4">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <div className="rounded-xl border p-6 space-y-4">
+        <Skeleton className="h-6 w-44" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-10 w-52" />
+      </div>
+    </div>
   );
 }

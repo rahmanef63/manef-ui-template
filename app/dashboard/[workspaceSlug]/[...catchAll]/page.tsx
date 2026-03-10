@@ -6,6 +6,7 @@ import { FEATURE_REGISTRY } from "@/features/registry";
 import { getMenuFromPath, getActiveTab } from "@/shared/config/menu-utils";
 import { Loader2 } from "lucide-react";
 import { PageTabsBlock } from "@/shared/block/ui/layout/PageTabsBlock";
+import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
 export default function CatchAllPage() {
     const params = useParams();
@@ -52,13 +53,16 @@ export default function CatchAllPage() {
     return (
         <div className="flex flex-col gap-6">
             <PageTabsBlock />
-            <Suspense fallback={
-                <div className="flex items-center justify-center p-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-            }>
-                <Component />
-            </Suspense>
+            <ErrorBoundary>
+                <Suspense fallback={
+                    <div className="rounded-xl border bg-card p-12 flex items-center justify-center gap-3 text-muted-foreground">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span>Loading feature...</span>
+                    </div>
+                }>
+                    <Component />
+                </Suspense>
+            </ErrorBoundary>
         </div>
     );
 }

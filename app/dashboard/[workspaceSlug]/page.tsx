@@ -1,14 +1,16 @@
 "use client";
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
+import { Suspense } from "react";
+import { z } from "zod";
 import { MessageBoard } from "@/features/messages/components/MessageBoard";
 import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { SectionCards } from "@/components/layout/sections/section-cards";
 import { ChartAreaInteractive } from "@/components/layout/chart-area-interactive";
 import { PageTabsBlock } from "@/shared/block/ui/layout/PageTabsBlock";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { DataTable, schema as dataTableSchema } from "@/components/layout/data-table";
-import { z } from "zod";
+import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const sampleData: z.infer<typeof dataTableSchema>[] = [
   {
@@ -42,6 +44,7 @@ const sampleData: z.infer<typeof dataTableSchema>[] = [
 
 export default function Home() {
   const workspace = useCurrentWorkspace();
+
   if (workspace == null) {
     return (
       <div className="flex flex-col gap-6">
@@ -50,15 +53,36 @@ export default function Home() {
       </div>
     );
   }
+
   return (
     <div className="flex flex-col gap-6">
       <PageTabsBlock />
-      <SectionCards />
+
+      <ErrorBoundary>
+        <Suspense fallback={<SectionCardsSkeleton />}>
+          <SectionCards />
+        </Suspense>
+      </ErrorBoundary>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <ChartAreaInteractive />
-        <MessageBoard />
+        <ErrorBoundary>
+          <Suspense fallback={<ChartCardSkeleton />}>
+            <ChartAreaInteractive />
+          </Suspense>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <Suspense fallback={<MessageCardSkeleton />}>
+            <MessageBoard />
+          </Suspense>
+        </ErrorBoundary>
       </div>
-      <DataTable data={sampleData} />
+
+      <ErrorBoundary>
+        <Suspense fallback={<TableSkeleton />}>
+          <DataTable data={sampleData} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
@@ -66,34 +90,66 @@ export default function Home() {
 function DashboardSkeleton() {
   return (
     <>
-      <SectionCards />
+      <SectionCardsSkeleton />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl border bg-card text-card-foreground shadow">
-          <div className="p-6 flex flex-col gap-4">
-            <div className="space-y-2">
-              <div className="h-4 w-[150px] animate-pulse rounded bg-muted" />
-              <div className="h-8 w-[250px] animate-pulse rounded bg-muted" />
-            </div>
-            <div className="h-[200px] w-full animate-pulse rounded bg-muted" />
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card text-card-foreground shadow h-[300px] p-6">
-          <div className="h-full w-full animate-pulse rounded bg-muted" />
-        </div>
+        <ChartCardSkeleton />
+        <MessageCardSkeleton />
       </div>
-      <div className="rounded-xl border bg-card text-card-foreground shadow">
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="h-8 w-[200px] animate-pulse rounded bg-muted" />
-            <div className="h-8 w-[100px] animate-pulse rounded bg-muted" />
-          </div>
-          <div className="space-y-2">
-            <div className="h-12 w-full animate-pulse rounded bg-muted" />
-            <div className="h-12 w-full animate-pulse rounded bg-muted" />
-            <div className="h-12 w-full animate-pulse rounded bg-muted" />
-          </div>
-        </div>
-      </div>
+      <TableSkeleton />
     </>
+  );
+}
+
+function SectionCardsSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, idx) => (
+        <div key={idx} className="rounded-xl border bg-card p-4 shadow">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-3 h-8 w-16" />
+          <Skeleton className="mt-4 h-3 w-32" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChartCardSkeleton() {
+  return (
+    <div className="rounded-xl border bg-card text-card-foreground shadow">
+      <div className="p-6 flex flex-col gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[150px]" />
+          <Skeleton className="h-8 w-[250px]" />
+        </div>
+        <Skeleton className="h-[200px] w-full" />
+      </div>
+    </div>
+  );
+}
+
+function MessageCardSkeleton() {
+  return (
+    <div className="rounded-xl border bg-card text-card-foreground shadow h-[300px] p-6">
+      <Skeleton className="h-full w-full" />
+    </div>
+  );
+}
+
+function TableSkeleton() {
+  return (
+    <div className="rounded-xl border bg-card text-card-foreground shadow">
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-[200px]" />
+          <Skeleton className="h-8 w-[100px]" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    </div>
   );
 }

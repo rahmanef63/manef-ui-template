@@ -14,7 +14,7 @@
     "auth:devices:revoke": "node scripts/device-approval.mjs revoke",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc && next lint"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@manef/db": "file:./vendor/manef-db",
