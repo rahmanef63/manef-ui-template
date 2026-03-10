@@ -3,6 +3,7 @@ import {
   authorizePasswordLoginRef,
   revokeSessionRef,
 } from "@/shared/convex/auth";
+import { isConvexNetworkError } from "@/lib/convex/errors";
 import { fetchMutation } from "@/lib/convex/server";
 import type { Id } from "@/shared/types/convex";
 import NextAuth, {
@@ -47,6 +48,10 @@ class EmailDomainNotAllowedError extends CredentialsSignin {
   code = "email_domain_not_allowed";
 }
 
+class ServiceUnavailableError extends CredentialsSignin {
+  code = "service_unavailable";
+}
+
 type AppToken = {
   deviceId?: string;
   id?: string;
@@ -88,15 +93,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           ref: unknown,
           args: Record<string, unknown>
         ) => Promise<unknown>;
-        const result = (await runMutation(authorizePasswordLoginRef, {
-          createSession: true,
-          deviceHash: device.deviceHash,
-          email,
-          ip: device.ip,
-          label: device.label,
-          password,
-          userAgent: device.userAgent,
-        })) as {
+        let result: {
           code:
             | "APPROVED"
             | "DEVICE_APPROVAL_REQUIRED"
@@ -112,6 +109,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           userId?: string;
           userName?: string;
         };
+        try {
+          result = (await runMutation(authorizePasswordLoginRef, {
+            createSession: true,
+            deviceHash: device.deviceHash,
+            email,
+            ip: device.ip,
+            label: device.label,
+            password,
+            userAgent: device.userAgent,
+          })) as typeof result;
+        } catch (error) {
+          if (isConvexNetworkError(error)) {
+            throw new ServiceUnavailableError();
+          }
+          throw error;
+        }
 
         switch (result.code) {
           case "APPROVED":

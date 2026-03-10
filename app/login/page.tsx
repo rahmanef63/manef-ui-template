@@ -1,6 +1,7 @@
 import { signIn } from "@/auth";
 import { emitDevicePendingEvent } from "@/lib/auth/openclaw";
 import { buildDeviceContext } from "@/lib/auth/device";
+import { isConvexNetworkError } from "@/lib/convex/errors";
 import { fetchMutation } from "@/lib/convex/server";
 import { authorizePasswordLoginRef } from "@/shared/convex/auth";
 import { AuthError } from "next-auth";
@@ -11,6 +12,7 @@ const errorMessages: Record<string, string> = {
   device_approval_required: "Perangkat ini masih menunggu approval admin.",
   device_revoked: "Perangkat ini sudah direvoke. Minta approval perangkat baru.",
   email_domain_not_allowed: "Domain email ini tidak diizinkan oleh policy.",
+  service_unavailable: "Layanan login sedang tidak tersedia. Coba lagi beberapa saat lagi.",
   user_blocked: "Akun ini diblokir.",
   "1": "Email atau password tidak valid.",
 };
@@ -97,6 +99,11 @@ export default async function LoginPage(props: {
                     ? error.cause.code
                     : "1";
                 redirect(`/login?code=${code}`);
+              }
+              if (isConvexNetworkError(error)) {
+                redirect(
+                  `/login?code=service_unavailable&callbackUrl=${encodeURIComponent(searchParams.callbackUrl ?? "/dashboard")}`,
+                );
               }
               throw error;
             }
