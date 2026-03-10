@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "convex/react";
 import { makeFunctionReference } from "convex/server";
-import { api } from "@/convex/_generated/api";
+import { api } from "@manef/db/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";

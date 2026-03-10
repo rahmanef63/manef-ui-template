@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "@manef/db/api";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { UsageFilters, ActivityChart, UsageStats } from "./components/UsageDashboard";
 import { Skeleton } from "@/components/ui/skeleton";

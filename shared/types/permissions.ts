@@ -1,1 +1,1 @@
-export type { Permission, Role } from "@/convex/permissions";
+export type { Permission, Role } from "@manef/db/permissions";

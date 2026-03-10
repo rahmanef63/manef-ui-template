@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "@manef/db/api";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { InstancesList } from "./components/InstancesList";
 import { MOCK_INSTANCES } from "./constants";

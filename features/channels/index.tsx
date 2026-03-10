@@ -2,7 +2,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "@manef/db/api";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { TelegramCard, WhatsAppCard } from "./components/ChannelCards";
 import { CHANNEL_CONFIGS } from "./constants";

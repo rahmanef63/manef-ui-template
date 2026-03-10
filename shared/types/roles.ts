@@ -1,4 +1,4 @@
-import type { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "@manef/db/dataModel";
 
 export const roles = ["Admin", "Member"] as const;
 
