@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { debugClient } from "@/lib/debug/client";
 import { cn } from "@/lib/utils";
 import { createMessageRef, listMessagesRef } from "@/shared/convex/messages";
 import { handleFailure } from "@/shared/errors/handleFailure";
 import { useMutation, usePaginatedQuery } from "convex/react";
 import Image from "next/image";
-import { useCallback, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
 export function MessageBoard() {
   const workspace = useCurrentWorkspace();
@@ -24,6 +25,16 @@ export function MessageBoard() {
   const [message, setMessage] = useState("");
   const sendMessage = useMutation(createMessageRef);
   const listRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    debugClient("messages.query", {
+      messageCount: messages.length,
+      status,
+      workspaceId: workspace?._id ?? null,
+      workspaceSlug: workspace?.slug ?? null,
+    });
+  }, [messages.length, status, workspace?._id, workspace?.slug]);
+
   const handleScroll = useCallback(() => {
     if (listRef.current === null) {
       return;

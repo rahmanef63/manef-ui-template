@@ -1,5 +1,6 @@
 "use client";
 
+import { debugClient } from "@/lib/debug/client";
 import { handleFailure } from "@/shared/errors/handleFailure";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,13 +15,20 @@ import { acceptInviteRef, listInvitesRef } from "@/shared/convex/user_invites";
 import { BellIcon } from "@radix-ui/react-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 
 export function Notifications() {
   const router = useRouter();
   const invites = useQuery(listInvitesRef);
   const acceptInvite = useMutation(acceptInviteRef);
   const noInvites = (invites ?? []).length === 0;
+
+  useEffect(() => {
+    debugClient("notifications.invites", {
+      inviteCount: invites?.length ?? null,
+    });
+  }, [invites?.length]);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

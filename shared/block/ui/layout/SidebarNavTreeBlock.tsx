@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { debugClient } from "@/lib/debug/client";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
@@ -89,6 +90,24 @@ export function SidebarNavTreeBlock({
         email: authProfile?.email || sessionEmail,
         avatar: session?.user?.image || "",
     };
+
+    React.useEffect(() => {
+        debugClient("sidebar.identity", {
+            authProfileName: authProfile?.name ?? null,
+            authProfileRoles: authProfile?.roles ?? null,
+            sessionEmail: sessionEmail || null,
+            sessionName: session?.user?.name ?? null,
+            userPayloadName: userPayload.name,
+            workspaceSlug: workspace?.slug ?? null,
+        });
+    }, [
+        authProfile?.name,
+        authProfile?.roles,
+        session?.user?.name,
+        sessionEmail,
+        userPayload.name,
+        workspace?.slug,
+    ]);
 
     const isActive = (href: string) => pathname.startsWith(href);
 

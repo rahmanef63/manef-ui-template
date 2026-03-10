@@ -36,6 +36,14 @@ Extending auth:
 - For VPS operations on pending-device approvals, use
   [docs/DEVICE_APPROVAL_CLI.md](/home/rahman/projects/manef-ui/docs/DEVICE_APPROVAL_CLI.md).
 
+Debugging dashboard fetch churn:
+
+- Open browser devtools console and run:
+  `localStorage.setItem("manef:debug", "1"); location.reload();`
+- Disable again with:
+  `localStorage.removeItem("manef:debug"); location.reload();`
+- Debug logs are prefixed with `"[manef-debug]"`.
+
 Included:
 
 - Convex-backed data access through the separate `manef-db` repo

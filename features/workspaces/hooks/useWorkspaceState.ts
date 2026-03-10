@@ -1,7 +1,8 @@
 import { useQuery } from "convex/react";
 import type { UsePaginatedQueryResult } from "convex/react";
+import { debugClient } from "@/lib/debug/client";
 import { useParams } from "next/navigation";
-import { useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { listWorkspacesRef, viewerPermissionsRef } from "@/shared/convex/workspaces";
 import type { WorkspaceSummary } from "@/shared/types/workspaces";
 
@@ -18,7 +19,7 @@ export function useWorkspaceRouteState() {
     (workspace: WorkspaceSummary) => workspace.slug === workspaceSlug,
   );
 
-  return {
+  const state = {
     currentWorkspace,
     fallbackWorkspace,
     isEmpty: Array.isArray(workspaces) && workspaces.length === 0,
@@ -32,6 +33,28 @@ export function useWorkspaceRouteState() {
     workspaces,
     workspaceSlug,
   };
+
+  useEffect(() => {
+    debugClient("workspace.route-state", {
+      currentWorkspaceSlug: state.currentWorkspace?.slug ?? null,
+      fallbackWorkspaceSlug: state.fallbackWorkspace?.slug ?? null,
+      isEmpty: state.isEmpty,
+      isLoading: state.isLoading,
+      isMissing: state.isMissing,
+      workspaceCount: state.workspaces?.length ?? null,
+      workspaceSlug: state.workspaceSlug ?? null,
+    });
+  }, [
+    state.currentWorkspace?.slug,
+    state.fallbackWorkspace?.slug,
+    state.isEmpty,
+    state.isLoading,
+    state.isMissing,
+    state.workspaces?.length,
+    state.workspaceSlug,
+  ]);
+
+  return state;
 }
 
 export function useCurrentWorkspace(): WorkspaceSummary | undefined {
@@ -44,6 +67,15 @@ export function useViewerPermissions() {
     viewerPermissionsRef,
     workspace == null ? "skip" : { workspaceId: workspace._id },
   );
+
+  useEffect(() => {
+    debugClient("workspace.permissions", {
+      permissionCount: permissions?.length ?? null,
+      workspaceId: workspace?._id ?? null,
+      workspaceSlug: workspace?.slug ?? null,
+    });
+  }, [permissions?.length, workspace?._id, workspace?.slug]);
+
   return useMemo(() => {
     return permissions == null ? null : new Set(permissions);
   }, [permissions]);
