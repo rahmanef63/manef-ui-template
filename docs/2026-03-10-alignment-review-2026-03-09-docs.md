@@ -53,5 +53,5 @@ Source utama terbaru:
 
 ## Gap Implementasi yang Ditemukan di Repo
 - Tidak ada hardcoded `api.rahmanef.com` atau `db.rahmanef.com` pada runtime app saat ini.
-- Namun ada fallback hardcoded ke deployment Convex cloud lama di `shared/providers/ConvexClientProvider.tsx`.
-- Implikasi: alignment dokumen sudah benar, tetapi implementasi runtime belum sepenuhnya aman untuk separation sampai fallback itu ditutup dan env production diarahkan ke endpoint baru.
+- Default runtime frontend sekarang diarahkan ke `ggdb.rahmanef.com` di `shared/providers/ConvexClientProvider.tsx`.
+- Implikasi: alignment dokumen sudah lebih dekat ke target operasional, tetapi env production tetap harus diverifikasi agar frontend `gg.rahmanef.com` tidak drift dari backend `manef-db`.

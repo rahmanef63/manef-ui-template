@@ -5,7 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { useMemo, type ReactNode } from "react";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
-const DEFAULT_CONVEX_URL = "https://api.rahmanef.com";
+const DEFAULT_CONVEX_URL = "https://ggdb.rahmanef.com";
 
 function ConvexProviderSafe({ children }: { children: ReactNode }) {
   const configuredUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();

@@ -1,4 +1,9 @@
-# SaaS Starter: Convex + TypeScript + Next.js + NextAuth + Tailwind + shadcn/ui
+# Manef UI
+
+Frontend repo for Manef, served on `https://gg.rahmanef.com`.
+
+Backend ownership has moved to the separate `manef-db` repo, served on
+`https://ggdb.rahmanef.com`.
 
 ## Auth Setup 
 
@@ -20,22 +25,19 @@ Quick start:
 
 1. Copy `.env.example` to `.env.local` and fill the auth + Convex values.
 2. Run `npm install`.
-3. Run `npm run dev`.
-4. Login at `/login` with your configured admin credentials.
+3. Ensure `manef-db` is available if you need the backend locally.
+4. Run `npm run dev`.
+5. Login at `/login` with your configured admin credentials.
 
 Extending auth:
 
 - Replace credentials auth in `auth.ts` with OAuth/email providers as needed.
 - Keep middleware route protection in `middleware.ts`.
-- Keep Convex token wiring in `shared/providers/ConvexClientProvider.tsx` and
-  `shared/auth/getAuthToken.ts`.
+- Keep Convex client wiring in `shared/providers/ConvexClientProvider.tsx`.
 
-Build your SaaS website in no time! Included:
+Included:
 
-- Realtime database for implementing your product with
-  [Convex](https://convex.dev)
-  - Team/organization management
-  - Configurable roles and permissions
+- Convex-backed data access through the separate `manef-db` repo
 - Member invite emails using [Resend](https://resend.com)
 - User sign-in with [NextAuth.js](https://authjs.dev)
 - Website router with [Next.js](https://nextjs.org/)
@@ -54,20 +56,9 @@ Check out [Convex docs](https://docs.convex.dev/home), and
 
 `<img alt="Invite accept flow" src="https://cdn.sanity.io/images/ts10onj4/production/afbf9daf190f992af8eadfba6daaf175b7bea679-1864x1070.png" width="400">`
 
-## Architecture Notes (SSOT + Menu Overrides)
+## Repo Split
 
-- Feature manifests live in `features/<feature>/config.ts` as the single source of truth.
-- The sidebar menu is built from manifests in `shared/config`, then merged with
-  overrides stored per team in Convex (`convex/menu.ts` + `convex/admin/menu.ts`).
-- PWA scaffolding is enabled via `app/manifest.ts` and `public/sw.js` (replace icons in `public/icons`).
-
-## Setting up
-
-```
-npm create convex@latest -- -t xixixao/saas-starter
-```
-
-Then:
-
-1. Run `npm run dev`.
-2. Run `npx convex run init:init` to initialize permissions and roles in Convex.
+- Frontend repo: `rahmanef63/manef-ui`
+- Backend repo: `rahmanef63/manef-db`
+- Frontend domain: `gg.rahmanef.com`
+- Backend domain: `ggdb.rahmanef.com`
