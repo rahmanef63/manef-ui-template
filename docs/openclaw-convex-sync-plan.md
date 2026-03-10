@@ -315,6 +315,7 @@ Whenever a field is available from those sources, prefer that over generated val
 - Read real OpenClaw session stores
 - Upsert Convex `sessions` using real `sessionKey`
 - Upsert `agentSessions` with source-linked metadata
+- **Implementation status:** initial seed now uses real known OpenClaw `sessionKey` + `sessionId` values extracted from local session stores instead of placeholder-generated bootstrap sessions
 
 ### Step 3 — create sync outbox
 - Add `syncOutbox` table

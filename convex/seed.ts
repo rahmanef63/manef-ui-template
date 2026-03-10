@@ -65,6 +65,89 @@ const OPENCLAW_CHANNELS = [
   },
 ] as const;
 
+const OPENCLAW_SESSIONS = [
+  {
+    agentId: "main",
+    sessionKey: "agent:main:main",
+    openclawSessionId: "1df5d760-1ca4-44d2-83ac-9ed6e611c522",
+    channel: "webchat",
+    lastActiveAt: 1773102138667,
+    metadata: { source: "openclaw", surface: "webchat" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:telegram:slash:7730229886",
+    openclawSessionId: "add41317-bd5f-4a8d-94b3-1660b554f15d",
+    channel: "telegram",
+    lastActiveAt: 1772037683946,
+    metadata: { source: "openclaw", surface: "telegram", chatType: "slash" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:telegram:slash:1087968824",
+    openclawSessionId: "9d126a0c-e93f-479a-9dbf-5080f7bc5539",
+    channel: "telegram",
+    lastActiveAt: 1772462007753,
+    metadata: { source: "openclaw", surface: "telegram", chatType: "slash" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:telegram:group:-1003889990005",
+    openclawSessionId: "18a5e4f2-f8e3-43e7-b112-45b619dd4c38",
+    channel: "telegram",
+    lastActiveAt: 1772524046329,
+    metadata: { source: "openclaw", surface: "telegram", chatType: "group" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:whatsapp:group:120363406023005203@g.us",
+    openclawSessionId: "9e3aa2e4-c2d2-49d3-9f6f-db49e53c74f5",
+    channel: "whatsapp",
+    lastActiveAt: 1772474160559,
+    metadata: { source: "openclaw", surface: "whatsapp", chatType: "group" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:tui-48e729bf-1c7a-433a-8e13-4437d0f71cfa",
+    openclawSessionId: "7cac6bf0-7e45-4cf2-9c3f-427ed15d6e22",
+    channel: "webchat",
+    lastActiveAt: 1773075958617,
+    metadata: { source: "openclaw", surface: "webchat", chatType: "tui" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:tui-4212a2d2-fa6d-40a2-aa5e-02dce402481e",
+    openclawSessionId: "97fd5969-06d8-4714-89ec-ae6a0dd2a46c",
+    channel: "webchat",
+    lastActiveAt: 1773078302600,
+    metadata: { source: "openclaw", surface: "webchat", chatType: "tui" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:cron:fd2b771e-24db-4774-a1a4-46f7933abc51",
+    openclawSessionId: "818181c9-57e6-4b1b-a817-196de9125e32",
+    channel: "cron",
+    lastActiveAt: 1773071136443,
+    metadata: { source: "openclaw", surface: "cron", chatType: "cron" },
+  },
+  {
+    agentId: "main",
+    sessionKey: "agent:main:cron:fd2b771e-24db-4774-a1a4-46f7933abc51:run:818181c9-57e6-4b1b-a817-196de9125e32",
+    openclawSessionId: "818181c9-57e6-4b1b-a817-196de9125e32",
+    channel: "cron",
+    lastActiveAt: 1773071136443,
+    metadata: { source: "openclaw", surface: "cron", chatType: "cron-run" },
+  },
+  {
+    agentId: "rysha",
+    sessionKey: "agent:rysha:main",
+    openclawSessionId: "5e50f1a1-2fce-488f-b9c6-8f6efe178cd1",
+    channel: "unknown",
+    lastActiveAt: 1772395006241,
+    metadata: { source: "openclaw", surface: "unknown" },
+  },
+] as const;
+
 export const populateDatabase = mutation({
   args: {},
   handler: async (ctx) => {
@@ -82,7 +165,7 @@ export const populateDatabase = mutation({
     await ensureChannels(ctx, now);
     await ensureSkills(ctx, now);
     await ensureAgents(ctx, profileId, now);
-    await ensureBootstrapSession(ctx, profileId, now);
+    await ensureOpenClawSessions(ctx, profileId, now);
 
     return {
       ok: true,
@@ -322,45 +405,67 @@ async function ensureAgents(ctx: any, ownerId: any, now: number) {
   }
 }
 
-async function ensureBootstrapSession(ctx: any, ownerId: any, now: number) {
-  const sessionKey = "agent:main:main";
-  let session = await ctx.db
-    .query("sessions")
-    .withIndex("by_sessionKey", (q: any) => q.eq("sessionKey", sessionKey))
-    .first();
+async function ensureOpenClawSessions(ctx: any, ownerId: any, now: number) {
+  for (const sourceSession of OPENCLAW_SESSIONS) {
+    let session = await ctx.db
+      .query("sessions")
+      .withIndex("by_sessionKey", (q: any) => q.eq("sessionKey", sourceSession.sessionKey))
+      .first();
 
-  if (!session) {
-    const sessionId = await ctx.db.insert("sessions", {
-      agentId: "main",
-      channel: "webchat",
-      createdAt: now,
-      lastActiveAt: now,
-      messageCount: 0,
-      metadata: { source: "seed", instanceId: INSTANCE_ID },
-      sessionKey,
-      status: "active",
+    const sessionPayload = {
+      agentId: sourceSession.agentId,
+      channel: sourceSession.channel,
+      lastActiveAt: sourceSession.lastActiveAt,
+      messageCount: session?.messageCount ?? 0,
+      metadata: {
+        ...(session?.metadata ?? {}),
+        ...sourceSession.metadata,
+        openclawSessionId: sourceSession.openclawSessionId,
+        instanceId: INSTANCE_ID,
+      },
+      sessionKey: sourceSession.sessionKey,
+      status: session?.status ?? "active",
       tenantId: TENANT_ID,
       userId: ownerId,
-    });
-    session = await ctx.db.get(sessionId);
-  }
+    };
 
-  const existingAgentSession = await ctx.db
-    .query("agentSessions")
-    .withIndex("by_sessionId", (q: any) => q.eq("sessionId", sessionKey))
-    .first();
+    if (!session) {
+      const sessionId = await ctx.db.insert("sessions", {
+        ...sessionPayload,
+        createdAt: sourceSession.lastActiveAt,
+      });
+      session = await ctx.db.get(sessionId);
+    } else {
+      await ctx.db.patch(session._id, sessionPayload);
+      session = await ctx.db.get(session._id);
+    }
 
-  if (!existingAgentSession) {
-    await ctx.db.insert("agentSessions", {
-      agentId: "main",
-      channel: "webchat",
+    const existingAgentSession = await ctx.db
+      .query("agentSessions")
+      .withIndex("by_sessionId", (q: any) => q.eq("sessionId", sourceSession.sessionKey))
+      .first();
+
+    const agentSessionPayload = {
+      agentId: sourceSession.agentId,
+      channel: sourceSession.channel,
       convexSessionId: session._id,
-      messageCount: 0,
-      metadata: { source: "seed", externalSessionKey: sessionKey },
-      sessionId: sessionKey,
-      startedAt: now,
-      status: "active",
+      messageCount: existingAgentSession?.messageCount ?? 0,
+      metadata: {
+        ...(existingAgentSession?.metadata ?? {}),
+        ...sourceSession.metadata,
+        openclawSessionId: sourceSession.openclawSessionId,
+        externalSessionKey: sourceSession.sessionKey,
+      },
+      sessionId: sourceSession.sessionKey,
+      startedAt: existingAgentSession?.startedAt ?? sourceSession.lastActiveAt,
+      status: existingAgentSession?.status ?? "active",
       userId: ownerId,
-    });
+    };
+
+    if (!existingAgentSession) {
+      await ctx.db.insert("agentSessions", agentSessionPayload);
+    } else {
+      await ctx.db.patch(existingAgentSession._id, agentSessionPayload);
+    }
   }
 }
