@@ -30,6 +30,12 @@ Remaining tasks yang masih relevan:
 4. Rapikan sisa legacy frontend yang masih mengganggu lint/typecheck, terutama file lama di `convex/`.
 5. Putuskan distribusi final `@manef/db`: tetap `file:../manef-db`, git dependency, atau private package registry.
 
+Port alignment note (Dokploy):
+
+- `manef-db` proxy wajib pakai `Domains -> Container Port` yang sesuai port listen container aktif.
+- Jika salah diarahkan ke `3000`, akan muncul `502 Bad Gateway` di `dbgg.rahmanef.com`.
+- Setelah perbaikan port + redeploy backend, baru validasi ulang login flow `manef-ui`.
+
 Dokumen yang sudah dihapus dari repo ini adalah dokumen fase dual-sync/shared Convex
 tanggal 2026-03-09. Dokumen tersebut tidak lagi dipakai sebagai source of truth
 karena backend `manef-ui` sekarang sudah dipisah ke `manef-db`.
