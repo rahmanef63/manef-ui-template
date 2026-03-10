@@ -26,7 +26,6 @@ import { sendMemberInviteRef } from "@/shared/convex/members";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { zid } from "convex-helpers/server/zod";
 import { useAction, useQuery } from "convex/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -130,5 +129,8 @@ function AddMemberForm({
 
 const formSchema = z.object({
   email: z.string().email(),
-  role: zid("roles"),
+  role: z.custom<Id<"roles">>(
+    (value) => typeof value === "string" && value.length > 0,
+    "Role is required"
+  ),
 });
