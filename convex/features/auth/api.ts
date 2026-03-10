@@ -105,6 +105,38 @@ async function createAuditLog(
   });
 }
 
+export const getAuthProfileByEmail = query({
+  args: {
+    email: v.string(),
+  },
+  returns: v.union(
+    v.object({
+      email: v.string(),
+      name: v.string(),
+      roles: v.array(v.string()),
+      status: v.union(v.literal("active"), v.literal("blocked")),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const authUser = await ctx.db
+      .query("authUsers")
+      .withIndex("by_email", (q) => q.eq("email", normalizeEmail(args.email)))
+      .first();
+
+    if (!authUser) {
+      return null;
+    }
+
+    return {
+      email: authUser.email,
+      name: authUser.name,
+      roles: authUser.roles,
+      status: authUser.status,
+    };
+  },
+});
+
 export const authorizePasswordLogin = mutation({
   args: {
     createSession: v.optional(v.boolean()),

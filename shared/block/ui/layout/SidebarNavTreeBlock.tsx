@@ -5,8 +5,10 @@ import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useQuery } from "convex/react";
 
 import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
+import { getAuthProfileByEmailRef } from "@/shared/convex/auth";
 import { buildSidebarTree, resolveIcon } from "@/shared/config";
 import type { SidebarGroup as SidebarGroupType, SidebarMenuItem as SidebarMenuItemType } from "@/shared/config";
 import { NavUser } from "@/components/layout/sidebar/nav-user";
@@ -54,11 +56,16 @@ export function SidebarNavTreeBlock({
     );
 
     const sessionEmail = session?.user?.email ?? "";
+    const authProfile = useQuery(
+        getAuthProfileByEmailRef,
+        sessionEmail ? { email: sessionEmail } : "skip"
+    );
     const userPayload = {
         name:
+            authProfile?.name ||
             session?.user?.name ||
             (sessionEmail ? sessionEmail.split("@")[0] : "User"),
-        email: sessionEmail,
+        email: authProfile?.email || sessionEmail,
         avatar: session?.user?.image || "",
     };
 

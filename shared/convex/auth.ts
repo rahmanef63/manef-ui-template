@@ -1,6 +1,19 @@
 import { makeFunctionReference } from "convex/server";
 import type { Id } from "@/shared/types/convex";
 
+export const getAuthProfileByEmailRef = makeFunctionReference<
+  "query",
+  {
+    email: string;
+  },
+  {
+    email: string;
+    name: string;
+    roles: string[];
+    status: "active" | "blocked";
+  } | null
+>("features/auth/api:getAuthProfileByEmail");
+
 export const authorizePasswordLoginRef = makeFunctionReference<
   "mutation",
   {
