@@ -1,10 +1,9 @@
 import { auth } from "@/auth";
-import { createPublicKey } from "crypto";
+import { createPrivateKey, createPublicKey } from "crypto";
 import {
   SignJWT,
   calculateJwkThumbprint,
   exportJWK,
-  importPKCS8,
   type JWK,
 } from "jose";
 
@@ -39,7 +38,28 @@ NQAtGxd2hg4kUo0tOs3t8k4=
 -----END PRIVATE KEY-----`;
 
 function normalizePem(value: string) {
-  return value.replace(/\\n/g, "\n").trim();
+  let normalized = value.trim();
+  if (
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  normalized = normalized.replace(/\\n/g, "\n").trim();
+
+  if (!normalized.includes("BEGIN ")) {
+    try {
+      const decoded = Buffer.from(normalized, "base64").toString("utf8").trim();
+      if (decoded.includes("BEGIN ")) {
+        normalized = decoded;
+      }
+    } catch {
+      // Keep original value; createPrivateKey will throw a clearer error below.
+    }
+  }
+
+  return normalized;
 }
 
 export function getConvexJwtIssuer() {
@@ -70,12 +90,15 @@ function getPrivateKeyPem() {
   );
 }
 
-async function getPrivateKey() {
-  return importPKCS8(getPrivateKeyPem(), "RS256");
+function getPrivateKey() {
+  return createPrivateKey({
+    format: "pem",
+    key: getPrivateKeyPem(),
+  });
 }
 
 export async function getConvexJwk() {
-  const publicKey = createPublicKey(getPrivateKeyPem());
+  const publicKey = createPublicKey(getPrivateKey());
   const jwk = (await exportJWK(publicKey)) as JWK;
   const kid = await calculateJwkThumbprint(jwk);
   return {
@@ -95,7 +118,7 @@ export async function issueConvexAccessToken() {
   const issuer = getConvexJwtIssuer();
   const audience = getConvexJwtAudience();
   const subject = session.user.email.toLowerCase();
-  const key = await getPrivateKey();
+  const key = getPrivateKey();
   const jwk = await getConvexJwk();
 
   return await new SignJWT({
