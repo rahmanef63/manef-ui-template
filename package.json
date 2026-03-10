@@ -9,6 +9,9 @@
     "dev": "next dev --turbopack",
     "dev:frontend": "next dev --turbopack",
     "dev:backend": "echo \"Convex backend moved to ../manef-db. Run npm run dev there.\"",
+    "auth:devices:list": "node scripts/device-approval.mjs list",
+    "auth:devices:approve": "node scripts/device-approval.mjs approve",
+    "auth:devices:revoke": "node scripts/device-approval.mjs revoke",
     "build": "next build",
     "start": "next start",
     "lint": "tsc && next lint"

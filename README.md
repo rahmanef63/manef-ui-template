@@ -33,6 +33,8 @@ Extending auth:
 - Replace credentials auth in `auth.ts` with OAuth/email providers as needed.
 - Keep middleware route protection in `middleware.ts`.
 - Keep Convex client wiring in `shared/providers/ConvexClientProvider.tsx`.
+- For VPS operations on pending-device approvals, use
+  [docs/DEVICE_APPROVAL_CLI.md](/home/rahman/projects/manef-ui/docs/DEVICE_APPROVAL_CLI.md).
 
 Included:
 
