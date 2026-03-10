@@ -10,6 +10,7 @@
     "dev:frontend": "next dev --turbopack",
     "dev:backend": "convex dev --typecheck=disable",
     "predev": "convex dev --until-success",
+    "deploy:backend": "npx convex deploy",
     "build": "next build",
     "start": "next start",
     "lint": "tsc && next lint"

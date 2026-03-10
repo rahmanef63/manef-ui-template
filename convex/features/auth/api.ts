@@ -399,6 +399,43 @@ export const authorizePasswordLogin = mutation({
   },
 });
 
+export const getAuthProfileByEmail = query({
+  args: {
+    email: v.string(),
+  },
+  returns: v.union(
+    v.object({
+      email: v.string(),
+      name: v.string(),
+      roles: v.array(v.string()),
+      sessionVersion: v.number(),
+      status: v.union(v.literal("active"), v.literal("blocked")),
+      userId: v.id("authUsers"),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const email = normalizeEmail(args.email);
+    const user = await ctx.db
+      .query("authUsers")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      email: user.email,
+      name: user.name,
+      roles: user.roles,
+      sessionVersion: user.sessionVersion,
+      status: user.status,
+      userId: user._id,
+    };
+  },
+});
+
 export const getViewerSessionState = query({
   args: { sessionId: v.id("authSessions") },
   returns: v.union(
