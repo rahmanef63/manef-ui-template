@@ -9,11 +9,13 @@ export interface ChannelStatus {
     lastConnect?: string;
     lastMessage?: string;
     authAge?: string;
+    lastError?: string;
 }
 
 export interface ChannelConfig {
     id: string;
-    type: "telegram" | "whatsapp" | "discord" | "signal";
+    channelId: string;
+    type: string;
     label: string;
     description: string;
     status: ChannelStatus;

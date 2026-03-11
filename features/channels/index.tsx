@@ -3,15 +3,14 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@manef/db/api";
-import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
-import { TelegramCard, WhatsAppCard } from "./components/ChannelCards";
-import { CHANNEL_CONFIGS } from "./constants";
+import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
+import { ChannelCard } from "./components/ChannelCards";
 import { ChannelConfig } from "./types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
+import { Radio } from "lucide-react";
 
 export default function ChannelsPage() {
-    // Attempt to load channels from Convex
     const channels = (useQuery as any)((api as any).features.channels.api.listChannels) as any[] | undefined;
 
     if (channels === undefined) {
@@ -26,45 +25,50 @@ export default function ChannelsPage() {
         );
     }
 
-    // Merge DB channels with fallback configs
-    const getChannelData = (type: string): ChannelConfig => {
-        const dbChannel = channels.find(c => c.type === type);
-        const fallback = CHANNEL_CONFIGS.find(c => c.type === type)!;
-
-        if (!dbChannel) return fallback;
-
-        return {
-            ...fallback,
-            label: dbChannel.label || fallback.label,
-            status: {
-                configured: dbChannel.configured,
-                running: dbChannel.running,
-                linked: dbChannel.linked ?? fallback.status.linked,
-                connected: dbChannel.connected ?? fallback.status.connected,
-                mode: dbChannel.mode || fallback.status.mode,
-                lastStart: dbChannel.lastStartAt
-                    ? formatDistanceToNow(dbChannel.lastStartAt, { addSuffix: true })
-                    : fallback.status.lastStart,
-                lastConnect: dbChannel.lastConnectAt
-                    ? formatDistanceToNow(dbChannel.lastConnectAt, { addSuffix: true })
-                    : fallback.status.lastConnect,
-            }
-        };
-    };
-
-    const telegram = getChannelData("telegram");
-    const whatsapp = getChannelData("whatsapp");
+    const displayChannels: ChannelConfig[] = channels.map((channel) => ({
+        id: channel._id,
+        channelId: channel.channelId,
+        type: channel.type,
+        label: channel.label || channel.channelId,
+        description: `Live mirror for ${channel.type} channel ${channel.channelId}.`,
+        variant: channel.type === "whatsapp" ? "highlight" : "default",
+        status: {
+            configured: channel.configured,
+            running: channel.running,
+            linked: channel.linked,
+            connected: channel.connected,
+            mode: channel.mode,
+            lastStart: channel.lastStartAt
+                ? formatDistanceToNow(channel.lastStartAt, { addSuffix: true })
+                : undefined,
+            lastConnect: channel.lastConnectAt
+                ? formatDistanceToNow(channel.lastConnectAt, { addSuffix: true })
+                : undefined,
+            lastError: channel.lastError,
+        },
+    }));
 
     return (
         <div className="space-y-6 px-4 lg:px-6">
             <PageHeader
                 title="Channels"
-                description="Manage channels and settings."
+                description="Live channel states mirrored from the backend database."
             />
-            <div className="grid gap-4 lg:grid-cols-2">
-                <TelegramCard channel={telegram} />
-                <WhatsAppCard channel={whatsapp} />
-            </div>
+            {displayChannels.length === 0 ? (
+                <div className="rounded-xl border border-dashed bg-muted/10">
+                    <EmptyState
+                        icon={Radio}
+                        message="Belum ada channel yang termirror ke database. Sinkronkan runtime OpenClaw agar channel muncul di sini."
+                        className="py-20"
+                    />
+                </div>
+            ) : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                    {displayChannels.map((channel) => (
+                        <ChannelCard key={channel.id} channel={channel} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
