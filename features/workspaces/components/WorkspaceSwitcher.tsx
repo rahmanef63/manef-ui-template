@@ -6,6 +6,7 @@ import {
   PlusCircledIcon,
 } from "@radix-ui/react-icons";
 
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { useCreateWorkspaceDialog } from "@/features/workspaces/components/CreateWorkspaceDialog";
 import {
   useCurrentWorkspace,
@@ -38,6 +39,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { listWorkspacesRef } from "@/shared/convex/workspaces";
 import type { WorkspaceDisplayInfo, WorkspaceSummary } from "@/shared/types/workspaces";
+import type { OpenClawScopeNode, OpenClawScopeRoot } from "@/shared/types/openclawNavigator";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -52,6 +54,72 @@ function formatWorkspaceLabelFromSlug(slug: string) {
 }
 
 export function WorkspaceSwitcher() {
+  const navigator = useOpenClawNavigator();
+  if (!navigator.isLoading && navigator.roots.length > 0) {
+    return <OpenClawWorkspaceSwitcher />;
+  }
+  return <LegacyWorkspaceSwitcher />;
+}
+
+function OpenClawWorkspaceSwitcher() {
+  const {
+    roots,
+    selectedChild,
+    selectedRoot,
+    setSelectedChild,
+    setSelectedRoot,
+  } = useOpenClawNavigator();
+  const [rootOpen, setRootOpen] = useState(false);
+  const [childOpen, setChildOpen] = useState(false);
+
+  if (!selectedRoot) {
+    return null;
+  }
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <ScopePopover
+          description="Contact Workspace"
+          items={roots}
+          label={selectedRoot.name}
+          onOpenChange={setRootOpen}
+          onSelect={(item) => {
+            setSelectedRoot(item as OpenClawScopeRoot);
+            setRootOpen(false);
+          }}
+          open={rootOpen}
+          selectedId={selectedRoot._id}
+          subtitle={selectedRoot.ownerEmail ?? selectedRoot.ownerPhone ?? "OpenClaw workspace"}
+        />
+      </SidebarMenuItem>
+
+      {selectedRoot.children.length > 0 ? (
+        <SidebarMenuItem>
+          <ScopePopover
+            compact
+            description="Sub Workspace"
+            items={selectedRoot.children}
+            label={(selectedChild ?? selectedRoot.children[0]).name}
+            onOpenChange={setChildOpen}
+            onSelect={(item) => {
+              setSelectedChild(item);
+              setChildOpen(false);
+            }}
+            open={childOpen}
+            selectedId={(selectedChild ?? selectedRoot.children[0])._id}
+            subtitle={
+              (selectedChild ?? selectedRoot.children[0]).agentId ??
+              (selectedChild ?? selectedRoot.children[0]).type
+            }
+          />
+        </SidebarMenuItem>
+      ) : null}
+    </SidebarMenu>
+  );
+}
+
+function LegacyWorkspaceSwitcher() {
   const pathname = usePathname();
   const workspaces = useQuery(listWorkspacesRef);
   const selectedWorkspace = useCurrentWorkspace();
@@ -177,6 +245,101 @@ export function WorkspaceSwitcher() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
+}
+
+function ScopePopover({
+  compact = false,
+  description,
+  items,
+  label,
+  onOpenChange,
+  onSelect,
+  open,
+  selectedId,
+  subtitle,
+}: {
+  compact?: boolean;
+  description: string;
+  items: Array<OpenClawScopeRoot | OpenClawScopeNode>;
+  label: string;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (item: any) => void;
+  open: boolean;
+  selectedId: string;
+  subtitle: string;
+}) {
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>
+        <SidebarMenuButton
+          size="lg"
+          className={cn(
+            "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
+            compact && "h-auto min-h-12",
+          )}
+        >
+          <Avatar className={cn("rounded-lg", compact ? "h-7 w-7" : "h-8 w-8")}>
+            <AvatarImage
+              src={`https://avatar.vercel.sh/${label}.png`}
+              alt={label}
+            />
+            <AvatarFallback className="rounded-lg">
+              {label[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="truncate font-medium">{label}</span>
+            <span className="truncate text-xs text-muted-foreground">{description}</span>
+          </div>
+          <CaretSortIcon className="ml-auto size-4 shrink-0 opacity-50 group-data-[collapsible=icon]:hidden" />
+        </SidebarMenuButton>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[--radix-popover-trigger-width] min-w-56 rounded-lg p-0"
+        align="start"
+        sideOffset={4}
+      >
+        <Command>
+          <CommandList>
+            <CommandInput placeholder={`Search ${description.toLowerCase()}...`} />
+            <CommandEmpty>No item found.</CommandEmpty>
+            <CommandGroup heading={description}>
+              {items.map((item) => (
+                <CommandItem
+                  key={item._id}
+                  className="flex items-center gap-2"
+                  onSelect={() => onSelect(item)}
+                >
+                  <WorkspaceDisplay
+                    workspace={{
+                      name: item.name,
+                      pictureUrl: null,
+                      slug: item.slug,
+                    }}
+                  />
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="max-w-28 truncate text-[10px] text-muted-foreground">
+                      {subtitleForItem(item)}
+                    </span>
+                    <CheckIcon
+                      className={cn(
+                        "h-4 w-4",
+                        selectedId === item._id ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function subtitleForItem(item: OpenClawScopeRoot | OpenClawScopeNode) {
+  return item.agentId ?? item.ownerEmail ?? item.ownerPhone ?? item.type;
 }
 
 function WorkspaceDisplay({

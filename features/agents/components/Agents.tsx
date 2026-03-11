@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useAction } from "convex/react";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import {
     Card,
     CardContent,
@@ -16,8 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Agents() {
+    const { selectedRoot, selectedScope } = useOpenClawNavigator();
     const myQuery: any = useQuery;
-    const agents: any[] = myQuery("features/agents/api:getAgents") || [];
+    const agents: any[] = myQuery("features/agents/api:getAgents", {
+        agentIds: selectedScope?.agentIds,
+        ownerId: selectedRoot?.ownerId,
+    }) || [];
 
     // Mutations and Actions
     const myMutation: any = useMutation;
