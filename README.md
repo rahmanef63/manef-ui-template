@@ -79,6 +79,13 @@ Halaman yang sudah mengikuti scope navigator:
 - `Sessions`
 - `Usage`
 
+Panel yang sekarang sudah membaca mirror runtime OpenClaw dari Convex:
+
+- `Skills`
+- `Channels`
+- `Logs`
+- `Nodes + Exec Approvals`
+
 Catatan:
 
 - beberapa halaman lama masih global/mock dan belum full scope-aware, misalnya

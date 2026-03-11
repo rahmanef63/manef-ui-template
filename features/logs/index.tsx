@@ -2,15 +2,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@manef/db/api";
-import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
+import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { LogStream } from "./components/LogStream";
-import { MOCK_LOGS, LOG_LEVELS } from "./constants";
+import { LOG_LEVELS } from "./constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LogLevel, LogEntry } from "./types";
+import { Logs } from "lucide-react";
 
 export default function LogsPage() {
+    const router = useRouter();
     const [activeLevels, setActiveLevels] = useState<Set<string>>(new Set(LOG_LEVELS));
     const [isRefreshing, setIsRefreshing] = useState(false);
     const dbLogs: any =
@@ -27,7 +30,8 @@ export default function LogsPage() {
 
     const handleRefresh = () => {
         setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 500);
+        router.refresh();
+        setTimeout(() => setIsRefreshing(false), 300);
     };
 
     if (dbLogs === undefined) {
@@ -39,18 +43,16 @@ export default function LogsPage() {
         );
     }
 
-    let displayLogs: LogEntry[] = dbLogs.length > 0
-        ? dbLogs.map(l => {
-            const date = new Date(l.timestamp);
-            const timeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-            return {
-                time: timeString,
-                level: (l.level as LogLevel) || "info",
-                msg: l.message,
-                source: l.source
-            };
-        })
-        : MOCK_LOGS;
+    const displayLogs: LogEntry[] = dbLogs.map(l => {
+        const date = new Date(l.timestamp);
+        const timeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+        return {
+            time: timeString,
+            level: (l.level as LogLevel) || "info",
+            msg: l.message,
+            source: l.source
+        };
+    });
 
     return (
         <div className="space-y-6 px-4 lg:px-6">
@@ -59,13 +61,23 @@ export default function LogsPage() {
                 description="Real-time gateway log stream."
             />
 
-            <LogStream
-                logs={displayLogs}
-                activeLevels={activeLevels}
-                toggleLevel={toggleLevel}
-                isRefreshing={isRefreshing}
-                onRefresh={handleRefresh}
-            />
+            {displayLogs.length === 0 ? (
+                <div className="rounded-xl border border-dashed bg-muted/10">
+                    <EmptyState
+                        icon={Logs}
+                        message="Belum ada snapshot log dari runtime OpenClaw. Sync gateway logs agar stream tampil di sini."
+                        className="py-20"
+                    />
+                </div>
+            ) : (
+                <LogStream
+                    logs={displayLogs}
+                    activeLevels={activeLevels}
+                    toggleLevel={toggleLevel}
+                    isRefreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                />
+            )}
         </div>
     );
 }

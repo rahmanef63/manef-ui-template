@@ -189,8 +189,16 @@ Definition of done:
 
 ## Logs
 
-- [ ] Hilangkan `MOCK_LOGS`.
-- [ ] Tampilkan log live dari `gatewayLogs`.
+- [x] Hilangkan `MOCK_LOGS`.
+  Bukti:
+  - [index.tsx](/home/rahman/projects/manef-ui/features/logs/index.tsx)
+  - page tidak lagi fallback ke `MOCK_LOGS`
+  - commit current working set 2026-03-11
+- [x] Tampilkan log live dari `gatewayLogs`.
+  Bukti:
+  - query `features.logs.api.getRecentLogs`
+  - [index.tsx](/home/rahman/projects/manef-ui/features/logs/index.tsx)
+  - backend runtime sync aktif menulis ke `gatewayLogs`
 - [ ] Tambahkan filter:
   `level`, `source`, `search text`, `time range`.
 - [ ] Tombol refresh harus memanggil backend fetch log nyata.
@@ -204,11 +212,22 @@ Definition of done:
 
 ## Skills
 
-- [ ] Tampilkan seluruh skill live dari DB.
+- [x] Tampilkan seluruh skill live dari DB.
+  Bukti:
+  - query `features.skills.api.listSkills`
+  - [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
+  - sync runtime backend mengisi tabel `skills`
 - [ ] Tambahkan write UI untuk enable/disable skill.
-- [ ] Tambahkan status source:
+- [x] Tambahkan status source:
   `bundled`, `custom`, `runtime-discovered`.
-- [ ] Tambahkan refresh nyata dari runtime OpenClaw.
+  Bukti:
+  - badge source dirender dari field `skill.source`
+  - [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
+- [x] Tambahkan refresh nyata dari runtime OpenClaw.
+  Bukti:
+  - data di page sekarang berasal dari tabel `skills` yang diisi timer sync runtime
+  - scheduler backend:
+    [manef-openclaw-runtime-sync.timer](/home/rahman/projects/manef-db/scripts/systemd/manef-openclaw-runtime-sync.timer)
 
 Definition of done:
 
@@ -296,7 +315,11 @@ Definition of done:
   - node/approval panel sekarang read dari query live dan save ke mutation live
   - [ExecApprovals.tsx](/home/rahman/projects/manef-ui/features/nodes/components/ExecApprovals.tsx)
   - build lolos setelah patch `8681bd4`
-- [ ] Verifikasi `Logs` dan `Skills` bukan dummy data.
+- [x] Verifikasi `Logs` dan `Skills` bukan dummy data.
+  Bukti:
+  - `skills` sync awal menulis `60` record runtime
+  - `logs` sync awal menulis `200` log runtime
+  - `manef-ui` page sekarang membaca query live, bukan fallback mock
 - [ ] Hard refresh dan pastikan state tetap konsisten.
 
 ## Blockers that must be resolved in manef-db
