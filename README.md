@@ -44,6 +44,38 @@ Debugging dashboard fetch churn:
   `localStorage.removeItem("manef:debug"); location.reload();`
 - Debug logs are prefixed with `"[manef-debug]"`.
 
+## OpenClaw Workspace Navigator
+
+Dashboard header sekarang memakai navigator OpenClaw berbasis data backend, bukan
+hanya daftar `workspaces` legacy.
+
+Source data:
+
+- `userProfiles`
+- `workspaceTrees`
+- `agents`
+- `agentDelegations`
+
+Perilaku UI:
+
+- header switcher pertama memilih root/contact workspace
+- jika root tersebut punya child agent/sub-workspace, header kedua otomatis muncul
+- pilihan navigator disimpan stabil di browser agar tidak bolak-balik saat auth
+  atau Convex reconnect
+
+Halaman yang sudah mengikuti scope navigator:
+
+- `Agents`
+- `Sessions`
+- `Usage`
+
+Catatan:
+
+- beberapa halaman lama masih global/mock dan belum full scope-aware, misalnya
+  sebagian panel `nodes`, `instances`, `logs`, dan `config`
+- transisi antar menu dashboard sekarang harus menampilkan skeleton loading,
+  bukan kartu overview asli
+
 Included:
 
 - Convex-backed data access through the separate `manef-db` repo
