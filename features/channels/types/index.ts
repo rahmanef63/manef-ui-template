@@ -29,6 +29,10 @@ export interface ChannelStatus {
         access?: string;
         source?: string;
     }>;
+    bindingPolicy?: {
+        mode: string;
+        source?: string;
+    };
 }
 
 export interface ChannelConfig {

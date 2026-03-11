@@ -125,6 +125,9 @@ Admin tooling terbaru:
 - admin bisa attach/detach:
   - `channel/account -> workspace`
   - `identity -> workspace`
+- admin bisa mengatur policy channel:
+  - `multi-workspace`
+  - `single-primary`
 
 Catatan:
 

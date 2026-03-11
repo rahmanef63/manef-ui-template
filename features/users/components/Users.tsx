@@ -15,9 +15,11 @@ import {
     attachWorkspaceChannelRef,
     detachIdentityWorkspaceRef,
     detachWorkspaceChannelRef,
+    listChannelBindingPoliciesRef,
     listChannelWorkspaceBindingsRef,
     listChannelsRef,
     listIdentityWorkspaceBindingsRef,
+    setChannelBindingPolicyRef,
 } from "@/shared/convex/channels";
 import type { Id } from "@/shared/types/convex";
 import {
@@ -124,12 +126,23 @@ export default function Users() {
     const detachWorkspaceChannel = useMutation(detachWorkspaceChannelRef);
     const attachIdentityWorkspace = useMutation(attachIdentityWorkspaceRef);
     const detachIdentityWorkspace = useMutation(detachIdentityWorkspaceRef);
+    const setChannelBindingPolicy = useMutation(setChannelBindingPolicyRef);
+    const channelPolicies = (useQuery(listChannelBindingPoliciesRef, {}) as Array<{
+        channelId: string;
+        mode: string;
+        primaryWorkspaceId?: Id<"workspaceTrees">;
+        source?: string;
+    }> | undefined) ?? [];
     const [search, setSearch] = useState("");
     const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
     const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
     const [channelWorkspaceId, setChannelWorkspaceId] = useState("");
     const [channelId, setChannelId] = useState("");
     const [channelBusy, setChannelBusy] = useState(false);
+    const [policyChannelId, setPolicyChannelId] = useState("");
+    const [policyMode, setPolicyMode] = useState("multi-workspace");
+    const [policyPrimaryWorkspaceId, setPolicyPrimaryWorkspaceId] = useState("");
+    const [policyBusy, setPolicyBusy] = useState(false);
     const [identityWorkspaceId, setIdentityWorkspaceId] = useState("");
     const [identityChannel, setIdentityChannel] = useState("whatsapp");
     const [identityExternalId, setIdentityExternalId] = useState("");
@@ -247,6 +260,28 @@ export default function Users() {
         }
     };
 
+    const handleSetChannelPolicy = async () => {
+        if (!policyChannelId || !policyMode) {
+            return;
+        }
+        setPolicyBusy(true);
+        try {
+            await setChannelBindingPolicy({
+                channelId: policyChannelId,
+                mode: policyMode as "single-primary" | "multi-workspace",
+                primaryWorkspaceId:
+                    policyMode === "single-primary" && policyPrimaryWorkspaceId
+                        ? (policyPrimaryWorkspaceId as Id<"workspaceTrees">)
+                        : undefined,
+            });
+            if (policyMode !== "single-primary") {
+                setPolicyPrimaryWorkspaceId("");
+            }
+        } finally {
+            setPolicyBusy(false);
+        }
+    };
+
     if (rawUsers === undefined) {
         return (
             <div className="flex items-center justify-center p-12">
@@ -288,6 +323,82 @@ export default function Users() {
                 </CardHeader>
                 <CardContent className="grid gap-6 p-6 md:grid-cols-2">
                     <div className="space-y-4">
+                        <div className="rounded-md border p-4 space-y-3">
+                            <div className="text-sm font-medium">Channel binding policy</div>
+                            <div className="space-y-2">
+                                <Label>Channel</Label>
+                                <Select value={policyChannelId} onValueChange={setPolicyChannelId}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select channel" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {channels.map((channel) => (
+                                            <SelectItem key={channel.channelId} value={channel.channelId}>
+                                                {channel.label ?? channel.channelId}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Policy mode</Label>
+                                <Select value={policyMode} onValueChange={setPolicyMode}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select mode" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="multi-workspace">multi-workspace</SelectItem>
+                                        <SelectItem value="single-primary">single-primary</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {policyMode === "single-primary" ? (
+                                <div className="space-y-2">
+                                    <Label>Primary workspace</Label>
+                                    <Select value={policyPrimaryWorkspaceId} onValueChange={setPolicyPrimaryWorkspaceId}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select primary workspace" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {workspaceOptions.map((workspace) => (
+                                                <SelectItem key={workspace.id} value={workspace.id}>
+                                                    {workspace.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            ) : null}
+                            <Button
+                                onClick={handleSetChannelPolicy}
+                                disabled={
+                                    policyBusy ||
+                                    !policyChannelId ||
+                                    !policyMode ||
+                                    (policyMode === "single-primary" && !policyPrimaryWorkspaceId)
+                                }
+                            >
+                                {policyBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Save Channel Policy
+                            </Button>
+                            <div className="space-y-2">
+                                <div className="text-sm font-medium">Current policies</div>
+                                {channelPolicies.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground">No explicit policy yet.</div>
+                                ) : (
+                                    channelPolicies.map((policy) => (
+                                        <div key={policy.channelId} className="rounded-md border p-3 text-sm">
+                                            <div className="font-medium">{policy.channelId}</div>
+                                            <div className="text-muted-foreground">
+                                                {policy.mode}
+                                                {policy.primaryWorkspaceId ? ` / primary: ${policy.primaryWorkspaceId}` : ""}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label>Channel</Label>
                             <Select value={channelId} onValueChange={setChannelId}>

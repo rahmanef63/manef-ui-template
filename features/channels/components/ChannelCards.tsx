@@ -46,6 +46,9 @@ export function ChannelCard({ channel }: ChannelCardProps) {
                 {status.bindingCount !== undefined && (
                     <KeyValueRow label="Bindings" value={String(status.bindingCount)} />
                 )}
+                {status.bindingPolicy && (
+                    <KeyValueRow label="Binding policy" value={status.bindingPolicy.mode} />
+                )}
                 {status.workspaceBindings && status.workspaceBindings.length > 0 && (
                     <KeyValueRow
                         label="Workspaces"

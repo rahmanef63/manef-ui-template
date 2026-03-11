@@ -297,6 +297,31 @@ Definition of done:
 - [ ] Phase berikutnya: `Feature Store` menu + schema backend live.
 - [ ] Phase berikutnya: `Agent Builder` draft from `JSON blocks`.
 
+## Channel binding admin controls
+
+- [x] Admin dapat menulis binding `channel/account -> workspace`.
+  Bukti:
+  - panel `Workspace Access Bindings` di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+- [x] Admin dapat menulis binding `identity -> workspace`.
+  Bukti:
+  - panel `Workspace Access Bindings` di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+- [x] Admin dapat mengatur policy channel:
+  `multi-workspace` atau `single-primary`.
+  Bukti:
+  - panel policy di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+  - policy tampil juga di
+    [ChannelCards.tsx](/home/rahman/projects/manef-ui/features/channels/components/ChannelCards.tsx)
+
+Definition of done:
+
+- admin bisa menambah binding dari UI
+- admin bisa menghapus binding dari UI
+- admin bisa menyimpan policy channel dari UI
+- halaman `Channels` menampilkan policy aktif
+
 ## Auth onboarding
 
 - [x] Login menerima `email atau nomor telepon`.

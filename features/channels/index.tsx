@@ -70,6 +70,12 @@ export default function ChannelsPage() {
             allowListCount: channel.config?.allowListCount,
             workspaceBindings: channel.workspaceBindings ?? [],
             identityBindings: channel.identityBindings ?? [],
+            bindingPolicy: channel.bindingPolicy
+                ? {
+                    mode: channel.bindingPolicy.mode,
+                    source: channel.bindingPolicy.source,
+                }
+                : undefined,
         },
     }));
 
