@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation } from "convex/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
     approveRegistrationRequestRef,
     denyRegistrationRequestRef,
@@ -9,6 +9,16 @@ import {
     listRegistrationRequestsRef,
     updateUserStatusRef,
 } from "@/shared/convex/admin";
+import { listOpenClawScopesRef } from "@/shared/convex/openclawNavigator";
+import {
+    attachIdentityWorkspaceRef,
+    attachWorkspaceChannelRef,
+    detachIdentityWorkspaceRef,
+    detachWorkspaceChannelRef,
+    listChannelWorkspaceBindingsRef,
+    listChannelsRef,
+    listIdentityWorkspaceBindingsRef,
+} from "@/shared/convex/channels";
 import type { Id } from "@/shared/types/convex";
 import {
     Card,
@@ -30,6 +40,7 @@ import {
     X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
     Table,
@@ -45,6 +56,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function Users() {
     const rawUsers = useQuery(getUsersRef) as Array<{
@@ -78,9 +96,56 @@ export default function Users() {
     const updateStatus = useMutation(updateUserStatusRef);
     const approveRegistration = useMutation(approveRegistrationRequestRef);
     const denyRegistration = useMutation(denyRegistrationRequestRef);
+    const channelBindings = (useQuery(listChannelWorkspaceBindingsRef, {}) as Array<{
+        access?: string;
+        agentId?: string;
+        channelId: string;
+        source?: string;
+        workspaceId: Id<"workspaceTrees">;
+        workspaceName: string;
+    }> | undefined) ?? [];
+    const identityBindings = (useQuery(listIdentityWorkspaceBindingsRef, {}) as Array<{
+        access?: string;
+        channel: string;
+        externalUserId: string;
+        normalizedPhone?: string;
+        source?: string;
+        userId?: Id<"userProfiles">;
+        workspaceId: Id<"workspaceTrees">;
+        workspaceName: string;
+    }> | undefined) ?? [];
+    const channels = (useQuery(listChannelsRef, {}) as Array<{
+        channelId: string;
+        label?: string;
+        type: string;
+    }> | undefined) ?? [];
+    const openClawScopes = useQuery(listOpenClawScopesRef, {});
+    const attachWorkspaceChannel = useMutation(attachWorkspaceChannelRef);
+    const detachWorkspaceChannel = useMutation(detachWorkspaceChannelRef);
+    const attachIdentityWorkspace = useMutation(attachIdentityWorkspaceRef);
+    const detachIdentityWorkspace = useMutation(detachIdentityWorkspaceRef);
     const [search, setSearch] = useState("");
     const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
     const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
+    const [channelWorkspaceId, setChannelWorkspaceId] = useState("");
+    const [channelId, setChannelId] = useState("");
+    const [channelBusy, setChannelBusy] = useState(false);
+    const [identityWorkspaceId, setIdentityWorkspaceId] = useState("");
+    const [identityChannel, setIdentityChannel] = useState("whatsapp");
+    const [identityExternalId, setIdentityExternalId] = useState("");
+    const [identityBusy, setIdentityBusy] = useState(false);
+
+    const workspaceOptions = useMemo(() => {
+        const roots = openClawScopes?.roots ?? [];
+        return roots.flatMap((root) => [
+            { id: root._id, label: root.name, slug: root.slug },
+            ...root.children.map((child) => ({
+                id: child._id,
+                label: `${root.name} / ${child.name}`,
+                slug: child.slug,
+            })),
+        ]);
+    }, [openClawScopes?.roots]);
 
     const filteredUsers = users.filter((user) => {
         if (!search) return true;
@@ -142,6 +207,46 @@ export default function Users() {
         }
     };
 
+    const handleAttachChannelWorkspace = async () => {
+        if (!channelId || !channelWorkspaceId) {
+            return;
+        }
+        setChannelBusy(true);
+        try {
+            await attachWorkspaceChannel({
+                access: "manual",
+                channelId,
+                source: "manual",
+                workspaceId: channelWorkspaceId as Id<"workspaceTrees">,
+            });
+            setChannelId("");
+            setChannelWorkspaceId("");
+        } finally {
+            setChannelBusy(false);
+        }
+    };
+
+    const handleAttachIdentityWorkspace = async () => {
+        const externalUserId = identityExternalId.trim();
+        if (!identityChannel || !identityWorkspaceId || !externalUserId) {
+            return;
+        }
+        setIdentityBusy(true);
+        try {
+            await attachIdentityWorkspace({
+                access: "manual",
+                channel: identityChannel,
+                externalUserId,
+                source: "manual",
+                workspaceId: identityWorkspaceId as Id<"workspaceTrees">,
+            });
+            setIdentityExternalId("");
+            setIdentityWorkspaceId("");
+        } finally {
+            setIdentityBusy(false);
+        }
+    };
+
     if (rawUsers === undefined) {
         return (
             <div className="flex items-center justify-center p-12">
@@ -173,6 +278,159 @@ export default function Users() {
                     Showing {filteredUsers.length} of {users.length} users
                 </div>
             </div>
+
+            <Card className="shadow-sm flex-1 mt-4 overflow-hidden border">
+                <CardHeader className="bg-muted/30 pb-4 border-b">
+                    <CardTitle>Workspace Access Bindings</CardTitle>
+                    <CardDescription>
+                        Attach channels and identities to specific OpenClaw workspaces. This is the admin write surface for workspace access.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-6 p-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Channel</Label>
+                            <Select value={channelId} onValueChange={setChannelId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select channel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {channels.map((channel) => (
+                                        <SelectItem key={channel.channelId} value={channel.channelId}>
+                                            {channel.label ?? channel.channelId}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Workspace</Label>
+                            <Select value={channelWorkspaceId} onValueChange={setChannelWorkspaceId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select workspace" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {workspaceOptions.map((workspace) => (
+                                        <SelectItem key={workspace.id} value={workspace.id}>
+                                            {workspace.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button onClick={handleAttachChannelWorkspace} disabled={channelBusy || !channelId || !channelWorkspaceId}>
+                            {channelBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Attach Channel to Workspace
+                        </Button>
+
+                        <div className="space-y-2">
+                            <div className="text-sm font-medium">Current channel bindings</div>
+                            <div className="space-y-2">
+                                {channelBindings.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground">No channel bindings yet.</div>
+                                ) : (
+                                    channelBindings.map((binding) => (
+                                        <div key={`${binding.channelId}-${binding.workspaceId}`} className="flex items-center justify-between rounded-md border p-3">
+                                            <div className="text-sm">
+                                                <div className="font-medium">{binding.channelId}</div>
+                                                <div className="text-muted-foreground">{binding.workspaceName}</div>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => detachWorkspaceChannel({
+                                                    channelId: binding.channelId,
+                                                    workspaceId: binding.workspaceId,
+                                                })}
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Identity channel</Label>
+                            <Select value={identityChannel} onValueChange={setIdentityChannel}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select identity channel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="whatsapp">whatsapp</SelectItem>
+                                    <SelectItem value="telegram">telegram</SelectItem>
+                                    <SelectItem value="webchat">webchat</SelectItem>
+                                    <SelectItem value="phone">phone</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>External user id / phone</Label>
+                            <Input
+                                value={identityExternalId}
+                                onChange={(event) => setIdentityExternalId(event.target.value)}
+                                placeholder="628119997914@s.whatsapp.net or +628..."
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Workspace</Label>
+                            <Select value={identityWorkspaceId} onValueChange={setIdentityWorkspaceId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select workspace" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {workspaceOptions.map((workspace) => (
+                                        <SelectItem key={workspace.id} value={workspace.id}>
+                                            {workspace.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button
+                            onClick={handleAttachIdentityWorkspace}
+                            disabled={identityBusy || !identityChannel || !identityWorkspaceId || !identityExternalId.trim()}
+                        >
+                            {identityBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Attach Identity to Workspace
+                        </Button>
+
+                        <div className="space-y-2">
+                            <div className="text-sm font-medium">Current identity bindings</div>
+                            <div className="space-y-2">
+                                {identityBindings.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground">No identity bindings yet.</div>
+                                ) : (
+                                    identityBindings.map((binding) => (
+                                        <div key={`${binding.workspaceId}-${binding.channel}-${binding.externalUserId}`} className="flex items-center justify-between rounded-md border p-3">
+                                            <div className="text-sm">
+                                                <div className="font-medium">{binding.normalizedPhone ?? binding.externalUserId}</div>
+                                                <div className="text-muted-foreground">
+                                                    {binding.channel} {"->"} {binding.workspaceName}
+                                                </div>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => detachIdentityWorkspace({
+                                                    channel: binding.channel,
+                                                    externalUserId: binding.externalUserId,
+                                                    workspaceId: binding.workspaceId,
+                                                })}
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Card className="shadow-sm flex-1 mt-4 overflow-hidden border">
                 <CardHeader className="bg-muted/30 pb-4 border-b">

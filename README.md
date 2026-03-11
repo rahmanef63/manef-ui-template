@@ -115,11 +115,16 @@ Progress terbaru:
 
 Remaining phase terdekat:
 
-- admin UI untuk menulis binding `channel/account -> workspace`
-- admin UI untuk menulis binding `user identity -> workspace`
 - policy resource scope:
   `workspace-local`, `workspace-shared`, `general/shared`
 - `Feature Store` dan `Agent Builder`
+
+Admin tooling terbaru:
+
+- halaman `Users` sekarang punya panel `Workspace Access Bindings`
+- admin bisa attach/detach:
+  - `channel/account -> workspace`
+  - `identity -> workspace`
 
 Catatan:
 

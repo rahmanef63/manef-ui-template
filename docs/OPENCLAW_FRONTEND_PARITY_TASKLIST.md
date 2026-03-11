@@ -229,8 +229,18 @@ Definition of done:
     [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
   - type UI di
     [types/index.ts](/home/rahman/projects/manef-ui/features/channels/types/index.ts)
-- [ ] Tambahkan surface write untuk binding `channel/account -> workspace`.
-- [ ] Tambahkan surface write untuk binding `user identity -> workspace`.
+- [x] Tambahkan surface write untuk binding `channel/account -> workspace`.
+  Bukti:
+  - panel admin di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+  - memakai refs:
+    [channels.ts](/home/rahman/projects/manef-ui/shared/convex/channels.ts)
+  - admin bisa attach/detach channel binding dari UI
+- [x] Tambahkan surface write untuk binding `user identity -> workspace`.
+  Bukti:
+  - panel admin di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+  - admin bisa attach/detach identity binding dari UI
 - [x] Tambahkan refresh/filter UI yang benar-benar bekerja untuk channel live.
   Bukti:
   - refresh memakai `router.refresh()`
@@ -263,6 +273,14 @@ Definition of done:
 - [ ] Admin boleh melihat semua workspace tenant.
 - [ ] Tambahkan surface UI untuk binding `channel/account -> workspace`.
 - [ ] Tambahkan surface UI untuk melihat `user identity -> workspace`.
+- [x] Tambahkan surface UI untuk binding `channel/account -> workspace`.
+  Bukti:
+  - panel `Workspace Access Bindings` di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+- [x] Tambahkan surface UI untuk melihat `user identity -> workspace`.
+  Bukti:
+  - panel `Workspace Access Bindings` di
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
 - [ ] Tambahkan surface UI untuk membedakan resources:
   `workspace-local`, `workspace-shared`, `general/shared`.
 
@@ -274,8 +292,6 @@ Definition of done:
 
 ## Remaining phases
 
-- [ ] Phase berikutnya: admin UI untuk menulis binding `channel/account -> workspace`.
-- [ ] Phase berikutnya: admin UI untuk menulis binding `userIdentity -> workspace`.
 - [ ] Phase berikutnya: policy visibility untuk `workspace-local`,
   `workspace-shared`, dan `general/shared`.
 - [ ] Phase berikutnya: `Feature Store` menu + schema backend live.
