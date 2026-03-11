@@ -44,6 +44,16 @@ Debugging dashboard fetch churn:
   `localStorage.removeItem("manef:debug"); location.reload();`
 - Debug logs are prefixed with `"[manef-debug]"`.
 
+Roadmap aktif untuk parity terhadap OpenClaw resmi ada di:
+
+- [docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-ui/docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md)
+
+Task dinyatakan selesai hanya bila:
+
+- CRUD database backend tersedia
+- data termirror dengan runtime OpenClaw
+- hasil write terbaca ulang di UI tanpa mock/fallback statis
+
 ## OpenClaw Workspace Navigator
 
 Dashboard header sekarang memakai navigator OpenClaw berbasis data backend, bukan

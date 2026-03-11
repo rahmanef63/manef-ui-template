@@ -4,6 +4,7 @@ Updated: 2026-03-10
 
 Dokumen aktif yang perlu dipakai untuk operasional repo ini:
 
+- `docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md`
 - `docs/2026-03-11-login-deploy-status.md`
 - `docs/2026-03-10-manef-ui-db-separation-migration-plan.md`
 - `docs/SEPARATION_PLAN.md`
