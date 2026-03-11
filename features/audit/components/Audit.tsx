@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { listAuditLogsRef } from "@/shared/convex/admin";
+import type { Id } from "@/shared/types/convex";
 import {
     Card,
     CardContent,
@@ -100,7 +101,15 @@ export default function Audit() {
     const logs = useQuery(listAuditLogsRef, {
         eventFilter: eventFilter === "all" ? undefined : eventFilter,
         limit: 200,
-    });
+    }) as Array<{
+        _id: Id<"authAuditLogs">;
+        event: string;
+        createdAt: number;
+        userId?: Id<"authUsers">;
+        userName?: string;
+        userEmail?: string;
+        meta?: unknown;
+    }> | undefined;
 
     const filteredLogs = (logs ?? []).filter((log) => {
         if (!search) return true;

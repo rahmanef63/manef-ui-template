@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Id } from "@/shared/types/convex";
+import type { RoleSummary } from "@/shared/types/roles";
 import { listRolesRef } from "@/shared/convex/roles";
 import { useQuery } from "convex/react";
 
@@ -18,7 +19,7 @@ export function SelectRole({
   onChange?: (value: Id<"roles">) => void;
   value: Id<"roles">;
 }) {
-  const availableRoles = useQuery(listRolesRef);
+  const availableRoles = useQuery(listRolesRef) as RoleSummary[] | undefined | null;
   if (availableRoles == null) {
     return null;
   }

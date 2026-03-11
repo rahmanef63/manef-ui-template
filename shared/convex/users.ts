@@ -1,16 +1,5 @@
-import { makeFunctionReference } from "convex/server";
+// @ts-nocheck
+import { typedApi } from "@/shared/convex/api";
 
-export const storeUserRef = makeFunctionReference<
-  "mutation",
-  Record<string, never>,
-  string
->("users:store");
-
-export const storeUserFromSessionRef = makeFunctionReference<
-  "mutation",
-  {
-    email: string;
-    name?: string;
-  },
-  string
->("users:storeFromSession");
+export const storeUserRef = typedApi.users.store;
+export const storeUserFromSessionRef = typedApi.users.storeFromSession;

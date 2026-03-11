@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { deleteWorkspaceRef } from "@/shared/convex/workspaces";
+import { APP_ROUTES } from "@/shared/constants/routes";
 import { useMutation } from "convex/react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -32,10 +33,10 @@ export function DeleteWorkspaceDialog({
   const handleDelete = handleFailure(async () => {
     await deleteWorkspace({ workspaceId: workspace._id });
     if (workspace.isPersonal) {
-      await signOut({ callbackUrl: "/" });
+      await signOut({ callbackUrl: APP_ROUTES.home });
       return;
     }
-    router.push("/");
+    router.push(APP_ROUTES.home);
   }, {
     feature: "workspaces",
     title: workspace.isPersonal

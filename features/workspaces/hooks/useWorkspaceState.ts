@@ -4,6 +4,7 @@ import { debugClient } from "@/lib/debug/client";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useMemo } from "react";
 import { listWorkspacesRef, viewerPermissionsRef } from "@/shared/convex/workspaces";
+import type { Permission } from "@/shared/types/permissions";
 import type { WorkspaceSummary } from "@/shared/types/workspaces";
 
 export function useWorkspaceRouteState() {
@@ -66,7 +67,7 @@ export function useViewerPermissions() {
   const permissions = useQuery(
     viewerPermissionsRef,
     workspace == null ? "skip" : { workspaceId: workspace._id },
-  );
+  ) as Permission[] | null | undefined;
 
   useEffect(() => {
     debugClient("workspace.permissions", {
@@ -77,7 +78,7 @@ export function useViewerPermissions() {
   }, [permissions?.length, workspace?._id, workspace?.slug]);
 
   return useMemo(() => {
-    return permissions == null ? null : new Set(permissions);
+    return permissions == null ? null : new Set<Permission>(permissions);
   }, [permissions]);
 }
 

@@ -40,6 +40,22 @@ Task dianggap belum selesai jika salah satu kondisi berikut masih terjadi:
 - [ ] Semua write path harus menampilkan hasil read-after-write dari Convex.
 - [ ] Semua refresh button harus memanggil action backend yang benar, bukan
   `setTimeout` visual saja.
+- [x] Referensi Convex yang sudah punya padanan di `@manef/db/api` harus
+  memakai generated source, bukan duplikasi route string manual.
+  Bukti:
+  - wrapper server-safe baru:
+    [api.ts](/home/rahman/projects/manef-ui/shared/convex/api.ts)
+  - wrapper `shared/convex/*` sekarang mengarah ke generated `typedApi`
+  - vendor package `@manef/db` di
+    [vendor/manef-db](/home/rahman/projects/manef-ui/vendor/manef-db)
+    disinkronkan dari repo backend agar generated API tersedia saat build
+- [x] Route string low-risk harus mulai dipusatkan.
+  Bukti:
+  - [routes.ts](/home/rahman/projects/manef-ui/shared/constants/routes.ts)
+  - dipakai di:
+    [DashboardButtons.tsx](/home/rahman/projects/manef-ui/features/dashboard/components/DashboardButtons.tsx),
+    [DeleteWorkspaceDialog.tsx](/home/rahman/projects/manef-ui/features/settings/components/DeleteWorkspaceDialog.tsx),
+    [CreateWorkspaceDialog.tsx](/home/rahman/projects/manef-ui/features/workspaces/components/CreateWorkspaceDialog.tsx)
 
 ## Navigator and scope
 
@@ -71,6 +87,12 @@ Tasks:
   - [Agents.tsx](/home/rahman/projects/manef-ui/features/agents/components/Agents.tsx)
   - commit `90d3e45`
   - query live: `features/agents/api:getAgents`
+- [x] Pastikan daftar agent berasal dari runtime mirror OpenClaw terbaru.
+  Bukti:
+  - backend runtime sync `agents` aktif dan menulis `16` agent ke Convex
+  - page ini tetap memakai `features/agents/api:getAgents`
+  - runtime source:
+    [sync_openclaw_agents_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_agents_to_convex.py)
 - [ ] Tambahkan kolom/section berikut per agent:
   `agentId`, `name`, `type`, `owner`, `status`, `workspace path`,
   `bound channels`, `last seen`, `session count`.
@@ -108,6 +130,12 @@ Definition of done:
   - [index.tsx](/home/rahman/projects/manef-ui/features/sessions-list/index.tsx)
   - query live: `features/sessions/api:getSessions`
   - commit `90d3e45`
+- [x] Pastikan daftar session berasal dari runtime mirror OpenClaw terbaru.
+  Bukti:
+  - backend runtime sync `sessions` aktif dan menulis `15` session ke Convex
+  - runtime source:
+    [sync_openclaw_sessions_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_sessions_to_convex.py)
+  - smoke test production membaca ulang `features/sessions/api:getSessions`
 - [ ] Tambahkan filter live:
   `channel`, `agent`, `status`, `session key`, `user token`.
 - [ ] Tambahkan detail panel session:

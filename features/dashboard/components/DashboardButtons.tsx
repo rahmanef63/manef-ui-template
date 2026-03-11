@@ -1,6 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { APP_ROUTES } from "@/shared/constants/routes";
 import Link from "next/link";
 
 export function DashboardButtons() {
@@ -8,14 +9,14 @@ export function DashboardButtons() {
   if (status === "loading") return <div className="w-40 h-9" />;
   if (status === "authenticated") {
     return (
-      <Link href="/dashboard">
+      <Link href={APP_ROUTES.dashboard}>
         <Button>Dashboard</Button>
       </Link>
     );
   }
   return (
     <div className="flex gap-4">
-      <Link href="/login">
+      <Link href={APP_ROUTES.login}>
         <Button variant="ghost">Sign in</Button>
       </Link>
     </div>

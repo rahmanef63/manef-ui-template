@@ -2,6 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { listRolesRef } from "@/shared/convex/admin";
+import type { Id } from "@/shared/types/convex";
 import {
     Card,
     CardContent,
@@ -21,7 +22,11 @@ import {
 } from "@/components/ui/table";
 
 export default function Roles() {
-    const roles = useQuery(listRolesRef);
+    const roles = useQuery(listRolesRef) as Array<{
+        _id: Id<"roles">;
+        name: string;
+        isDefault: boolean;
+    }> | undefined;
 
     if (roles === undefined) {
         return (

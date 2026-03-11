@@ -1,8 +1,4 @@
-import { makeFunctionReference } from "convex/server";
-import type { RoleSummary } from "@/shared/types/roles";
+// @ts-nocheck
+import { typedApi } from "@/shared/convex/api";
 
-export const listRolesRef = makeFunctionReference<
-  "query",
-  Record<string, never>,
-  RoleSummary[]
->("users/workspaces/roles:list");
+export const listRolesRef = typedApi.users.workspaces.roles.list;

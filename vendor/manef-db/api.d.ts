@@ -1,3 +1,1 @@
-export declare const api: any;
-export declare const internal: any;
-export declare const components: any;
+export { api, components, internal } from "./convex/_generated/api.js";

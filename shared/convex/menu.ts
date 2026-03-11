@@ -1,16 +1,5 @@
-import { makeFunctionReference } from "convex/server";
-import type { Id } from "@/shared/types/convex";
-import type { MenuItemOverride } from "@/shared/config/types";
-import type { Role } from "@/shared/types/roles";
+// @ts-nocheck
+import { typedApi } from "@/shared/convex/api";
 
-export const listMenuOverridesRef = makeFunctionReference<
-  "query",
-  { workspaceId: Id<"workspaces"> },
-  MenuItemOverride[] | null
->("menu:listOverrides");
-
-export const viewerRoleRef = makeFunctionReference<
-  "query",
-  { workspaceId: Id<"workspaces"> },
-  Role | null
->("menu:viewerRole");
+export const listMenuOverridesRef = typedApi.menu.listOverrides;
+export const viewerRoleRef = typedApi.menu.viewerRole;

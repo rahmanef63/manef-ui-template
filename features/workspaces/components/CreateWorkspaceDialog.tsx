@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { APP_ROUTES } from "@/shared/constants/routes";
 import { createWorkspaceRef } from "@/shared/convex/workspaces";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
@@ -62,7 +63,7 @@ export function useCreateWorkspaceDialog() {
             form.handleSubmit(async ({ name }) => {
               const workspaceSlug = await createWorkspace({ name });
               handleShowNewWorkspaceDialog(false);
-              router.push(`/dashboard/${workspaceSlug}`);
+              router.push(APP_ROUTES.dashboardWorkspace(workspaceSlug));
             }),
             {
               feature: "workspaces",

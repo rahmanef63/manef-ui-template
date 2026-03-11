@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import type { Id } from "@/shared/types/convex";
 import type { Permission } from "@/shared/types/permissions";
+import type { RoleSummary } from "@/shared/types/roles";
 import { listRolesRef } from "@/shared/convex/roles";
 import { sendMemberInviteRef } from "@/shared/convex/members";
 import { cn } from "@/lib/utils";
@@ -32,8 +33,8 @@ import { z } from "zod";
 
 export function AddMember() {
   const permissions = useViewerPermissions();
-  const availableRoles = useQuery(listRolesRef);
-  const defaultRole = availableRoles?.filter((role) => role.isDefault)[0]._id;
+  const availableRoles = useQuery(listRolesRef) as RoleSummary[] | undefined | null;
+  const defaultRole = availableRoles?.find((role) => role.isDefault)?._id;
   if (permissions == null || availableRoles == null || defaultRole == null) {
     return null;
   }

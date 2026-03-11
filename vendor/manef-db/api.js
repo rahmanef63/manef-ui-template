@@ -1,5 +1,1 @@
-import { anyApi, componentsGeneric } from "convex/server";
-
-export const api = anyApi;
-export const internal = anyApi;
-export const components = componentsGeneric();
+export { api, components, internal } from "./convex/_generated/api.js";

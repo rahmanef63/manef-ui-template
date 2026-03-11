@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { acceptInviteRef, listInvitesRef } from "@/shared/convex/user_invites";
+import type { InviteSummary } from "@/shared/types/invites";
+import { APP_ROUTES } from "@/shared/constants/routes";
 import { BellIcon } from "@radix-ui/react-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
@@ -19,7 +21,7 @@ import { Fragment, useEffect } from "react";
 
 export function Notifications() {
   const router = useRouter();
-  const invites = useQuery(listInvitesRef);
+  const invites = useQuery(listInvitesRef) as InviteSummary[] | null | undefined;
   const acceptInvite = useMutation(acceptInviteRef);
   const noInvites = (invites ?? []).length === 0;
 
@@ -50,7 +52,7 @@ export function Notifications() {
             <DropdownMenuItem
               onSelect={handleFailure(async () => {
                 const workspaceSlug = await acceptInvite({ inviteId: invite._id });
-                router.push(`/dashboard/${workspaceSlug}`);
+                router.push(APP_ROUTES.dashboardWorkspace(workspaceSlug));
               }, {
                 feature: "members",
                 title: "Undangan belum berhasil diterima",

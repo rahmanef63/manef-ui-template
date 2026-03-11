@@ -6,6 +6,7 @@ import {
     getUsersRef,
     updateUserStatusRef,
 } from "@/shared/convex/admin";
+import type { Id } from "@/shared/types/convex";
 import {
     Card,
     CardContent,
@@ -34,7 +35,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Users() {
-    const users = useQuery(getUsersRef) ?? [];
+    const users = (useQuery(getUsersRef) as Array<{
+        _id: Id<"authUsers">;
+        name: string;
+        email: string;
+        roles: string[];
+        status: string;
+        createdAt: number;
+        updatedAt: number;
+    }> | undefined) ?? [];
     const updateStatus = useMutation(updateUserStatusRef);
     const [search, setSearch] = useState("");
 
