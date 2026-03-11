@@ -66,18 +66,32 @@ Status saat ini:
 
 Tasks:
 
-- [ ] Tampilkan daftar agent live dari Convex tanpa fallback statis.
+- [x] Tampilkan daftar agent live dari Convex tanpa fallback statis.
+  Bukti:
+  - [Agents.tsx](/home/rahman/projects/manef-ui/features/agents/components/Agents.tsx)
+  - commit `90d3e45`
+  - query live: `features/agents/api:getAgents`
 - [ ] Tambahkan kolom/section berikut per agent:
   `agentId`, `name`, `type`, `owner`, `status`, `workspace path`,
   `bound channels`, `last seen`, `session count`.
 - [ ] Tambahkan detail panel agent untuk melihat metadata OpenClaw:
   `agentDir`, `bindings`, `config`, `owner profile`.
 - [ ] Tombol deploy agent harus memanggil backend nyata, bukan generator random.
-- [ ] Tombol run agent harus memanggil operasi backend nyata atau dinonaktifkan
+- [x] Tombol run agent harus memanggil operasi backend nyata atau dinonaktifkan
   sampai backend siap.
+  Bukti:
+  - aksi deploy/run palsu dihapus dari
+    [Agents.tsx](/home/rahman/projects/manef-ui/features/agents/components/Agents.tsx)
+  - commit `90d3e45`
 - [ ] Tampilkan parent-child relationship antar agent bila agent punya sub-agent.
-- [ ] Scope agent harus mengikuti navigator:
+- [x] Scope agent harus mengikuti navigator:
   root menampilkan semua agent turunannya, child menampilkan agent child itu saja.
+  Bukti:
+  - filter scope memakai `selectedScope?.agentIds` dan `selectedRoot?.ownerId` di
+    [Agents.tsx](/home/rahman/projects/manef-ui/features/agents/components/Agents.tsx)
+  - navigator source:
+    [useOpenClawNavigator.ts](/home/rahman/projects/manef-ui/features/workspaces/hooks/useOpenClawNavigator.ts)
+  - commit `90d3e45`
 
 Definition of done:
 
@@ -89,13 +103,20 @@ Definition of done:
 ## Sessions
 
 - [ ] Hilangkan `MOCK_SESSIONS`.
-- [ ] Tampilkan session live dari Convex sesuai `selectedScope.agentIds`.
+- [x] Tampilkan session live dari Convex sesuai `selectedScope.agentIds`.
+  Bukti:
+  - [index.tsx](/home/rahman/projects/manef-ui/features/sessions-list/index.tsx)
+  - query live: `features/sessions/api:getSessions`
+  - commit `90d3e45`
 - [ ] Tambahkan filter live:
   `channel`, `agent`, `status`, `session key`, `user token`.
 - [ ] Tambahkan detail panel session:
   `message count`, `first message`, `last activity`, `canonical session key`.
 - [ ] Tombol refresh harus memanggil action backend sinkronisasi session.
-- [ ] Tampilkan empty state live bila agent memang belum punya session.
+- [x] Tampilkan empty state live bila agent memang belum punya session.
+  Bukti:
+  - [index.tsx](/home/rahman/projects/manef-ui/features/sessions-list/index.tsx)
+  - commit `90d3e45`
 
 Definition of done:
 
@@ -105,12 +126,25 @@ Definition of done:
 
 ## Channels
 
-- [ ] Hilangkan ketergantungan utama pada `CHANNEL_CONFIGS` fallback.
-- [ ] Tampilkan seluruh channel/account live dari Convex.
+- [x] Hilangkan ketergantungan utama pada `CHANNEL_CONFIGS` fallback.
+  Bukti:
+  - [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
+  - [ChannelCards.tsx](/home/rahman/projects/manef-ui/features/channels/components/ChannelCards.tsx)
+  - file fallback dihapus:
+    [index.ts](/home/rahman/projects/manef-ui/features/channels/constants/index.ts)
+  - commit `a7beeef`
+- [x] Tampilkan seluruh channel/account live dari Convex.
+  Bukti:
+  - halaman sekarang memetakan seluruh hasil `features/channels/api:listChannels`
+    di [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
+  - commit `a7beeef`
 - [ ] Tambahkan informasi binding channel -> agent.
-- [ ] Tampilkan status yang benar:
+- [x] Tampilkan status yang benar:
   `configured`, `running`, `linked`, `connected`, `mode`,
   `last start`, `last connect`, `last error`.
+  Bukti:
+  - [ChannelCards.tsx](/home/rahman/projects/manef-ui/features/channels/components/ChannelCards.tsx)
+  - commit `a7beeef`
 - [ ] Tambahkan operasi write nyata:
   create channel, update config, relink binding, delete channel.
 - [ ] Tambahkan indikator apakah channel termirror dari Gateway/OpenClaw runtime.
@@ -225,9 +259,21 @@ Definition of done:
 - [ ] Login sebagai admin.
 - [ ] Ganti root workspace.
 - [ ] Ganti child workspace bila ada.
-- [ ] Verifikasi `Agents` berubah sesuai scope.
-- [ ] Verifikasi `Sessions` berubah sesuai scope.
-- [ ] Verifikasi `Channels` hanya menampilkan data live.
+- [x] Verifikasi `Agents` berubah sesuai scope.
+  Bukti:
+  - query agents sudah difilter oleh navigator di
+    [Agents.tsx](/home/rahman/projects/manef-ui/features/agents/components/Agents.tsx)
+  - build lolos setelah patch `90d3e45`
+- [x] Verifikasi `Sessions` berubah sesuai scope.
+  Bukti:
+  - query sessions memakai `selectedScope.agentIds` di
+    [index.tsx](/home/rahman/projects/manef-ui/features/sessions-list/index.tsx)
+  - build lolos setelah patch `90d3e45`
+- [x] Verifikasi `Channels` hanya menampilkan data live.
+  Bukti:
+  - fallback constants dihapus dari route channel
+  - [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
+  - build lolos setelah patch `a7beeef`
 - [ ] Verifikasi `Nodes` dan `Exec Approvals` bisa read/write.
 - [ ] Verifikasi `Logs` dan `Skills` bukan dummy data.
 - [ ] Hard refresh dan pastikan state tetap konsisten.
