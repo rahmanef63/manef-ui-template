@@ -64,6 +64,13 @@ Task dianggap belum selesai jika salah satu kondisi berikut masih terjadi:
 - [ ] Scope root harus mewakili contact/account workspace.
 - [ ] Scope child harus mewakili sub-agent atau sub-workspace bila ada.
 - [ ] Seluruh route dashboard harus mengambil filter dari `selectedScope`.
+- [x] Pertahankan kontrak `selectedScope.agentIds` walau backend pindah ke
+  model `workspace -> agents[]`.
+  Bukti:
+  - frontend tetap membaca `selectedScope.agentIds` di
+    [useOpenClawNavigator.ts](/home/rahman/projects/manef-ui/features/workspaces/hooks/useOpenClawNavigator.ts)
+  - backend navigator sekarang menghitung `agentIds` dari `workspaceAgents`
+  - build produksi `manef-ui` lolos setelah perubahan backend model
 - [ ] Hilangkan fallback ke workspace legacy untuk halaman OpenClaw-only.
 
 Definition of done:
