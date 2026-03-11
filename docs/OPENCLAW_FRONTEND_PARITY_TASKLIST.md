@@ -219,6 +219,18 @@ Definition of done:
     di [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
   - commit `a7beeef`
 - [ ] Tambahkan informasi binding channel -> agent.
+- [x] Tampilkan binding `channel -> workspace` live di card channel.
+  Bukti:
+  - query `features/channels/api:listChannels` sekarang membawa
+    `workspaceBindings` dan `identityBindings`
+  - UI menampilkan daftar workspace dan identity ringkas di
+    [ChannelCards.tsx](/home/rahman/projects/manef-ui/features/channels/components/ChannelCards.tsx)
+  - mapping data di
+    [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
+  - type UI di
+    [types/index.ts](/home/rahman/projects/manef-ui/features/channels/types/index.ts)
+- [ ] Tambahkan surface write untuk binding `channel/account -> workspace`.
+- [ ] Tambahkan surface write untuk binding `user identity -> workspace`.
 - [x] Tambahkan refresh/filter UI yang benar-benar bekerja untuk channel live.
   Bukti:
   - refresh memakai `router.refresh()`
@@ -241,6 +253,7 @@ Definition of done:
 - channel di UI sama dengan record `channels` di DB
 - perubahan channel dari backend/runtime tampil di UI tanpa edit manual
 - update channel dari UI terbaca ulang dari DB dan runtime
+- workspace yang terikat ke channel terlihat di UI tanpa fallback statis
 
 ## Workspace, users, and channel access
 
@@ -258,6 +271,15 @@ Definition of done:
 - user biasa tidak melihat workspace orang lain
 - workspace switcher hanya menampilkan scope yang boleh diakses viewer
 - channel visibility dan akses app mengikuti workspace binding yang sama
+
+## Remaining phases
+
+- [ ] Phase berikutnya: admin UI untuk menulis binding `channel/account -> workspace`.
+- [ ] Phase berikutnya: admin UI untuk menulis binding `userIdentity -> workspace`.
+- [ ] Phase berikutnya: policy visibility untuk `workspace-local`,
+  `workspace-shared`, dan `general/shared`.
+- [ ] Phase berikutnya: `Feature Store` menu + schema backend live.
+- [ ] Phase berikutnya: `Agent Builder` draft from `JSON blocks`.
 
 ## Auth onboarding
 

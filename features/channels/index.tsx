@@ -66,8 +66,10 @@ export default function ChannelsPage() {
                 ? `${Math.round(channel.authAgeMs / 1000 / 60)}m`
                 : undefined,
             lastError: channel.lastError,
-            bindingCount: channel.config?.bindingCount,
+            bindingCount: channel.workspaceBindings?.length ?? channel.config?.bindingCount,
             allowListCount: channel.config?.allowListCount,
+            workspaceBindings: channel.workspaceBindings ?? [],
+            identityBindings: channel.identityBindings ?? [],
         },
     }));
 

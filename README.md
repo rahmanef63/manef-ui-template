@@ -102,6 +102,25 @@ Panel yang sekarang sudah membaca mirror runtime OpenClaw dari Convex:
 - `Logs`
 - `Nodes + Exec Approvals`
 
+Progress terbaru:
+
+- `Channels` sekarang juga menampilkan binding live:
+  - `channel -> workspace`
+  - `identity -> workspace`
+- login/registrasi sekarang mendukung:
+  - `email atau nomor telepon`
+  - request registrasi
+  - temporary password
+  - wajib ganti password saat first login
+
+Remaining phase terdekat:
+
+- admin UI untuk menulis binding `channel/account -> workspace`
+- admin UI untuk menulis binding `user identity -> workspace`
+- policy resource scope:
+  `workspace-local`, `workspace-shared`, `general/shared`
+- `Feature Store` dan `Agent Builder`
+
 Catatan:
 
 - beberapa halaman lama masih global/mock dan belum full scope-aware, misalnya

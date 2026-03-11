@@ -12,6 +12,23 @@ export interface ChannelStatus {
     lastError?: string;
     bindingCount?: number;
     allowListCount?: number;
+    workspaceBindings?: Array<{
+        workspaceId: string;
+        workspaceName: string;
+        slug: string;
+        access?: string;
+        agentId?: string;
+        source?: string;
+    }>;
+    identityBindings?: Array<{
+        workspaceId: string;
+        workspaceName: string;
+        channel: string;
+        externalUserId: string;
+        normalizedPhone?: string;
+        access?: string;
+        source?: string;
+    }>;
 }
 
 export interface ChannelConfig {

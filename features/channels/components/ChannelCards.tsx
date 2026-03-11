@@ -46,6 +46,21 @@ export function ChannelCard({ channel }: ChannelCardProps) {
                 {status.bindingCount !== undefined && (
                     <KeyValueRow label="Bindings" value={String(status.bindingCount)} />
                 )}
+                {status.workspaceBindings && status.workspaceBindings.length > 0 && (
+                    <KeyValueRow
+                        label="Workspaces"
+                        value={status.workspaceBindings.map((binding) => binding.workspaceName).join(", ")}
+                    />
+                )}
+                {status.identityBindings && status.identityBindings.length > 0 && (
+                    <KeyValueRow
+                        label="Identities"
+                        value={status.identityBindings
+                            .slice(0, 3)
+                            .map((binding) => binding.normalizedPhone || binding.externalUserId)
+                            .join(", ")}
+                    />
+                )}
                 {status.allowListCount !== undefined && (
                     <KeyValueRow label="Allowlist" value={String(status.allowListCount)} />
                 )}
