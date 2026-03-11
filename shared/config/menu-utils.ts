@@ -12,6 +12,7 @@ import { NAVIGATION_REGISTRY } from "@/project/registry/navigation";
 import { featureRegistry } from "./registry";
 import { type MenuId, type MenuTab, type MenuCatalogItem } from "./menu-catalog";
 import type { FeatureManifest } from "./types";
+import type { Role } from "@/shared/types/roles";
 import {
     getPortalConfig,
     DEFAULT_BOTTOM_NAV,
@@ -183,13 +184,24 @@ export function normalizeBottomNav(
 /**
  * Build sidebar menu tree from PORTAL_CONFIG
  */
-export function buildSidebarTree(portalId: string, workspaceSlug?: string): SidebarGroup[] {
+export function buildSidebarTree(
+    portalId: string,
+    workspaceSlug?: string,
+    viewerRole?: Role | null
+): SidebarGroup[] {
     const config = getPortalConfig(portalId);
     const groups: SidebarGroup[] = [];
 
     const resolveItem = (id: string): SidebarMenuItem | null => {
         const feature = featureRegistry.find(f => f.id === id) as FeatureManifest | undefined;
         if (!feature) return null;
+        if (
+            viewerRole &&
+            feature.requiredRoles?.length &&
+            !feature.requiredRoles.includes(viewerRole)
+        ) {
+            return null;
+        }
 
         // Get children from NAVIGATION_REGISTRY if any
         // We use keyof typeof NAVIGATION_REGISTRY checking to avoid any
@@ -230,7 +242,7 @@ export function buildSidebarTree(portalId: string, workspaceSlug?: string): Side
     }
 
     // Admin group
-    if (config.sidebar.admin.length > 0) {
+    if (viewerRole === "Admin" && config.sidebar.admin.length > 0) {
         groups.push({
             id: "admin",
             label: "Admin",

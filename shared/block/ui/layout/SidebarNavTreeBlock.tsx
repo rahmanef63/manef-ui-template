@@ -9,9 +9,11 @@ import { useSession } from "next-auth/react";
 import { useQuery } from "convex/react";
 
 import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { getAuthProfileByEmailRef } from "@/shared/convex/auth";
 import { buildSidebarTree, resolveIcon } from "@/shared/config";
 import type { SidebarGroup as SidebarGroupType, SidebarMenuItem as SidebarMenuItemType } from "@/shared/config";
+import type { Role } from "@/shared/types/roles";
 import { NavUser } from "@/components/layout/sidebar/nav-user";
 import { cn } from "@/lib/utils";
 import {
@@ -68,13 +70,9 @@ export function SidebarNavTreeBlock({
     const { data: session } = useSession();
     const pathname = usePathname();
     const params = useParams();
+    const navigator = useOpenClawNavigator();
 
     const workspaceSlug = typeof params?.workspaceSlug === 'string' ? params.workspaceSlug : undefined;
-
-    const sidebarGroups = React.useMemo(
-        () => buildSidebarTree(portalId, workspaceSlug),
-        [portalId, workspaceSlug]
-    );
 
     const sessionEmail = session?.user?.email ?? "";
     const authProfile = useQuery(
@@ -90,6 +88,17 @@ export function SidebarNavTreeBlock({
         email: authProfile?.email || sessionEmail,
         avatar: session?.user?.image || "",
     };
+    const viewerRole: Role = React.useMemo(() => {
+        const roles = authProfile?.roles ?? [];
+        if (navigator.isAdmin || roles.some((role) => role.toLowerCase() === "admin")) {
+            return "Admin";
+        }
+        return "Member";
+    }, [authProfile?.roles, navigator.isAdmin]);
+    const sidebarGroups = React.useMemo(
+        () => buildSidebarTree(portalId, workspaceSlug, viewerRole),
+        [portalId, workspaceSlug, viewerRole]
+    );
 
     React.useEffect(() => {
         debugClient("sidebar.identity", {
@@ -98,11 +107,13 @@ export function SidebarNavTreeBlock({
             sessionEmail: sessionEmail || null,
             sessionName: session?.user?.name ?? null,
             userPayloadName: userPayload.name,
+            viewerRole,
             workspaceSlug: workspace?.slug ?? null,
         });
     }, [
         authProfile?.name,
         authProfile?.roles,
+        viewerRole,
         session?.user?.name,
         sessionEmail,
         userPayload.name,
