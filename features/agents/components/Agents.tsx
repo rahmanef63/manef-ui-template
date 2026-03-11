@@ -37,7 +37,20 @@ export default function Agents() {
                     />
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {agents.map((agent) => (
+                        {agents.map((agent) => {
+                            const boundChannels = Array.isArray(agent?.boundChannels)
+                                ? agent.boundChannels
+                                : [];
+                            const sessionCount =
+                                typeof agent?.sessionCount === "number"
+                                    ? agent.sessionCount
+                                    : 0;
+                            const childCount =
+                                typeof agent?.childCount === "number"
+                                    ? agent.childCount
+                                    : 0;
+
+                            return (
                             <Card key={agent._id} className="shadow-sm hover:shadow-md transition-shadow group">
                                 <CardHeader className="flex flex-row items-start justify-between pb-2">
                                     <div className="flex items-start space-x-3">
@@ -83,7 +96,7 @@ export default function Agents() {
                                                 <MessagesSquare className="h-3.5 w-3.5" />
                                                 Sessions
                                             </span>
-                                            <span className="text-foreground">{agent.sessionCount}</span>
+                                            <span className="text-foreground">{sessionCount}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-3">
                                             <span className="flex items-center gap-1.5">
@@ -91,8 +104,8 @@ export default function Agents() {
                                                 Channels
                                             </span>
                                             <span className="truncate text-right text-foreground">
-                                                {agent.boundChannels.length > 0
-                                                    ? agent.boundChannels.join(", ")
+                                                {boundChannels.length > 0
+                                                    ? boundChannels.join(", ")
                                                     : "No bindings"}
                                             </span>
                                         </div>
@@ -104,15 +117,16 @@ export default function Agents() {
                                         {agent.model ? (
                                             <Badge variant="outline">{agent.model}</Badge>
                                         ) : null}
-                                        {agent.childCount > 0 ? (
+                                        {childCount > 0 ? (
                                             <Badge variant="outline">
-                                                {agent.childCount} child
+                                                {childCount} child
                                             </Badge>
                                         ) : null}
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
