@@ -82,6 +82,26 @@ function resolveRoute(href: string, workspaceSlug?: string): string {
     return href;
 }
 
+function resolveFeatureHref(feature: FeatureManifest, workspaceSlug?: string): string {
+    const navConfig: { children: readonly string[]; defaultChild?: string } | undefined =
+        feature.id in NAVIGATION_REGISTRY
+            ? (NAVIGATION_REGISTRY[
+                feature.id as keyof typeof NAVIGATION_REGISTRY
+            ] as { children: readonly string[]; defaultChild?: string })
+            : undefined;
+    if (!navConfig) {
+        return resolveRoute(feature.route, workspaceSlug);
+    }
+
+    const defaultChildId = navConfig.defaultChild ?? navConfig.children[0];
+    const defaultChild = featureRegistry.find((item) => item.id === defaultChildId) as FeatureManifest | undefined;
+    if (!defaultChild) {
+        return resolveRoute(feature.route, workspaceSlug);
+    }
+
+    return resolveRoute(defaultChild.route, workspaceSlug);
+}
+
 
 /**
  * Normalize bottom nav to always have 5 items.
@@ -122,7 +142,7 @@ export function normalizeBottomNav(
             id: feature.id,
             label: feature.label,
             icon: icon ?? "Menu", // Default icon if missing
-            href: resolveRoute(feature.route, workspaceSlug),
+            href: resolveFeatureHref(feature, workspaceSlug),
         });
         return true;
     };
@@ -193,7 +213,7 @@ export function buildSidebarTree(portalId: string, workspaceSlug?: string): Side
             id: feature.id,
             label: feature.label,
             icon: icon ?? "Menu", // Fallback
-            href: resolveRoute(feature.route, workspaceSlug),
+            href: resolveFeatureHref(feature, workspaceSlug),
             tabs,
         };
     };
@@ -316,7 +336,7 @@ export function getMenuFromPath(pathname: string): MenuCatalogItem | null {
         id: parentFeature.id,
         label: parentFeature.label,
         icon: parentFeature.icon ?? "Menu",
-        href: resolveRoute(parentFeature.route, workspaceSlug),
+        href: resolveFeatureHref(parentFeature, workspaceSlug),
         tabs,
     };
 }
