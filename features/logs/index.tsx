@@ -13,8 +13,8 @@ import type { LogLevel, LogEntry } from "./types";
 export default function LogsPage() {
     const [activeLevels, setActiveLevels] = useState<Set<string>>(new Set(LOG_LEVELS));
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-// @ts-ignore`n    // @ts-ignore`n    const dbLogs: any = (useQuery as any)((api as any).features.logs.api.getRecentLogs as any, {});
+    const dbLogs: any =
+        (useQuery as any)((api as any).features.logs.api.getRecentLogs as any, {});
 
     const toggleLevel = (level: string) => {
         setActiveLevels(prev => {

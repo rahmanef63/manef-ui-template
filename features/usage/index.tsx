@@ -11,8 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function UsagePage() {
     const [activeRange, setActiveRange] = useState("Today");
     const [activeMetric, setActiveMetric] = useState("Tokens");
-
-// @ts-ignore`n    // @ts-ignore`n    const records: any = (useQuery as any)((api as any).features.usage.api.getUsage as any, {});
+    const records: any =
+        (useQuery as any)((api as any).features.usage.api.getUsage as any, {});
 
     if (records === undefined) {
         return (

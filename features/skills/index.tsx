@@ -11,8 +11,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function SkillsPage() {
     const [filter, setFilter] = useState("maman");
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-// @ts-ignore`n    // @ts-ignore`n    const skills: any = (useQuery as any)((api as any).features.skills.api.listSkills as any, { filter: filter !== "maman" ? filter : undefined });
+    const skills: any =
+        (useQuery as any)((api as any).features.skills.api.listSkills as any, {
+            filter: filter !== "maman" ? filter : undefined,
+        });
 
     const handleRefresh = () => {
         setIsRefreshing(true);

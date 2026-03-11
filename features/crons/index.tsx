@@ -13,8 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CronsPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-// @ts-ignore`n    // @ts-ignore`n    const jobs: any = (useQuery as any)((api as any).features.crons.api.listJobs as any, {});
+    const jobs: any =
+        (useQuery as any)((api as any).features.crons.api.listJobs as any, {});
 
     if (jobs === undefined) {
         return (
