@@ -12,6 +12,19 @@ Source of truth referensi:
 - OpenClaw Agents
 - OpenClaw Multi-Agent Routing
 
+Session handoff references:
+
+- frontend repo aktif:
+  [manef-ui](/home/rahman/projects/manef-ui)
+- backend repo aktif:
+  [manef-db](/home/rahman/projects/manef-db)
+- repo acuan feature store:
+  [superspace](/home/rahman/projects/superspace)
+- halaman store acuan:
+  [MenuStorePage.tsx](/home/rahman/projects/superspace/frontend/features/menus/MenuStorePage.tsx)
+- halaman workspace acuan:
+  [WorkspaceStorePage.tsx](/home/rahman/projects/superspace/frontend/features/workspace-store/WorkspaceStorePage.tsx)
+
 Definisi selesai untuk setiap task frontend:
 
 1. halaman bisa membaca data live dari `manef-db`, bukan mock/fallback statis
@@ -98,6 +111,57 @@ Definition of done:
 - `Agent Builder` bisa menghasilkan draft app dari JSON block config
 - workspace aktif menentukan app mana yang terlihat atau dapat diedit
 - integrasi Superspace memakai contract/backend adapter yang jelas
+
+## Superspace findings
+
+Temuan yang sudah diverifikasi dari repo
+[superspace](/home/rahman/projects/superspace):
+
+- `feature store` yang paling dekat dengan kebutuhan `manef` sebenarnya adalah
+  `menu store`, bukan `workspace-store`
+- source of truth feature di Superspace berasal dari `config.ts` per feature,
+  lalu diubah menjadi manifest/catalog auto-generated
+- `workspace-store` di Superspace fokus pada hierarchy workspace, template, dan
+  panel inspector
+- `menu-store` di Superspace fokus pada:
+  - katalog feature installable
+  - install ke workspace
+  - preview feature
+  - visibility/permission
+
+Bukti file:
+
+- manifest default/system:
+  [menu_manifest_data.ts](/home/rahman/projects/superspace/convex/features/menus/menu_manifest_data.ts)
+- katalog optional/installable:
+  [optional_features_catalog.ts](/home/rahman/projects/superspace/convex/features/menus/optional_features_catalog.ts)
+- backend install/manage menu:
+  [menuItems.ts](/home/rahman/projects/superspace/convex/features/menus/menuItems.ts)
+- UI store:
+  [MenuStorePage.tsx](/home/rahman/projects/superspace/frontend/features/menus/MenuStorePage.tsx)
+- preview registry:
+  [all-previews.ts](/home/rahman/projects/superspace/frontend/shared/preview/all-previews.ts)
+- workspace hierarchy manager:
+  [WorkspaceStorePage.tsx](/home/rahman/projects/superspace/frontend/features/workspace-store/WorkspaceStorePage.tsx)
+
+Implikasi untuk `manef-ui`:
+
+- `Feature Store` sebaiknya meniru pola `catalog -> preview -> install to workspace`
+- `Workspace Store` tetap dipisahkan dari `Feature Store`
+- `Agent Builder` adalah layer tambahan milik `manef`, bukan fitur yang sama
+  persis dengan Superspace
+- `Feature Store` `manef` harus tetap `workspace + agent + runtime aware`,
+  tidak cukup hanya menu installer
+
+Remaining phase setelah session ini:
+
+- [ ] Tambahkan menu/route `Feature Store`
+- [ ] Tampilkan katalog item live dari backend, bukan konstanta frontend
+- [ ] Tambahkan preview registry untuk `Feature Store`
+- [ ] Tambahkan status scope item:
+  `workspace-local`, `workspace-shared`, `general/shared`
+- [ ] Tambahkan draft surface `Agent Builder`:
+  `json_blocks` dan `custom_code`
 
 ## Navigator and scope
 

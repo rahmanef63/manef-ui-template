@@ -48,6 +48,15 @@ Roadmap aktif untuk parity terhadap OpenClaw resmi ada di:
 
 - [docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-ui/docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md)
 
+Session handoff references:
+
+- frontend tasklist:
+  [OPENCLAW_FRONTEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-ui/docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md)
+- backend tasklist:
+  [OPENCLAW_BACKEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-db/docs/OPENCLAW_BACKEND_PARITY_TASKLIST.md)
+- Superspace repo clone:
+  [superspace](/home/rahman/projects/superspace)
+
 Roadmap produk berikutnya yang harus dijaga:
 
 - `Feature Store`
@@ -63,6 +72,25 @@ Catatan konteks:
   `https://github.com/zianinn/v0-remix-of-superspace-app-aazian.git`
 - repo eksternal tersebut belum menjadi source of truth frontend ini; konteksnya
   saat ini dicatat sebagai target downstream integration
+
+Temuan Superspace yang sudah diverifikasi:
+
+- acuan `Feature Store` yang paling relevan adalah pola `menu-store`
+- acuan `Workspace Store` yang paling relevan adalah pola `workspace-store`
+- file referensi penting:
+  - [MenuStorePage.tsx](/home/rahman/projects/superspace/frontend/features/menus/MenuStorePage.tsx)
+  - [WorkspaceStorePage.tsx](/home/rahman/projects/superspace/frontend/features/workspace-store/WorkspaceStorePage.tsx)
+  - [menu_manifest_data.ts](/home/rahman/projects/superspace/convex/features/menus/menu_manifest_data.ts)
+  - [optional_features_catalog.ts](/home/rahman/projects/superspace/convex/features/menus/optional_features_catalog.ts)
+  - [all-previews.ts](/home/rahman/projects/superspace/frontend/shared/preview/all-previews.ts)
+
+Kesimpulan implementasi:
+
+- `Feature Store` `manef` nanti harus meniru pola:
+  `catalog -> preview -> install to workspace`
+- tapi tetap harus memahami:
+  `workspace`, `sub-workspace`, `agents`, `channels`, dan runtime OpenClaw
+- `Agent Builder` tetap menjadi fitur khusus `manef`
 
 Task dinyatakan selesai hanya bila:
 
