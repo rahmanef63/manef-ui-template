@@ -49,23 +49,58 @@ export function useOpenClawNavigator() {
     setStoredRootId(loadStoredValue(ROOT_STORAGE_KEY));
   }, []);
 
+  const routeMatchedRoot = useMemo(
+    () =>
+      routeWorkspaceSlug
+        ? roots.find((root) => root.slug === routeWorkspaceSlug) ?? null
+        : null,
+    [roots, routeWorkspaceSlug],
+  );
+
+  const routeMatchedChild = useMemo(() => {
+    if (!routeWorkspaceSlug) {
+      return null;
+    }
+    for (const root of roots) {
+      const child = root.children.find((candidate) => candidate.slug === routeWorkspaceSlug);
+      if (child) {
+        return { child, root };
+      }
+    }
+    return null;
+  }, [roots, routeWorkspaceSlug]);
+
   const selectedRoot = useMemo(() => {
+    if (routeMatchedChild?.root) {
+      return routeMatchedChild.root;
+    }
+    if (routeMatchedRoot) {
+      return routeMatchedRoot;
+    }
+    if (payload?.defaultScopeSlug) {
+      const byDefaultChild = roots.find((root) =>
+        root.children.some((child) => child.slug === payload.defaultScopeSlug),
+      );
+      if (byDefaultChild) {
+        return byDefaultChild;
+      }
+      const byDefaultRoot = roots.find((root) => root.slug === payload.defaultScopeSlug);
+      if (byDefaultRoot) {
+        return byDefaultRoot;
+      }
+    }
     const byStored = roots.find((root) => root._id === storedRootId);
     if (byStored) {
       return byStored;
     }
-    const byRouteChild = roots.find((root) =>
-      root.children.some((child) => child.slug === routeWorkspaceSlug),
-    );
-    if (byRouteChild) {
-      return byRouteChild;
-    }
-    const byRouteRoot = roots.find((root) => root.slug === routeWorkspaceSlug);
-    if (byRouteRoot) {
-      return byRouteRoot;
-    }
     return roots[0] ?? null;
-  }, [roots, routeWorkspaceSlug, storedRootId]);
+  }, [
+    payload?.defaultScopeSlug,
+    roots,
+    routeMatchedChild?.root,
+    routeMatchedRoot,
+    storedRootId,
+  ]);
 
   useEffect(() => {
     if (!selectedRoot) {
@@ -81,20 +116,15 @@ export function useOpenClawNavigator() {
     if (!selectedRoot || selectedRoot.children.length === 0) {
       return null;
     }
-    const byStored = selectedRoot.children.find(
-      (child) => child._id === storedChildId,
-    );
-    if (byStored) {
-      return byStored;
+    if (routeMatchedChild?.root._id === selectedRoot._id) {
+      return routeMatchedChild.child;
     }
-    const byRoute = selectedRoot.children.find(
-      (child) => child.slug === routeWorkspaceSlug,
-    );
-    if (byRoute) {
-      return byRoute;
+    if (routeMatchedRoot?._id === selectedRoot._id) {
+      return null;
     }
-    return selectedRoot.children[0] ?? null;
-  }, [routeWorkspaceSlug, selectedRoot, storedChildId]);
+    const byStored = selectedRoot.children.find((child) => child._id === storedChildId);
+    return byStored ?? null;
+  }, [routeMatchedChild, routeMatchedRoot?._id, selectedRoot, storedChildId]);
 
   useEffect(() => {
     if (!selectedRoot) {
@@ -115,9 +145,11 @@ export function useOpenClawNavigator() {
       routeWorkspaceSlug: routeWorkspaceSlug ?? null,
       selectedRoot: selectedRoot?.name ?? null,
       selectedChild: selectedChild?.name ?? null,
+      defaultScopeSlug: payload?.defaultScopeSlug ?? null,
       selectedScopeAgentIds: selectedScope?.agentIds?.length ?? 0,
     });
   }, [
+    payload?.defaultScopeSlug,
     payload?.isAdmin,
     roots.length,
     routeWorkspaceSlug,
@@ -130,6 +162,7 @@ export function useOpenClawNavigator() {
     isAdmin: payload?.isAdmin ?? false,
     isLoading: payload === undefined,
     roots,
+    defaultScopeSlug: payload?.defaultScopeSlug,
     selectedRoot,
     selectedChild,
     selectedScope,

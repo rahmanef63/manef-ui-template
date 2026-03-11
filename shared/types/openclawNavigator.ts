@@ -20,6 +20,7 @@ export interface OpenClawScopeRoot extends OpenClawScopeNode {
 }
 
 export interface OpenClawScopePayload {
+  defaultScopeSlug?: string;
   isAdmin: boolean;
   roots: OpenClawScopeRoot[];
   viewerEmail?: string;

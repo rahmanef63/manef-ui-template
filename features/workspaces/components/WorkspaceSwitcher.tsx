@@ -42,7 +42,7 @@ import type { WorkspaceDisplayInfo, WorkspaceSummary } from "@/shared/types/work
 import type { OpenClawScopeNode, OpenClawScopeRoot } from "@/shared/types/openclawNavigator";
 import { useQuery } from "convex/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 function formatWorkspaceLabelFromSlug(slug: string) {
@@ -63,18 +63,27 @@ export function WorkspaceSwitcher() {
 
 function OpenClawWorkspaceSwitcher() {
   const {
+    defaultScopeSlug,
     roots,
     selectedChild,
     selectedRoot,
     setSelectedChild,
     setSelectedRoot,
   } = useOpenClawNavigator();
+  const pathname = usePathname();
+  const router = useRouter();
   const [rootOpen, setRootOpen] = useState(false);
   const [childOpen, setChildOpen] = useState(false);
 
   if (!selectedRoot) {
     return null;
   }
+
+  const nextPathForSlug = (slug: string) => {
+    const segments = pathname.split("/").filter(Boolean);
+    const suffix = segments.length > 2 ? `/${segments.slice(2).join("/")}` : "";
+    return `/dashboard/${slug}${suffix}`;
+  };
 
   return (
     <SidebarMenu>
@@ -85,7 +94,9 @@ function OpenClawWorkspaceSwitcher() {
           label={selectedRoot.name}
           onOpenChange={setRootOpen}
           onSelect={(item) => {
-            setSelectedRoot(item as OpenClawScopeRoot);
+            const nextRoot = item as OpenClawScopeRoot;
+            setSelectedRoot(nextRoot);
+            router.push(nextPathForSlug(nextRoot.slug));
             setRootOpen(false);
           }}
           open={rootOpen}
@@ -100,17 +111,21 @@ function OpenClawWorkspaceSwitcher() {
             compact
             description="Sub Workspace"
             items={selectedRoot.children}
-            label={(selectedChild ?? selectedRoot.children[0]).name}
+            emptyLabel="Select sub workspace"
+            label={selectedChild?.name ?? "Select sub workspace"}
             onOpenChange={setChildOpen}
             onSelect={(item) => {
-              setSelectedChild(item);
+              const nextChild = item as OpenClawScopeNode;
+              setSelectedChild(nextChild);
+              router.push(nextPathForSlug(nextChild.slug));
               setChildOpen(false);
             }}
             open={childOpen}
-            selectedId={(selectedChild ?? selectedRoot.children[0])._id}
+            selectedId={selectedChild?._id ?? ""}
             subtitle={
-              (selectedChild ?? selectedRoot.children[0]).agentId ??
-              (selectedChild ?? selectedRoot.children[0]).type
+              selectedChild?.agentId ??
+              selectedChild?.type ??
+              `Default: ${defaultScopeSlug ?? selectedRoot.slug}`
             }
           />
         </SidebarMenuItem>
@@ -250,6 +265,7 @@ function LegacyWorkspaceSwitcher() {
 function ScopePopover({
   compact = false,
   description,
+  emptyLabel,
   items,
   label,
   onOpenChange,
@@ -260,6 +276,7 @@ function ScopePopover({
 }: {
   compact?: boolean;
   description: string;
+  emptyLabel?: string;
   items: Array<OpenClawScopeRoot | OpenClawScopeNode>;
   label: string;
   onOpenChange: (open: boolean) => void;
@@ -284,7 +301,7 @@ function ScopePopover({
               alt={label}
             />
             <AvatarFallback className="rounded-lg">
-              {label[0]?.toUpperCase()}
+              {(label === emptyLabel ? description : label)[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
