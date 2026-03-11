@@ -8,6 +8,7 @@ export const submitRegistrationRequestRef = typedApi.features.auth.api.submitReg
 export const listRegistrationRequestsRef = typedApi.features.auth.api.listRegistrationRequests;
 export const approveRegistrationRequestRef = typedApi.features.auth.api.approveRegistrationRequest;
 export const denyRegistrationRequestRef = typedApi.features.auth.api.denyRegistrationRequest;
+export const changePasswordRef = typedApi.features.auth.api.changePassword;
 export const listPendingDevicesRef = typedApi.features.auth.api.listPendingDevices;
 export const getDeviceStatusRef = typedApi.features.auth.api.getDeviceStatus;
 export const requestDeviceApprovalRef = typedApi.features.auth.api.requestDeviceApproval;

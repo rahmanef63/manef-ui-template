@@ -54,6 +54,46 @@ function normalizePhone(phone: string) {
   return `${hasPlus ? "+" : ""}${digits}`;
 }
 
+function extractPhoneDigits(value: string) {
+  return value.replace(/[^\d]/g, "");
+}
+
+function phoneLookupVariants(phone: string) {
+  const normalized = normalizePhone(phone);
+  const baseDigits = extractPhoneDigits(normalized || phone);
+  const variants = new Set<string>();
+
+  if (!baseDigits) {
+    return [];
+  }
+
+  variants.add(baseDigits);
+  variants.add(`+${baseDigits}`);
+  variants.add(`${baseDigits}@s.whatsapp.net`);
+  variants.add(`${baseDigits}@lid`);
+
+  if (baseDigits.startsWith("0") && baseDigits.length > 1) {
+    const intl = `62${baseDigits.slice(1)}`;
+    variants.add(intl);
+    variants.add(`+${intl}`);
+    variants.add(`${intl}@s.whatsapp.net`);
+    variants.add(`${intl}@lid`);
+  }
+
+  if (baseDigits.startsWith("62")) {
+    variants.add(baseDigits.slice(2));
+    variants.add(`0${baseDigits.slice(2)}`);
+  } else if (baseDigits.startsWith("8")) {
+    const intl = `62${baseDigits}`;
+    variants.add(intl);
+    variants.add(`+${intl}`);
+    variants.add(`${intl}@s.whatsapp.net`);
+    variants.add(`${intl}@lid`);
+  }
+
+  return Array.from(variants).filter(Boolean);
+}
+
 function parseIdentifier(identifier: string) {
   const normalized = identifier.trim();
   if (!normalized) {
@@ -148,7 +188,7 @@ async function loadPolicy(ctx: any) {
     name: "default",
     policyVersion: 1,
     refreshTtlDays: 14,
-    requireDeviceApproval: true,
+    requireDeviceApproval: false,
     sessionTtlMinutes: 60,
     stepUpForNewGeo: true,
     trustedNetworks: [],
@@ -174,7 +214,8 @@ async function createAuditLog(
       | "REGISTRATION_REQUESTED"
       | "REGISTRATION_APPROVED"
       | "REGISTRATION_DENIED"
-      | "TEMP_PASSWORD_ISSUED";
+      | "TEMP_PASSWORD_ISSUED"
+      | "PASSWORD_CHANGED";
     meta?: Record<string, unknown>;
     userId?: unknown;
   }
@@ -188,33 +229,37 @@ async function createAuditLog(
 }
 
 async function resolveProfileByPhone(ctx: any, phone: string) {
-  const normalizedPhone = normalizePhone(phone);
-  if (!normalizedPhone) {
+  const variants = phoneLookupVariants(phone);
+  if (variants.length === 0) {
     return null;
   }
 
-  const byPhone = await ctx.db
-    .query("userProfiles")
-    .withIndex("by_phone", (q: any) => q.eq("phone", normalizedPhone))
-    .first();
-  if (byPhone) {
-    return byPhone;
+  for (const variant of variants) {
+    const byPhone = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_phone", (q: any) => q.eq("phone", variant))
+      .first();
+    if (byPhone) {
+      return byPhone;
+    }
   }
 
-  const channels = ["whatsapp", "phone"];
+  const channels = ["whatsapp", "phone", "telegram"];
   for (const channel of channels) {
-    const identity = await ctx.db
-      .query("userIdentities")
-      .withIndex("by_channel_external", (q: any) =>
-        q.eq("channel", channel).eq("externalUserId", normalizedPhone)
-      )
-      .first();
-    if (!identity) {
-      continue;
-    }
-    const profile = await ctx.db.get(identity.userId);
-    if (profile) {
-      return profile;
+    for (const variant of variants) {
+      const identity = await ctx.db
+        .query("userIdentities")
+        .withIndex("by_channel_external", (q: any) =>
+          q.eq("channel", channel).eq("externalUserId", variant)
+        )
+        .first();
+      if (!identity) {
+        continue;
+      }
+      const profile = await ctx.db.get(identity.userId);
+      if (profile) {
+        return profile;
+      }
     }
   }
 
@@ -672,13 +717,14 @@ export const authorizePasswordLogin = mutation({
   returns: v.object({
     code: loginCode,
     deviceId: v.optional(v.id("authDevices")),
-    policyVersion: v.optional(v.number()),
-    roles: v.optional(v.array(v.string())),
-    sessionId: v.optional(v.id("authSessions")),
-    sessionVersion: v.optional(v.number()),
-    userId: v.optional(v.id("authUsers")),
-    userEmail: v.optional(v.string()),
-    userName: v.optional(v.string()),
+      policyVersion: v.optional(v.number()),
+      roles: v.optional(v.array(v.string())),
+      sessionId: v.optional(v.id("authSessions")),
+      sessionVersion: v.optional(v.number()),
+      mustChangePassword: v.optional(v.boolean()),
+      userId: v.optional(v.id("authUsers")),
+      userEmail: v.optional(v.string()),
+      userName: v.optional(v.string()),
   }),
   handler: async (ctx, args) => {
     const admin = getAdminConfig();
@@ -847,27 +893,11 @@ export const authorizePasswordLogin = mutation({
       )
       .first();
 
-    const hasApprovedDevice = await ctx.db
-      .query("authDevices")
-      .withIndex("by_user_status", (q) =>
-        q.eq("userId", authUser._id).eq("status", "approved")
-      )
-      .first();
-
-    const shouldBootstrapApprove =
-      authUser.email === admin.email &&
-      hasApprovedDevice === null &&
-      policy.allowBootstrapAutoApprove &&
-      !policy.bootstrapCompletedAt;
-
     if (!device) {
-      const status =
-        policy.requireDeviceApproval && !shouldBootstrapApprove
-          ? "pending"
-          : "approved";
+      const status = "approved";
       const deviceId = await ctx.db.insert("authDevices", {
         approvedAt: status === "approved" ? now : undefined,
-        approvedBy: status === "approved" ? "system-bootstrap" : undefined,
+        approvedBy: "system-auto",
         deviceHash: args.deviceHash,
         firstSeenAt: now,
         label: args.label,
@@ -879,36 +909,42 @@ export const authorizePasswordLogin = mutation({
         userId: authUser._id,
       });
       device = await ctx.db.get(deviceId);
-      if (status === "approved" && shouldBootstrapApprove) {
-        await ctx.db.patch(policy._id, {
-          allowBootstrapAutoApprove: false,
-          bootstrapCompletedAt: now,
-          updatedAt: now,
-        });
-      }
       await createAuditLog(ctx, {
-        event:
-          status === "approved" && shouldBootstrapApprove
-            ? "BOOTSTRAP_DEVICE_APPROVED"
-            : status === "approved"
-              ? "DEVICE_APPROVED"
-              : "DEVICE_PENDING",
+        event: "DEVICE_APPROVED",
         meta: {
           deviceId,
           email: authUser.email,
           identifier: identifier.raw,
-          reason: status === "approved" ? "BOOTSTRAP" : "NEW_DEVICE",
+          reason: "AUTO_APPROVED",
         },
         userId: authUser._id,
       });
     } else {
-      await ctx.db.patch(device._id, {
+      const patch: Record<string, unknown> = {
         label: args.label ?? device.label,
         lastSeenAt: now,
         lastSeenIp: args.ip,
         lastSeenUserAgent: args.userAgent,
-      });
+      };
+      if (device.status === "pending") {
+        patch.approvedAt = now;
+        patch.approvedBy = "system-auto";
+        patch.status = "approved";
+      }
+      await ctx.db.patch(device._id, patch);
       device = await ctx.db.get(device._id);
+      if (device?.status === "approved" && patch.status === "approved") {
+        await createAuditLog(ctx, {
+          event: "DEVICE_APPROVED",
+          meta: {
+            deviceId: device._id,
+            email: authUser.email,
+            identifier: identifier.raw,
+            reason: "AUTO_APPROVED_EXISTING_PENDING",
+          },
+          userId: authUser._id,
+        });
+      }
     }
 
     if (!device) {
@@ -994,10 +1030,54 @@ export const authorizePasswordLogin = mutation({
       roles: authUser.roles,
       sessionId,
       sessionVersion: authUser.sessionVersion,
+      mustChangePassword: authUser.mustChangePassword,
       userEmail: authUser.email,
       userId: authUser._id,
       userName: authUser.name,
     };
+  },
+});
+
+export const changePassword = mutation({
+  args: {
+    currentPassword: v.string(),
+    newPassword: v.string(),
+    userId: v.id("authUsers"),
+  },
+  returns: v.literal("ok"),
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const currentHash = await hashPassword(args.currentPassword);
+    if (!user.passwordHash || user.passwordHash !== currentHash) {
+      throw new Error("Current password is invalid");
+    }
+
+    const nextPassword = args.newPassword.trim();
+    if (nextPassword.length < 6) {
+      throw new Error("New password must be at least 6 characters");
+    }
+
+    const nextHash = await hashPassword(nextPassword);
+    await ctx.db.patch(user._id, {
+      mustChangePassword: false,
+      passwordHash: nextHash,
+      temporaryPasswordIssuedAt: undefined,
+      updatedAt: Date.now(),
+    });
+
+    await createAuditLog(ctx, {
+      event: "PASSWORD_CHANGED",
+      meta: {
+        reason: user.mustChangePassword ? "FIRST_LOGIN" : "SELF_SERVICE",
+      },
+      userId: user._id,
+    });
+
+    return "ok" as const;
   },
 });
 
@@ -1179,6 +1259,7 @@ export const requestDeviceApproval = mutation({
     if (!user) {
       throw new Error("User not found");
     }
+    const policy = await loadPolicy(ctx);
 
     const now = Date.now();
     let device = await ctx.db
@@ -1189,9 +1270,10 @@ export const requestDeviceApproval = mutation({
       .first();
 
     if (!device) {
+      const nextStatus = policy.requireDeviceApproval ? "pending" : "approved";
       const deviceId = await ctx.db.insert("authDevices", {
-        approvedAt: undefined,
-        approvedBy: undefined,
+        approvedAt: nextStatus === "approved" ? now : undefined,
+        approvedBy: nextStatus === "approved" ? "system-auto" : undefined,
         deviceHash: args.deviceHash,
         firstSeenAt: now,
         label: args.label,
@@ -1199,31 +1281,34 @@ export const requestDeviceApproval = mutation({
         lastSeenIp: args.ip,
         lastSeenUserAgent: args.userAgent,
         riskScore: 0,
-        status: "pending",
+        status: nextStatus,
         userId: args.userId,
       });
       await createAuditLog(ctx, {
-        event: "DEVICE_PENDING",
-        meta: { deviceId, reason: "API_REQUEST" },
+        event: nextStatus === "approved" ? "DEVICE_APPROVED" : "DEVICE_PENDING",
+        meta: { deviceId, reason: nextStatus === "approved" ? "AUTO_APPROVED" : "API_REQUEST" },
         userId: args.userId,
       });
       return {
         deviceId,
-        status: "pending" as const,
+        status: nextStatus as "pending" | "approved",
       };
     }
 
     if (device.status !== "approved") {
+      const nextStatus = policy.requireDeviceApproval ? "pending" : "approved";
       await ctx.db.patch(device._id, {
+        approvedAt: nextStatus === "approved" ? now : device.approvedAt,
+        approvedBy: nextStatus === "approved" ? "system-auto" : device.approvedBy,
         label: args.label ?? device.label,
         lastSeenAt: now,
         lastSeenIp: args.ip,
         lastSeenUserAgent: args.userAgent,
-        status: "pending",
+        status: nextStatus,
       });
       await createAuditLog(ctx, {
-        event: "DEVICE_PENDING",
-        meta: { deviceId: device._id, reason: "API_REQUEST" },
+        event: nextStatus === "approved" ? "DEVICE_APPROVED" : "DEVICE_PENDING",
+        meta: { deviceId: device._id, reason: nextStatus === "approved" ? "AUTO_APPROVED" : "API_REQUEST" },
         userId: args.userId,
       });
       device = await ctx.db.get(device._id);
@@ -1235,6 +1320,59 @@ export const requestDeviceApproval = mutation({
     return {
       deviceId: device._id,
       status: device.status,
+    };
+  },
+});
+
+export const setRequireDeviceApproval = mutation({
+  args: {
+    requireDeviceApproval: v.boolean(),
+  },
+  returns: v.object({
+    autoApproved: v.number(),
+    policyVersion: v.number(),
+    requireDeviceApproval: v.boolean(),
+  }),
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const policy = await loadPolicy(ctx);
+    const nextPolicyVersion = policy.policyVersion + 1;
+
+    await ctx.db.patch(policy._id, {
+      policyVersion: nextPolicyVersion,
+      requireDeviceApproval: args.requireDeviceApproval,
+      updatedAt: now,
+    });
+
+    let autoApproved = 0;
+    if (!args.requireDeviceApproval) {
+      const pendingDevices = await ctx.db
+        .query("authDevices")
+        .withIndex("by_status", (q) => q.eq("status", "pending"))
+        .collect();
+      for (const device of pendingDevices) {
+        await ctx.db.patch(device._id, {
+          approvedAt: now,
+          approvedBy: "system-auto",
+          lastSeenAt: now,
+          status: "approved",
+        });
+        autoApproved += 1;
+        await createAuditLog(ctx, {
+          event: "DEVICE_APPROVED",
+          meta: {
+            deviceId: device._id,
+            reason: "POLICY_DISABLED",
+          },
+          userId: device.userId,
+        });
+      }
+    }
+
+    return {
+      autoApproved,
+      policyVersion: nextPolicyVersion,
+      requireDeviceApproval: args.requireDeviceApproval,
     };
   },
 });

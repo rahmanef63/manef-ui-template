@@ -17,6 +17,7 @@ declare module "next-auth" {
     user: DefaultSession["user"] & {
       deviceId?: string;
       id: string;
+      mustChangePassword?: boolean;
       policyVersion?: number;
       roles: string[];
       sessionId?: string;
@@ -26,6 +27,7 @@ declare module "next-auth" {
 
   interface User {
     deviceId?: string;
+    mustChangePassword?: boolean;
     roles?: string[];
     sessionId?: string;
     sessionVersion?: number;
@@ -55,6 +57,7 @@ class ServiceUnavailableError extends CredentialsSignin {
 type AppToken = {
   deviceId?: string;
   id?: string;
+  mustChangePassword?: boolean;
   policyVersion?: number;
   roles?: string[];
   sessionId?: string;
@@ -65,6 +68,7 @@ type AuthorizedUser = {
   deviceId?: string;
   email: string;
   id: string;
+  mustChangePassword?: boolean;
   name: string;
   policyVersion?: number;
   roles: string[];
@@ -106,6 +110,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           roles?: string[];
           sessionId?: string;
           sessionVersion?: number;
+          mustChangePassword?: boolean;
           userId?: string;
           userEmail?: string;
           userName?: string;
@@ -133,6 +138,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               deviceId: result.deviceId,
               email: result.userEmail ?? (identifier.includes("@") ? identifier : ""),
               id: result.userId,
+              mustChangePassword: result.mustChangePassword ?? false,
               name: result.userName ?? identifier.split("@")[0] ?? identifier,
               policyVersion: result.policyVersion ?? 1,
               roles: result.roles ?? [],
@@ -163,6 +169,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const authorizedUser = user as typeof user & AuthorizedUser;
         appToken.deviceId = authorizedUser.deviceId;
         appToken.id = authorizedUser.id;
+        appToken.mustChangePassword = authorizedUser.mustChangePassword;
         appToken.policyVersion = authorizedUser.policyVersion;
         appToken.roles = authorizedUser.roles ?? [];
         appToken.sessionId = authorizedUser.sessionId;
@@ -179,6 +186,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const appToken = token as typeof token & AppToken;
         session.user.deviceId = appToken.deviceId;
         session.user.id = appToken.id ?? session.user.email ?? "";
+        session.user.mustChangePassword = appToken.mustChangePassword;
         session.user.policyVersion = appToken.policyVersion;
         session.user.roles = appToken.roles ?? [];
         session.user.sessionId = appToken.sessionId;

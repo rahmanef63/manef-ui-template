@@ -24,6 +24,11 @@ const REGISTRATION_NOTICES = {
       "Nomor Anda sudah cocok dengan workspace yang ada. Hubungi Rahman untuk mendapatkan password sementara Anda.",
     title: "Workspace sudah terhubung",
   },
+  password_changed: {
+    description:
+      "Password Anda sudah diperbarui. Silakan login lagi menggunakan password baru Anda.",
+    title: "Password berhasil diganti",
+  },
 } as const;
 
 export default async function LoginPage(props: {
