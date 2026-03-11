@@ -43,7 +43,9 @@ export function SessionsList({ sessions, isRefreshing, onRefresh }: SessionsList
                             <th className="py-2 pr-2 font-medium">Key</th>
                             <th className="py-2 pr-2 font-medium">Label</th>
                             <th className="py-2 pr-2 font-medium">Kind</th>
-                            <th className="py-2 pr-2 font-medium">Updated</th>
+                            <th className="py-2 pr-2 font-medium">Status</th>
+                            <th className="py-2 pr-2 font-medium">Last Active</th>
+                            <th className="py-2 pr-2 font-medium">Messages</th>
                             <th className="py-2 pr-2 font-medium">Tokens</th>
                             <th className="py-2 pr-2 font-medium">Thinking</th>
                             <th className="py-2 pr-2 font-medium">Verbose</th>
@@ -62,7 +64,9 @@ export function SessionsList({ sessions, isRefreshing, onRefresh }: SessionsList
                                     <Input placeholder="(optional)" className="h-7 w-24 text-xs bg-muted/50" />
                                 </td>
                                 <td className="py-2.5 pr-2 text-xs">{s.kind}</td>
-                                <td className="py-2.5 pr-2 text-xs text-muted-foreground">{s.updated}</td>
+                                <td className="py-2.5 pr-2 text-xs capitalize">{s.status}</td>
+                                <td className="py-2.5 pr-2 text-xs text-muted-foreground">{s.lastActive}</td>
+                                <td className="py-2.5 pr-2 text-xs">{s.msgs}</td>
                                 <td className="py-2.5 pr-2 text-xs font-mono">{s.tokens}</td>
                                 <td className="py-2.5 pr-2">
                                     <select className="h-7 rounded border bg-muted/50 px-1 text-xs">

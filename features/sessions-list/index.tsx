@@ -1,20 +1,22 @@
 // @ts-nocheck
 "use client";
 
-import { useState } from "react";
+import { useTransition } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@manef/db/api";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
-import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
+import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { SessionsList } from "./components/SessionsList";
-import { MOCK_SESSIONS } from "./constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SessionData } from "./types";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
+import { MessagesSquare } from "lucide-react";
 
 export default function SessionsListPage() {
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isRefreshing, startRefresh] = useTransition();
     const { selectedScope } = useOpenClawNavigator();
+    const router = useRouter();
 
     // Attempt to load sessions from Convex
     const dbSessions: any =
@@ -24,8 +26,9 @@ export default function SessionsListPage() {
         });
 
     const handleRefresh = () => {
-        setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 500);
+        startRefresh(() => {
+            router.refresh();
+        });
     };
 
     if (dbSessions === undefined) {
@@ -37,22 +40,18 @@ export default function SessionsListPage() {
         );
     }
 
-    const displaySessions: SessionData[] = dbSessions.length > 0
-        ? dbSessions.map((s: any) => ({
-            id: s.sessionKey,
-            key: s.sessionKey,
-            sub: [s.channel, s.agentId].filter(Boolean).join(" / "),
-            label: s.channel || "session",
-            kind: s.status || "active",
-            agentId: s.agentId || "unknown",
-            status: s.status === "active" ? "active" : "idle",
-            msgs: s.messageCount,
-            lastActive: formatDistanceToNow(s.lastActiveAt, { addSuffix: true }),
-            cost: "$0.00",
-            tokens: `${s.messageCount ?? 0} msgs`,
-            updated: "just now"
-        }))
-        : MOCK_SESSIONS;
+    const displaySessions: SessionData[] = dbSessions.map((s: any) => ({
+        id: s._id,
+        key: s.sessionKey,
+        sub: [s.channel, s.agentId].filter(Boolean).join(" / "),
+        label: s.channel || "session",
+        kind: s.channel || "session",
+        status: s.status === "active" ? "active" : "idle",
+        msgs: s.messageCount ?? 0,
+        lastActive: formatDistanceToNow(s.lastActiveAt, { addSuffix: true }),
+        tokens: `${s.messageCount ?? 0} msgs`,
+        updated: "just now",
+    }));
 
     return (
         <div className="space-y-6 px-4 lg:px-6">
@@ -61,11 +60,21 @@ export default function SessionsListPage() {
                 description="Inspect active sessions and adjust per-session defaults."
             />
 
-            <SessionsList
-                sessions={displaySessions}
-                isRefreshing={isRefreshing}
-                onRefresh={handleRefresh}
-            />
+            {displaySessions.length === 0 ? (
+                <div className="rounded-xl border border-dashed bg-muted/10">
+                    <EmptyState
+                        icon={MessagesSquare}
+                        message="Belum ada session pada scope aktif. Session akan muncul di sini setelah data runtime OpenClaw termirror ke Convex."
+                        className="py-20"
+                    />
+                </div>
+            ) : (
+                <SessionsList
+                    sessions={displaySessions}
+                    isRefreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                />
+            )}
         </div>
     );
 }
