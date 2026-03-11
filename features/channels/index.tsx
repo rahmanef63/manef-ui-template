@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@manef/db/api";
@@ -72,17 +72,14 @@ export default function ChannelsPage() {
         },
     }));
 
-    const filteredChannels = useMemo(() => {
-        const needle = filter.trim().toLowerCase();
-        if (!needle) {
-            return displayChannels;
-        }
-        return displayChannels.filter((channel) =>
+    const needle = filter.trim().toLowerCase();
+    const filteredChannels = !needle
+        ? displayChannels
+        : displayChannels.filter((channel) =>
             channel.channelId.toLowerCase().includes(needle) ||
             channel.label.toLowerCase().includes(needle) ||
             channel.type.toLowerCase().includes(needle)
         );
-    }, [displayChannels, filter]);
 
     return (
         <div className="space-y-6 px-4 lg:px-6">
