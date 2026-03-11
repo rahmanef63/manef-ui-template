@@ -3,8 +3,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { SkillsList } from "./components/SkillsList";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,11 +14,10 @@ export default function SkillsPage() {
     const [filter, setFilter] = useState("");
     const [isRefreshing, startRefresh] = useTransition();
     const [isToggling, startToggle] = useTransition();
-    const skills: any =
-        (useQuery as any)((api as any).features.skills.api.listSkills as any, {
-            filter: filter || undefined,
-        });
-    const toggleSkill = (useMutation as any)((api as any).features.skills.api.toggleSkill as any);
+    const skills: any = useAppQuery(appApi.features.skills.api.listSkills, {
+        filter: filter || undefined,
+    });
+    const toggleSkill = useAppMutation(appApi.features.skills.api.toggleSkill);
 
     const handleRefresh = () => {
         startRefresh(() => {

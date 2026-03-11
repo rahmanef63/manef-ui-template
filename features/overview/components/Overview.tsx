@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useAppQuery } from "@/lib/convex/client";
 
 import {
     Card,
@@ -25,10 +25,8 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Overview() {
-    // We use string literals for convex queries to avoid deep instantiation TS errors
-    const myQuery: any = useQuery;
-    const stats: any = myQuery("features/dashboard/api:getStats");
-    const recentActivity: any[] = myQuery("features/dashboard/api:getRecentActivity") || [];
+    const stats: any = useAppQuery("features/dashboard/api:getStats");
+    const recentActivity: any[] = useAppQuery("features/dashboard/api:getRecentActivity") || [];
 
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

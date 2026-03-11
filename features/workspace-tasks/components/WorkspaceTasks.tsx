@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useAppAction, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import {
     Card,
     CardContent,
@@ -15,15 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function WorkspaceTasks() {
-    const myQuery: any = useQuery;
-    const tasks: any[] = myQuery("features/workspace_tasks/api:getWorkspaceTasks") || [];
-
-    // Mutations and Actions
-    const myMutation: any = useMutation;
-    const createTask = myMutation("features/workspace_tasks/api:createWorkspaceTask");
-
-    const myAction: any = useAction;
-    const assignTask = myAction("features/workspace_tasks/api:assignTask");
+    const tasks: any[] = useAppQuery("features/workspace_tasks/api:getWorkspaceTasks") || [];
+    const createTask = useAppMutation("features/workspace_tasks/api:createWorkspaceTask");
+    const assignTask = useAppAction("features/workspace_tasks/api:assignTask");
 
     // Grouping tasks by status
     const statuses = ["pending", "in_progress", "completed"];

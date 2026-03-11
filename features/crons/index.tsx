@@ -2,8 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppQuery } from "@/lib/convex/client";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { CronStats } from "./components/CronStats";
 import { CronJobsList } from "./components/CronJobsList";
@@ -13,8 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CronsPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const jobs: any =
-        (useQuery as any)((api as any).features.crons.api.listJobs as any, {});
+    const jobs: any = useAppQuery(appApi.features.crons.api.listJobs, {});
 
     if (jobs === undefined) {
         return (

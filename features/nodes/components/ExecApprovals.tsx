@@ -2,8 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { SectionCard, Chip, EmptyState } from "@/shared/block/ui/openclaw-blocks";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,12 +24,12 @@ export function ExecApprovals({ agentIds, defaultAgentId }: ExecApprovalsProps) 
     const [autoAllowSkillClis, setAutoAllowSkillClis] = useState(false);
     const [isSaving, startSaving] = useTransition();
 
-    const nodes = (useQuery as any)((api as any).features.nodes.api.listNodes as any, {}) as any[] | undefined;
-    const approval = (useQuery as any)((api as any).features.nodes.api.getExecApprovals as any, {
+    const nodes = useAppQuery(appApi.features.nodes.api.listNodes, {}) as any[] | undefined;
+    const approval = useAppQuery(appApi.features.nodes.api.getExecApprovals, {
         host: selectedHost,
         agentId: activeChip,
     }) as any | null | undefined;
-    const upsertExecApproval = (useMutation as any)((api as any).features.nodes.api.upsertExecApproval as any);
+    const upsertExecApproval = useAppMutation(appApi.features.nodes.api.upsertExecApproval);
 
     const chips = useMemo(() => {
         const uniqueAgentIds = Array.from(new Set(agentIds.filter(Boolean)));
@@ -185,7 +184,7 @@ export function ExecApprovals({ agentIds, defaultAgentId }: ExecApprovalsProps) 
 }
 
 export function ExecNodeBinding({ agentIds }: { agentIds: string[] }) {
-    const bindings = (useQuery as any)((api as any).features.nodes.api.listNodeBindings as any, {
+    const bindings = useAppQuery(appApi.features.nodes.api.listNodeBindings, {
         agentIds,
     }) as any[] | undefined;
 

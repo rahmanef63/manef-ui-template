@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useAppAction, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import {
     Card,
     CardContent,
@@ -14,15 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Inbox() {
-    const myQuery: any = useQuery;
-    const messages: any[] = myQuery("features/inbox/api:getMessages") || [];
-
-    // Mutation and action hooks
-    const myMutation: any = useMutation;
-    const markAsRead = myMutation("features/inbox/api:markAsRead");
-
-    const myAction: any = useAction;
-    const syncEmails = myAction("features/inbox/api:syncEmails");
+    const messages: any[] = useAppQuery("features/inbox/api:getMessages") || [];
+    const markAsRead = useAppMutation("features/inbox/api:markAsRead");
+    const syncEmails = useAppAction("features/inbox/api:syncEmails");
 
     const formatTime = (ts: number) => {
         return new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });

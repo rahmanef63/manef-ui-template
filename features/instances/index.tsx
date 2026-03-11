@@ -2,8 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useAction } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppAction, useAppQuery } from "@/lib/convex/client";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { InstancesList } from "./components/InstancesList";
 import { MOCK_INSTANCES } from "./constants";
@@ -15,9 +14,8 @@ export default function InstancesPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Attempt to load instances from Convex
-    const dbInstances: any =
-        (useQuery as any)((api as any).features.instances.api.listInstances as any, {});
-    const refreshInstances = useAction(api.features.instances.api.refreshInstances);
+    const dbInstances: any = useAppQuery(appApi.features.instances.api.listInstances, {});
+    const refreshInstances = useAppAction(appApi.features.instances.api.refreshInstances);
 
     const handleRefresh = async () => {
         setIsRefreshing(true);

@@ -3,8 +3,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppQuery } from "@/lib/convex/client";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { ChannelCard } from "./components/ChannelCards";
 import { ChannelConfig } from "./types";
@@ -18,7 +17,7 @@ export default function ChannelsPage() {
     const router = useRouter();
     const [filter, setFilter] = useState("");
     const [isRefreshing, startRefresh] = useTransition();
-    const channels = (useQuery as any)((api as any).features.channels.api.listChannels) as any[] | undefined;
+    const channels = useAppQuery(appApi.features.channels.api.listChannels) as any[] | undefined;
 
     const handleRefresh = () => {
         startRefresh(() => {

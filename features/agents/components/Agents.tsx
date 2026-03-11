@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useAppQuery } from "@/lib/convex/client";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import {
     Card,
@@ -15,8 +15,7 @@ import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 
 export default function Agents() {
     const { selectedRoot, selectedScope } = useOpenClawNavigator();
-    const myQuery: any = useQuery;
-    const agents: any[] = myQuery("features/agents/api:getAgents", {
+    const agents: any[] = useAppQuery("features/agents/api:getAgents", {
         agentIds: selectedScope?.agentIds,
         ownerId: selectedRoot?.ownerId,
     }) || [];

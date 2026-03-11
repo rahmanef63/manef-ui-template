@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useAppAction, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import {
     Card,
     CardContent,
@@ -13,15 +13,9 @@ import { PlusCircle, Search, Calendar as CalendarIcon, Clock, ChevronLeft, Chevr
 import { Input } from "@/components/ui/input";
 
 export default function CalendarTasks() {
-    const myQuery: any = useQuery;
-    const events: any[] = myQuery("features/calendar/api:getEvents") || [];
-
-    // We would use useMutation and useAction here using string literal syntax as well
-    const myMutation: any = useMutation;
-    const createEvent = myMutation("features/calendar/api:createEvent");
-
-    const myAction: any = useAction;
-    const syncEvents = myAction("features/calendar/api:syncEvents");
+    const events: any[] = useAppQuery("features/calendar/api:getEvents") || [];
+    const createEvent = useAppMutation("features/calendar/api:createEvent");
+    const syncEvents = useAppAction("features/calendar/api:syncEvents");
 
     const formatTime = (ts: number) => {
         return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

@@ -2,8 +2,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { SessionsList } from "./components/SessionsList";
@@ -21,16 +20,15 @@ export default function SessionsListPage() {
     const [includeUnknown, setIncludeUnknown] = useState(false);
     const { selectedScope } = useOpenClawNavigator();
     const router = useRouter();
-    const deleteSession = (useMutation as any)((api as any).features.sessions.api.deleteSession as any);
+    const deleteSession = useAppMutation(appApi.features.sessions.api.deleteSession);
 
     // Attempt to load sessions from Convex
-    const dbSessions: any =
-        (useQuery as any)((api as any).features.sessions.api.getSessions as any, {
-            agentIds: selectedScope?.agentIds,
-            activeWithinMinutes: Number(activeWithinMinutes) || undefined,
-            includeUnknown,
-            limit: Number(limit) || 50,
-        });
+    const dbSessions: any = useAppQuery(appApi.features.sessions.api.getSessions, {
+        agentIds: selectedScope?.agentIds,
+        activeWithinMinutes: Number(activeWithinMinutes) || undefined,
+        includeUnknown,
+        limit: Number(limit) || 50,
+    });
 
     const handleRefresh = () => {
         startRefresh(() => {

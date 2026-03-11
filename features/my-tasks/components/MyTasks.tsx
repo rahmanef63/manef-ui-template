@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useAppQuery } from "@/lib/convex/client";
 
 import {
     Card,
@@ -14,8 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Search, Clock, CheckCircle2, Circle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 export default function MyTasks() {
-    const myQuery: any = useQuery;
-    const tasks: any[] = myQuery("features/tasks/api:getMyTasks") || [];
+    const tasks: any[] = useAppQuery("features/tasks/api:getMyTasks") || [];
 
     const getStatusIcon = (status: string) => {
         switch (status) {

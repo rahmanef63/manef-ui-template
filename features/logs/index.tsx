@@ -3,8 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppQuery } from "@/lib/convex/client";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { LogStream } from "./components/LogStream";
 import { LOG_LEVELS } from "./constants";
@@ -18,12 +17,11 @@ export default function LogsPage() {
     const [source, setSource] = useState("");
     const [searchText, setSearchText] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const dbLogs: any =
-        (useQuery as any)((api as any).features.logs.api.getRecentLogs as any, {
-            source: source || undefined,
-            searchText: searchText || undefined,
-            limit: 200,
-        });
+    const dbLogs: any = useAppQuery(appApi.features.logs.api.getRecentLogs, {
+        source: source || undefined,
+        searchText: searchText || undefined,
+        limit: 200,
+    });
 
     const toggleLevel = (level: string) => {
         setActiveLevels(prev => {

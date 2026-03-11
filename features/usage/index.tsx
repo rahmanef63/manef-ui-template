@@ -2,8 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@manef/db/api";
+import { appApi, useAppQuery } from "@/lib/convex/client";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { UsageFilters, ActivityChart, UsageStats } from "./components/UsageDashboard";
@@ -13,10 +12,9 @@ export default function UsagePage() {
     const [activeRange, setActiveRange] = useState("Today");
     const [activeMetric, setActiveMetric] = useState("Tokens");
     const { selectedScope } = useOpenClawNavigator();
-    const records: any =
-        (useQuery as any)((api as any).features.usage.api.getUsage as any, {
-            agentIds: selectedScope?.agentIds,
-        });
+    const records: any = useAppQuery(appApi.features.usage.api.getUsage, {
+        agentIds: selectedScope?.agentIds,
+    });
 
     if (records === undefined) {
         return (
