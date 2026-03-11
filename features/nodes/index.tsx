@@ -1,12 +1,14 @@
 // @ts-nocheck
 "use client";
 
-import { useState } from "react";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { ExecApprovals, ExecNodeBinding } from "./components/ExecApprovals";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 
 export default function NodesPage() {
-    const [activeChip, setActiveChip] = useState("Defaults");
+    const { selectedScope } = useOpenClawNavigator();
+    const scopeAgentIds = selectedScope?.agentIds ?? [];
+    const defaultAgentId = scopeAgentIds[0] ?? "*";
 
     return (
         <div className="space-y-6 px-4 lg:px-6">
@@ -15,9 +17,12 @@ export default function NodesPage() {
                 description="Paired devices, capabilities, and command exposure."
             />
 
-            <ExecApprovals activeChip={activeChip} onChipChange={setActiveChip} />
+            <ExecApprovals
+                agentIds={scopeAgentIds}
+                defaultAgentId={defaultAgentId}
+            />
 
-            <ExecNodeBinding />
+            <ExecNodeBinding agentIds={scopeAgentIds} />
         </div>
     );
 }
