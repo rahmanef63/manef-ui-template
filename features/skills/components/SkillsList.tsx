@@ -1,5 +1,6 @@
 import { SectionCard, RefreshButton, EmptyState, Chip } from "@/shared/block/ui/openclaw-blocks";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 
 interface SkillsListProps {
@@ -7,10 +8,20 @@ interface SkillsListProps {
     onFilterChange: (val: string) => void;
     isRefreshing: boolean;
     onRefresh: () => void;
+    isToggling: boolean;
+    onToggle: (skillId: string, enabled: boolean) => void;
     skills: any[];
 }
 
-export function SkillsList({ filter, onFilterChange, isRefreshing, onRefresh, skills }: SkillsListProps) {
+export function SkillsList({
+    filter,
+    onFilterChange,
+    isRefreshing,
+    onRefresh,
+    isToggling,
+    onToggle,
+    skills,
+}: SkillsListProps) {
     return (
         <SectionCard
             title="Skills"
@@ -47,11 +58,29 @@ export function SkillsList({ filter, onFilterChange, isRefreshing, onRefresh, sk
                                 <span className="text-[10px] text-muted-foreground uppercase bg-muted px-1.5 py-0.5 rounded">
                                     {skill.source}
                                 </span>
+                                {skill.hasManualOverride && (
+                                    <span className="text-[10px] text-muted-foreground uppercase bg-muted px-1.5 py-0.5 rounded">
+                                        override
+                                    </span>
+                                )}
                                 {skill.version && (
                                     <span className="text-[10px] text-muted-foreground uppercase bg-muted px-1.5 py-0.5 rounded">
                                         v{skill.version}
                                     </span>
                                 )}
+                            </div>
+                            <div className="flex items-center justify-between gap-3 pt-2">
+                                <p className="text-[11px] text-muted-foreground">
+                                    Runtime: {skill.runtimeEnabled ? "enabled" : "disabled"}
+                                </p>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={isToggling}
+                                    onClick={() => onToggle(skill._id, !skill.enabled)}
+                                >
+                                    {skill.enabled ? "Disable" : "Enable"}
+                                </Button>
                             </div>
                         </div>
                     ))}

@@ -1,7 +1,4 @@
-"use client";
-
 import { SectionCard, KeyValueRow } from "@/shared/block/ui/openclaw-blocks";
-import { Button } from "@/components/ui/button";
 import type { ChannelConfig } from "../types";
 
 interface ChannelCardProps {
@@ -46,6 +43,12 @@ export function ChannelCard({ channel }: ChannelCardProps) {
                     <KeyValueRow label="Connected" value={status.connected ? "Yes" : "No"} />
                 )}
                 {status.mode && <KeyValueRow label="Mode" value={status.mode} />}
+                {status.bindingCount !== undefined && (
+                    <KeyValueRow label="Bindings" value={String(status.bindingCount)} />
+                )}
+                {status.allowListCount !== undefined && (
+                    <KeyValueRow label="Allowlist" value={String(status.allowListCount)} />
+                )}
                 {status.lastStart && <KeyValueRow label="Last start" value={status.lastStart} />}
                 {status.lastProbe && <KeyValueRow label="Last probe" value={status.lastProbe} />}
                 {status.lastConnect && <KeyValueRow label="Last connect" value={status.lastConnect} />}
@@ -61,12 +64,6 @@ export function ChannelCard({ channel }: ChannelCardProps) {
 
             <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2">
                 <p className="text-sm">{runtimeSummary(channel)}</p>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" disabled>
-                    Runtime Sync Pending
-                </Button>
             </div>
         </SectionCard>
     );

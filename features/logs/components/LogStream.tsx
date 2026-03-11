@@ -1,6 +1,7 @@
 import { SectionCard, RefreshButton, StatusBadge } from "@/shared/block/ui/openclaw-blocks";
 import { LOG_LEVELS, LEVEL_COLORS } from "../constants";
 import type { LogEntry, LogLevel } from "../types";
+import { Input } from "@/components/ui/input";
 
 interface LogStreamProps {
     logs: LogEntry[];
@@ -8,9 +9,23 @@ interface LogStreamProps {
     toggleLevel: (level: string) => void;
     isRefreshing: boolean;
     onRefresh: () => void;
+    source: string;
+    onSourceChange: (value: string) => void;
+    searchText: string;
+    onSearchTextChange: (value: string) => void;
 }
 
-export function LogStream({ logs, activeLevels, toggleLevel, isRefreshing, onRefresh }: LogStreamProps) {
+export function LogStream({
+    logs,
+    activeLevels,
+    toggleLevel,
+    isRefreshing,
+    onRefresh,
+    source,
+    onSourceChange,
+    searchText,
+    onSearchTextChange,
+}: LogStreamProps) {
     const filteredLogs = logs.filter(log => activeLevels.has(log.level));
 
     return (
@@ -23,6 +38,21 @@ export function LogStream({ logs, activeLevels, toggleLevel, isRefreshing, onRef
                 </div>
             }
         >
+            <div className="mb-4 grid gap-3 md:grid-cols-2">
+                <Input
+                    value={source}
+                    onChange={(event) => onSourceChange(event.target.value)}
+                    placeholder="Filter source, e.g. whatsapp"
+                    className="bg-muted/50"
+                />
+                <Input
+                    value={searchText}
+                    onChange={(event) => onSearchTextChange(event.target.value)}
+                    placeholder="Search log message"
+                    className="bg-muted/50"
+                />
+            </div>
+
             {/* Level Filters */}
             <div className="flex flex-wrap gap-1.5 mb-4">
                 {LOG_LEVELS.map(level => (
@@ -40,6 +70,9 @@ export function LogStream({ logs, activeLevels, toggleLevel, isRefreshing, onRef
 
             {/* Log Lines */}
             <div className="rounded-lg bg-black/90 dark:bg-black/50 p-4 overflow-auto max-h-[500px] font-mono text-xs leading-relaxed">
+                {filteredLogs.length === 0 && (
+                    <div className="py-8 text-gray-500">No log entries match the current filters.</div>
+                )}
                 {filteredLogs.map((log, i) => (
                     <div key={i} className="flex gap-3 py-0.5 hover:bg-white/5">
                         <span className="text-gray-500 shrink-0">{log.time}</span>
@@ -55,7 +88,9 @@ export function LogStream({ logs, activeLevels, toggleLevel, isRefreshing, onRef
                         <span className="text-gray-200">{log.msg}</span>
                     </div>
                 ))}
-                <div className="mt-2 text-gray-500 animate-pulse">▊</div>
+                {filteredLogs.length > 0 && (
+                    <div className="mt-2 text-gray-500 animate-pulse">▊</div>
+                )}
             </div>
         </SectionCard>
     );

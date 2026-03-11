@@ -10,6 +10,8 @@ export interface ChannelStatus {
     lastMessage?: string;
     authAge?: string;
     lastError?: string;
+    bindingCount?: number;
+    allowListCount?: number;
 }
 
 export interface ChannelConfig {

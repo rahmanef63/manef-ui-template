@@ -1,9 +1,9 @@
 // @ts-nocheck
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@manef/db/api";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { SkillsList } from "./components/SkillsList";
@@ -13,16 +13,24 @@ import { Zap } from "lucide-react";
 export default function SkillsPage() {
     const router = useRouter();
     const [filter, setFilter] = useState("");
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isRefreshing, startRefresh] = useTransition();
+    const [isToggling, startToggle] = useTransition();
     const skills: any =
         (useQuery as any)((api as any).features.skills.api.listSkills as any, {
             filter: filter || undefined,
         });
+    const toggleSkill = (useMutation as any)((api as any).features.skills.api.toggleSkill as any);
 
     const handleRefresh = () => {
-        setIsRefreshing(true);
-        router.refresh();
-        setTimeout(() => setIsRefreshing(false), 300);
+        startRefresh(() => {
+            router.refresh();
+        });
+    };
+
+    const handleToggle = (skillId: string, enabled: boolean) => {
+        startToggle(async () => {
+            await toggleSkill({ id: skillId, enabled });
+        });
     };
 
     if (skills === undefined) {
@@ -56,6 +64,8 @@ export default function SkillsPage() {
                     isRefreshing={isRefreshing}
                     onRefresh={handleRefresh}
                     skills={skills}
+                    isToggling={isToggling}
+                    onToggle={handleToggle}
                 />
             )}
         </div>

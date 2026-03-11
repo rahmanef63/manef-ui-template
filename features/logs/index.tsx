@@ -15,9 +15,15 @@ import { Logs } from "lucide-react";
 export default function LogsPage() {
     const router = useRouter();
     const [activeLevels, setActiveLevels] = useState<Set<string>>(new Set(LOG_LEVELS));
+    const [source, setSource] = useState("");
+    const [searchText, setSearchText] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
     const dbLogs: any =
-        (useQuery as any)((api as any).features.logs.api.getRecentLogs as any, {});
+        (useQuery as any)((api as any).features.logs.api.getRecentLogs as any, {
+            source: source || undefined,
+            searchText: searchText || undefined,
+            limit: 200,
+        });
 
     const toggleLevel = (level: string) => {
         setActiveLevels(prev => {
@@ -76,6 +82,10 @@ export default function LogsPage() {
                     toggleLevel={toggleLevel}
                     isRefreshing={isRefreshing}
                     onRefresh={handleRefresh}
+                    source={source}
+                    onSourceChange={setSource}
+                    searchText={searchText}
+                    onSearchTextChange={setSearchText}
                 />
             )}
         </div>

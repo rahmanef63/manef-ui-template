@@ -1,8 +1,8 @@
 // @ts-nocheck
 "use client";
 
-import { useTransition } from "react";
-import { useQuery } from "convex/react";
+import { useState, useTransition } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@manef/db/api";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
@@ -15,19 +15,32 @@ import { MessagesSquare } from "lucide-react";
 
 export default function SessionsListPage() {
     const [isRefreshing, startRefresh] = useTransition();
+    const [isDeleting, startDelete] = useTransition();
+    const [activeWithinMinutes, setActiveWithinMinutes] = useState("120");
+    const [limit, setLimit] = useState("50");
+    const [includeUnknown, setIncludeUnknown] = useState(false);
     const { selectedScope } = useOpenClawNavigator();
     const router = useRouter();
+    const deleteSession = (useMutation as any)((api as any).features.sessions.api.deleteSession as any);
 
     // Attempt to load sessions from Convex
     const dbSessions: any =
         (useQuery as any)((api as any).features.sessions.api.getSessions as any, {
             agentIds: selectedScope?.agentIds,
-            limit: 50
+            activeWithinMinutes: Number(activeWithinMinutes) || undefined,
+            includeUnknown,
+            limit: Number(limit) || 50,
         });
 
     const handleRefresh = () => {
         startRefresh(() => {
             router.refresh();
+        });
+    };
+
+    const handleDelete = (sessionId: string) => {
+        startDelete(async () => {
+            await deleteSession({ id: sessionId });
         });
     };
 
@@ -73,6 +86,14 @@ export default function SessionsListPage() {
                     sessions={displaySessions}
                     isRefreshing={isRefreshing}
                     onRefresh={handleRefresh}
+                    activeWithinMinutes={activeWithinMinutes}
+                    onActiveWithinMinutesChange={setActiveWithinMinutes}
+                    limit={limit}
+                    onLimitChange={setLimit}
+                    includeUnknown={includeUnknown}
+                    onIncludeUnknownChange={setIncludeUnknown}
+                    isDeleting={isDeleting}
+                    onDelete={handleDelete}
                 />
             )}
         </div>

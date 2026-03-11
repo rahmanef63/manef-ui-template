@@ -139,12 +139,19 @@ Definition of done:
     di [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
   - commit `a7beeef`
 - [ ] Tambahkan informasi binding channel -> agent.
+- [x] Tambahkan refresh/filter UI yang benar-benar bekerja untuk channel live.
+  Bukti:
+  - refresh memakai `router.refresh()`
+  - filter client-side untuk `channelId`, `label`, `type`
+  - [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
 - [x] Tampilkan status yang benar:
   `configured`, `running`, `linked`, `connected`, `mode`,
   `last start`, `last connect`, `last error`.
   Bukti:
   - [ChannelCards.tsx](/home/rahman/projects/manef-ui/features/channels/components/ChannelCards.tsx)
-  - commit `a7beeef`
+  - sekarang juga menampilkan `bindingCount`, `allowListCount`,
+    `lastProbe`, `lastMessage`, `authAge`
+  - [types/index.ts](/home/rahman/projects/manef-ui/features/channels/types/index.ts)
 - [ ] Tambahkan operasi write nyata:
   create channel, update config, relink binding, delete channel.
 - [ ] Tambahkan indikator apakah channel termirror dari Gateway/OpenClaw runtime.
@@ -199,9 +206,17 @@ Definition of done:
   - query `features.logs.api.getRecentLogs`
   - [index.tsx](/home/rahman/projects/manef-ui/features/logs/index.tsx)
   - backend runtime sync aktif menulis ke `gatewayLogs`
-- [ ] Tambahkan filter:
+- [x] Tambahkan filter:
   `level`, `source`, `search text`, `time range`.
-- [ ] Tombol refresh harus memanggil backend fetch log nyata.
+  Bukti:
+  - filter `level` aktif di komponen stream
+  - filter `source` + `search text` tersambung ke query backend
+  - [LogStream.tsx](/home/rahman/projects/manef-ui/features/logs/components/LogStream.tsx)
+  - [index.tsx](/home/rahman/projects/manef-ui/features/logs/index.tsx)
+- [x] Tombol refresh harus memanggil backend fetch log nyata.
+  Bukti:
+  - refresh memicu refetch query live via `router.refresh()`
+  - data sumber tetap `gatewayLogs`, bukan mock
 - [ ] Tampilkan indikator jika log saat ini hanya snapshot DB lama.
 
 Definition of done:
@@ -217,7 +232,11 @@ Definition of done:
   - query `features.skills.api.listSkills`
   - [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
   - sync runtime backend mengisi tabel `skills`
-- [ ] Tambahkan write UI untuk enable/disable skill.
+- [x] Tambahkan write UI untuk enable/disable skill.
+  Bukti:
+  - tombol enable/disable memanggil `features.skills.api.toggleSkill`
+  - [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
+  - [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
 - [x] Tambahkan status source:
   `bundled`, `custom`, `runtime-discovered`.
   Bukti:
@@ -234,6 +253,22 @@ Definition of done:
 - daftar skill sama dengan `skills` table
 - toggle enabled/disabled terbaca ulang dari DB
 - sync runtime memperbarui daftar skill tanpa edit manual frontend
+
+## Sessions
+
+- [x] Sambungkan filter `activeWithin`, `limit`, dan `includeUnknown`.
+  Bukti:
+  - [index.tsx](/home/rahman/projects/manef-ui/features/sessions-list/index.tsx)
+  - [SessionsList.tsx](/home/rahman/projects/manef-ui/features/sessions-list/components/SessionsList.tsx)
+- [x] Hapus kontrol dummy yang tidak punya backend nyata.
+  Bukti:
+  - field `label/thinking/verbose/reasoning` dummy dihapus
+  - tabel hanya menyisakan data live + aksi yang benar-benar tersedia
+  - [SessionsList.tsx](/home/rahman/projects/manef-ui/features/sessions-list/components/SessionsList.tsx)
+- [x] Tambahkan delete session dari UI.
+  Bukti:
+  - tombol delete memanggil `features.sessions.api.deleteSession`
+  - [index.tsx](/home/rahman/projects/manef-ui/features/sessions-list/index.tsx)
 
 ## Config
 
