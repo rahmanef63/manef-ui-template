@@ -44,7 +44,7 @@ export default async function LoginPage(props: {
                 {
                   createSession: false,
                   deviceHash: device.deviceHash,
-                  email: String(formData.get("email") ?? ""),
+                  identifier: String(formData.get("identifier") ?? ""),
                   ip: device.ip,
                   label: device.label,
                   password: String(formData.get("password") ?? ""),
@@ -70,7 +70,7 @@ export default async function LoginPage(props: {
                       userAgent: device.userAgent,
                     },
                     user: {
-                      email: String(formData.get("email") ?? ""),
+                      email: String(formData.get("identifier") ?? ""),
                       id: preflight.userId,
                       name: undefined,
                     },
@@ -80,7 +80,7 @@ export default async function LoginPage(props: {
               }
 
               await signIn("credentials", {
-                email: formData.get("email"),
+                identifier: formData.get("identifier"),
                 password: formData.get("password"),
                 redirectTo: searchParams.callbackUrl ?? "/dashboard",
               });
@@ -106,11 +106,11 @@ export default async function LoginPage(props: {
           className="space-y-4"
         >
           <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
+            <label htmlFor="identifier" className="text-sm font-medium">Email atau nomor telepon</label>
             <input
-              id="email" name="email" type="email" required
+              id="identifier" name="identifier" type="text" required
               className="w-full rounded-lg border border-input bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="admin@example.com"
+              placeholder="rahmanef63@gmail.com atau +628..."
             />
           </div>
           <div className="space-y-1">

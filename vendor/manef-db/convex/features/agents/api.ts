@@ -75,7 +75,9 @@ export const getAgents = query({
                     agentId: agent.agentId,
                     name: agent.name,
                     description: agent.agentsMd,
-                    workspacePath: workspaceTree?.rootPath,
+                    workspacePath:
+                        (workspaceTree as { runtimePath?: string } | null)?.runtimePath ??
+                        workspaceTree?.rootPath,
                     agentDir:
                         typeof config.agentDir === "string" ? config.agentDir : undefined,
                     boundChannels: Array.from(new Set(boundChannels)),
@@ -116,6 +118,103 @@ export const deployAgent = mutation({
             createdAt: Date.now(),
             updatedAt: Date.now(),
         });
+    },
+});
+
+/**
+ * Upsert runtime-mirrored agents from OpenClaw config.
+ */
+export const syncRuntimeAgents = mutation({
+    args: {
+        agents: v.array(
+            v.object({
+                agentId: v.string(),
+                name: v.string(),
+                type: v.string(),
+                status: v.optional(v.string()),
+                model: v.optional(v.string()),
+                lastActiveAt: v.optional(v.number()),
+                capabilities: v.optional(v.array(v.string())),
+                workspacePath: v.optional(v.string()),
+                agentDir: v.optional(v.string()),
+                agentsMd: v.optional(v.string()),
+                bootstrapMd: v.optional(v.string()),
+                heartbeatMd: v.optional(v.string()),
+                identityMd: v.optional(v.string()),
+                memoryMd: v.optional(v.string()),
+                soulMd: v.optional(v.string()),
+                toolsMd: v.optional(v.string()),
+                userMd: v.optional(v.string()),
+                config: v.optional(v.any()),
+                tenantId: v.optional(v.string()),
+            })
+        ),
+    },
+    returns: v.object({ upserted: v.number(), deleted: v.number() }),
+    handler: async (ctx, args) => {
+        const now = Date.now();
+        let upserted = 0;
+        let deleted = 0;
+        const seen = new Set<string>();
+        const tenantIds = new Set<string>();
+
+        for (const agent of args.agents) {
+            const {
+                workspacePath,
+                agentDir,
+                ...agentPayload
+            } = agent;
+            if (agent.tenantId) {
+                tenantIds.add(agent.tenantId);
+            }
+            seen.add(`${agent.tenantId ?? ""}::${agent.agentId}`);
+
+            const existing = await ctx.db
+                .query("agents")
+                .withIndex("by_agentId", (q) => q.eq("agentId", agent.agentId))
+                .first();
+            const payload = {
+                ...agentPayload,
+                status: agentPayload.status ?? "active",
+                config: {
+                    ...(existing?.config ?? {}),
+                    ...(agentPayload.config ?? {}),
+                    runtimeWorkspacePath: workspacePath,
+                    agentDir: agentDir ?? agentPayload.config?.agentDir ?? existing?.config?.agentDir,
+                    runtimeSource: "openclaw.json",
+                },
+                createdAt: existing?.createdAt ?? now,
+                updatedAt: now,
+            };
+
+            if (existing) {
+                await ctx.db.patch(existing._id, payload);
+            } else {
+                await ctx.db.insert("agents", payload);
+            }
+            upserted++;
+        }
+
+        for (const tenantId of tenantIds) {
+            const existingAgents = await ctx.db
+                .query("agents")
+                .withIndex("by_tenant", (q) => q.eq("tenantId", tenantId))
+                .collect();
+            for (const agent of existingAgents) {
+                if (agent.config?.runtimeSource !== "openclaw.json") {
+                    continue;
+                }
+                if (!seen.has(`${tenantId}::${agent.agentId}`)) {
+                    await ctx.db.patch(agent._id, {
+                        status: "inactive",
+                        updatedAt: now,
+                    });
+                    deleted++;
+                }
+            }
+        }
+
+        return { upserted, deleted };
     },
 });
 

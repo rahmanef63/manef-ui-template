@@ -81,11 +81,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        identifier: { label: "Email atau nomor telepon", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, request) {
-        const email = String(credentials?.email ?? "");
+        const identifier = String(credentials?.identifier ?? "");
         const password = String(credentials?.password ?? "");
         const device = buildDeviceContext(request.headers);
 
@@ -107,13 +107,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           sessionId?: string;
           sessionVersion?: number;
           userId?: string;
+          userEmail?: string;
           userName?: string;
         };
         try {
           result = (await runMutation(authorizePasswordLoginRef, {
             createSession: true,
             deviceHash: device.deviceHash,
-            email,
+            identifier,
             ip: device.ip,
             label: device.label,
             password,
@@ -130,9 +131,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           case "APPROVED":
             return {
               deviceId: result.deviceId,
-              email,
+              email: result.userEmail ?? (identifier.includes("@") ? identifier : ""),
               id: result.userId,
-              name: result.userName ?? email.split("@")[0],
+              name: result.userName ?? identifier.split("@")[0] ?? identifier,
               policyVersion: result.policyVersion ?? 1,
               roles: result.roles ?? [],
               sessionId: result.sessionId,

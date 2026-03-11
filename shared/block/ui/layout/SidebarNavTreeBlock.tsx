@@ -10,7 +10,7 @@ import { useQuery } from "convex/react";
 
 import { useCurrentWorkspace } from "@/features/workspaces/hooks/useWorkspaceState";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
-import { getAuthProfileByEmailRef } from "@/shared/convex/auth";
+import { getAuthProfileRef } from "@/shared/convex/auth";
 import { buildSidebarTree, resolveIcon } from "@/shared/config";
 import type { SidebarGroup as SidebarGroupType, SidebarMenuItem as SidebarMenuItemType } from "@/shared/config";
 import type { Role } from "@/shared/types/roles";
@@ -74,18 +74,17 @@ export function SidebarNavTreeBlock({
 
     const workspaceSlug = typeof params?.workspaceSlug === 'string' ? params.workspaceSlug : undefined;
 
-    const sessionEmail = session?.user?.email ?? "";
     const authProfile = useQuery(
-        getAuthProfileByEmailRef,
-        sessionEmail ? { email: sessionEmail } : "skip"
+        getAuthProfileRef,
+        session?.user?.id ? { userId: session.user.id as any } : "skip"
     );
     const userPayload = {
         name: deriveDisplayName({
             authProfileName: authProfile?.name,
-            sessionEmail,
+            sessionEmail: session?.user?.email ?? "",
             sessionName: session?.user?.name,
         }),
-        email: authProfile?.email || sessionEmail,
+        email: authProfile?.email || authProfile?.phone || session?.user?.email || "",
         avatar: session?.user?.image || "",
     };
     const viewerRole: Role = React.useMemo(() => {
@@ -104,7 +103,7 @@ export function SidebarNavTreeBlock({
         debugClient("sidebar.identity", {
             authProfileName: authProfile?.name ?? null,
             authProfileRoles: authProfile?.roles ?? null,
-            sessionEmail: sessionEmail || null,
+            sessionEmail: session?.user?.email ?? null,
             sessionName: session?.user?.name ?? null,
             userPayloadName: userPayload.name,
             viewerRole,
@@ -115,7 +114,7 @@ export function SidebarNavTreeBlock({
         authProfile?.roles,
         viewerRole,
         session?.user?.name,
-        sessionEmail,
+        session?.user?.email,
         userPayload.name,
         workspace?.slug,
     ]);

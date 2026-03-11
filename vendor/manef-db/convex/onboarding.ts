@@ -102,6 +102,7 @@ export const initializeNewUser = mutation({
         name: buildUserWorkspaceName(displayName),
         ownerId: user._id,
         rootPath: buildUserRootPath(user._id),
+        source: "onboarding",
         status: "active",
         type: "user",
         updatedAt: now,
@@ -160,9 +161,20 @@ export const initializeNewUser = mutation({
         ownerId: user._id,
         parentId: userWorkspace._id,
         rootPath: buildAgentRootPath(userWorkspace.rootPath, dedicatedAgent.agentId),
+        source: "onboarding",
         status: "active",
         type: "agent",
         updatedAt: now,
+      });
+      await ctx.db.insert("workspaceAgents", {
+        agentId: dedicatedAgent.agentId,
+        createdAt: now,
+        inheritToChildren: true,
+        isPrimary: true,
+        relation: "primary",
+        source: "onboarding",
+        updatedAt: now,
+        workspaceId: agentWorkspaceId,
       });
       agentWorkspace = await ctx.db.get(agentWorkspaceId);
       createdAgentWorkspace = true;

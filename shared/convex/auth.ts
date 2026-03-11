@@ -2,6 +2,7 @@
 import { typedApi } from "@/shared/convex/api";
 
 export const getAuthProfileByEmailRef = typedApi.features.auth.api.getAuthProfileByEmail;
+export const getAuthProfileRef = typedApi.features.auth.api.getAuthProfile;
 export const authorizePasswordLoginRef = typedApi.features.auth.api.authorizePasswordLogin;
 export const listPendingDevicesRef = typedApi.features.auth.api.listPendingDevices;
 export const getDeviceStatusRef = typedApi.features.auth.api.getDeviceStatus;

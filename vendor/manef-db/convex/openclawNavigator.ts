@@ -18,9 +18,25 @@ function buildScopeSlug(parts: Array<string | null | undefined>) {
   return base;
 }
 
+function uniqueAgentIds(agentIds: string[]) {
+  return Array.from(new Set(agentIds.filter(Boolean)));
+}
+
+function scopeSlugForTree(tree: {
+  _id: string;
+  agentId?: string | null;
+  name: string;
+}) {
+  if (tree.agentId?.trim()) {
+    return slugify(tree.agentId) || tree.agentId;
+  }
+  return buildScopeSlug([tree.name, tree._id]);
+}
+
 export const listScopes = query({
   args: {},
   returns: v.object({
+    defaultScopeSlug: v.optional(v.string()),
     isAdmin: v.boolean(),
     roots: v.array(
       v.object({
@@ -64,6 +80,7 @@ export const listScopes = query({
         isAdmin: false,
         roots: [],
         viewerEmail: undefined,
+        defaultScopeSlug: undefined,
       };
     }
 
@@ -75,12 +92,20 @@ export const listScopes = query({
       (role) => role.trim().toLowerCase() === "admin",
     );
 
-    const visibleProfiles = isAdmin
+    const visibleProfiles = (isAdmin
       ? await ctx.db.query("userProfiles").collect()
-      : await ctx.db
-          .query("userProfiles")
-          .withIndex("by_email", (q) => q.eq("email", viewerEmail))
-          .collect();
+      : authUser?.profileId
+        ? (
+            await Promise.all([ctx.db.get(authUser.profileId)])
+          ).filter(
+            (
+              profile,
+            ): profile is NonNullable<typeof profile> => profile !== null,
+          )
+        : await ctx.db
+            .query("userProfiles")
+            .withIndex("by_email", (q) => q.eq("email", viewerEmail))
+            .collect()) as Array<{ _id: any; email?: string; name?: string; phone?: string }>;
 
     const visibleOwnerIds = new Set(
       visibleProfiles.map((profile) => profile._id),
@@ -91,6 +116,7 @@ export const listScopes = query({
         isAdmin,
         roots: [],
         viewerEmail,
+        defaultScopeSlug: undefined,
       };
     }
 
@@ -109,6 +135,18 @@ export const listScopes = query({
       )
     ).flat();
 
+    const workspaceAgentLinks = await ctx.db.query("workspaceAgents").collect();
+    const agentLinksByWorkspace = new Map<
+      string,
+      Array<(typeof workspaceAgentLinks)[number]>
+    >();
+    for (const link of workspaceAgentLinks) {
+      const key = link.workspaceId as string;
+      const next = agentLinksByWorkspace.get(key) ?? [];
+      next.push(link);
+      agentLinksByWorkspace.set(key, next);
+    }
+
     const treesById = new Map(workspaceTrees.map((tree) => [tree._id, tree]));
     const childrenByParent = new Map<
       string,
@@ -125,20 +163,53 @@ export const listScopes = query({
       childrenByParent.set(key, next);
     }
 
+    const getDirectChildren = (
+      treeId: (typeof workspaceTrees)[number]["_id"],
+    ): Array<(typeof workspaceTrees)[number]> => {
+      return (
+        childrenByParent.get(treeId as string)?.slice().sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ) ?? []
+      );
+    };
+
     const collectDescendants = (
       treeId: (typeof workspaceTrees)[number]["_id"],
     ): Array<(typeof workspaceTrees)[number]> => {
-      const directChildren =
-        childrenByParent.get(treeId as string)?.sort((a, b) =>
-          a.name.localeCompare(b.name),
-        ) ?? [];
-      return directChildren.flatMap((child) => [
-        child,
-        ...collectDescendants(child._id),
-      ]);
+      const directChildren = getDirectChildren(treeId);
+      return directChildren.flatMap((child) => [child, ...collectDescendants(child._id)]);
     };
 
-    const roots = workspaceTrees
+    const directAgentIdsForTree = (
+      tree: (typeof workspaceTrees)[number],
+    ): string[] => {
+      const linked = agentLinksByWorkspace.get(tree._id as string) ?? [];
+      const preferred = linked
+        .slice()
+        .sort((left, right) => {
+          const leftWeight = left.isPrimary ? 0 : 1;
+          const rightWeight = right.isPrimary ? 0 : 1;
+          return leftWeight - rightWeight;
+        })
+        .map((link) => link.agentId);
+      if (preferred.length > 0) {
+        return Array.from(new Set(preferred));
+      }
+      return tree.agentId ? [tree.agentId] : [];
+    };
+
+    const primaryAgentIdForTree = (
+      tree: (typeof workspaceTrees)[number],
+    ): string | undefined => {
+      const linked = agentLinksByWorkspace.get(tree._id as string) ?? [];
+      const primary =
+        linked.find((link) => link.isPrimary) ??
+        linked.find((link) => link.relation === "primary") ??
+        linked[0];
+      return primary?.agentId ?? tree.agentId;
+    };
+
+    const rawRoots = workspaceTrees
       .filter((tree) => {
         if (!tree.parentId) {
           return true;
@@ -157,68 +228,91 @@ export const listScopes = query({
         }
         return a.name.localeCompare(b.name);
       })
-      .map((root) => {
+      .flatMap((root) => {
         const profile = root.ownerId ? profilesById.get(root.ownerId) : null;
-        const descendants = collectDescendants(root._id);
-        const rootAgentIds = [root.agentId, ...descendants.map((tree) => tree.agentId)]
-          .filter((value): value is string => Boolean(value));
+        const visibleRoots =
+          root.type === "user" && getDirectChildren(root._id).length > 0
+            ? getDirectChildren(root._id)
+            : [root];
 
-        const children = descendants.map((child) => {
-          const childProfile = child.ownerId
-            ? profilesById.get(child.ownerId)
-            : profile;
-          const childDescendantAgentIds = [
-            child.agentId,
-            ...collectDescendants(child._id).map((tree) => tree.agentId),
-          ].filter((value): value is string => Boolean(value));
+        return visibleRoots.map((visibleRoot) => {
+          const effectiveProfile =
+            visibleRoot.ownerId ? profilesById.get(visibleRoot.ownerId) : profile;
+          const directChildren = getDirectChildren(visibleRoot._id);
+          const rootAgentIds = uniqueAgentIds([
+            ...directAgentIdsForTree(visibleRoot),
+            ...collectDescendants(visibleRoot._id).flatMap((tree) =>
+              directAgentIdsForTree(tree),
+            ),
+          ]);
+
+          const children = directChildren.map((child) => {
+            const childProfile = child.ownerId
+              ? profilesById.get(child.ownerId)
+              : effectiveProfile;
+            const childAgentIds = uniqueAgentIds([
+              ...directAgentIdsForTree(child),
+              ...collectDescendants(child._id).flatMap((tree) =>
+                directAgentIdsForTree(tree),
+              ),
+            ]);
+
+            return {
+              _id: child._id,
+              agentId: primaryAgentIdForTree(child),
+              agentIds: childAgentIds,
+              name:
+                child.type === "user"
+                  ? childProfile?.name ?? child.name
+                  : child.name,
+              ownerEmail: childProfile?.email,
+              ownerId: child.ownerId,
+              ownerName: childProfile?.name ?? child.name,
+              ownerPhone: childProfile?.phone,
+              rootPath: child.rootPath,
+              slug: scopeSlugForTree(child),
+              type: child.type,
+            };
+          });
 
           return {
-            _id: child._id,
-            agentId: child.agentId,
-            agentIds: Array.from(new Set(childDescendantAgentIds)),
+            _id: visibleRoot._id,
+            agentId: primaryAgentIdForTree(visibleRoot),
+            agentIds: rootAgentIds,
+            childCount: children.length,
+            children,
             name:
-              child.type === "user"
-                ? childProfile?.name ?? child.name
-                : child.name,
-            ownerEmail: childProfile?.email,
-            ownerId: child.ownerId,
-            ownerName: childProfile?.name ?? child.name,
-            ownerPhone: childProfile?.phone,
-            rootPath: child.rootPath,
-            slug: buildScopeSlug([
-              childProfile?.name ?? child.name,
-              child.agentId,
-              child._id,
-            ]),
-            type: child.type,
+              visibleRoot.type === "user"
+                ? effectiveProfile?.name ?? visibleRoot.name
+                : visibleRoot.name,
+            ownerEmail: effectiveProfile?.email,
+            ownerId: visibleRoot.ownerId,
+            ownerName: effectiveProfile?.name ?? visibleRoot.name,
+            ownerPhone: effectiveProfile?.phone,
+            rootPath: visibleRoot.rootPath,
+            slug: scopeSlugForTree(visibleRoot),
+            type: visibleRoot.type,
           };
         });
-
-        return {
-          _id: root._id,
-          agentId: root.agentId,
-          agentIds: Array.from(new Set(rootAgentIds)),
-          childCount: children.length,
-          children,
-          name:
-            root.type === "user" ? profile?.name ?? root.name : root.name,
-          ownerEmail: profile?.email,
-          ownerId: root.ownerId,
-          ownerName: profile?.name ?? root.name,
-          ownerPhone: profile?.phone,
-          rootPath: root.rootPath,
-          slug: buildScopeSlug([
-            profile?.name ?? root.name,
-            root.agentId,
-            root._id,
-          ]),
-          type: root.type,
-        };
       });
 
+    const mainRoot =
+      rawRoots.find((root) => root.agentId === "main" || root.slug === "main") ??
+      rawRoots.find((root) =>
+        root.children.some((child) => child.agentId === "main" || child.slug === "main"),
+      );
+    const defaultScopeSlug =
+      (mainRoot?.agentId === "main" || mainRoot?.slug === "main"
+        ? "main"
+        : mainRoot?.children.find(
+            (child) => child.agentId === "main" || child.slug === "main",
+          )?.slug) ??
+      rawRoots[0]?.slug;
+
     return {
+      defaultScopeSlug,
       isAdmin,
-      roots,
+      roots: rawRoots,
       viewerEmail,
     };
   },

@@ -1,0 +1,38 @@
+server {
+    listen 8080;
+    server_name ${PUBLIC_DB_DOMAIN};
+
+    client_max_body_size 25m;
+    # Force Docker DNS resolution over IPv4 to avoid noisy IPv6 upstream attempts
+    # when the host network has no IPv6 route to Convex Cloud/CDN addresses.
+    resolver 127.0.0.11 ipv6=off valid=300s;
+    resolver_timeout 5s;
+
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 "ok\n";
+    }
+
+    location / {
+        set $convex_upstream ${UPSTREAM_CONVEX_URL};
+        proxy_pass $convex_upstream;
+        proxy_http_version 1.1;
+
+        # Important for Convex Cloud upstream behind TLS/CDN:
+        # - Send upstream host (not public db domain) as Host header
+        # - Enable SNI and pin SSL name to upstream host
+        proxy_set_header Host ${UPSTREAM_CONVEX_HOST};
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${UPSTREAM_CONVEX_HOST};
+
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+}
