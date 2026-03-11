@@ -157,11 +157,28 @@ Definition of done:
 
 ## Nodes and exec approvals
 
-- [ ] Tampilkan daftar node live dari DB.
-- [ ] Tampilkan binding agent -> node.
-- [ ] Tampilkan `exec approvals` per host + agent.
-- [ ] Tambahkan write UI nyata untuk approval config:
+- [x] Tampilkan daftar node live dari DB.
+  Bukti:
+  - query host/node live dipakai di
+    [ExecApprovals.tsx](/home/rahman/projects/manef-ui/features/nodes/components/ExecApprovals.tsx)
+  - backend source: `features/nodes/api:listNodes`
+  - commit `8681bd4`
+- [x] Tampilkan binding agent -> node.
+  Bukti:
+  - [ExecApprovals.tsx](/home/rahman/projects/manef-ui/features/nodes/components/ExecApprovals.tsx)
+  - backend source: `features/nodes/api:listNodeBindings`
+  - commit `8681bd4`
+- [x] Tampilkan `exec approvals` per host + agent.
+  Bukti:
+  - [ExecApprovals.tsx](/home/rahman/projects/manef-ui/features/nodes/components/ExecApprovals.tsx)
+  - backend source: `features/nodes/api:getExecApprovals`
+  - commit `8681bd4`
+- [x] Tambahkan write UI nyata untuk approval config:
   `securityMode`, `askMode`, `allowList`, `denyList`.
+  Bukti:
+  - save sekarang memanggil `features/nodes/api:upsertExecApproval`
+  - [ExecApprovals.tsx](/home/rahman/projects/manef-ui/features/nodes/components/ExecApprovals.tsx)
+  - commit `8681bd4`
 - [ ] Tambahkan refresh nyata dari runtime gateway.
 
 Definition of done:
@@ -274,7 +291,11 @@ Definition of done:
   - fallback constants dihapus dari route channel
   - [index.tsx](/home/rahman/projects/manef-ui/features/channels/index.tsx)
   - build lolos setelah patch `a7beeef`
-- [ ] Verifikasi `Nodes` dan `Exec Approvals` bisa read/write.
+- [x] Verifikasi `Nodes` dan `Exec Approvals` bisa read/write.
+  Bukti:
+  - node/approval panel sekarang read dari query live dan save ke mutation live
+  - [ExecApprovals.tsx](/home/rahman/projects/manef-ui/features/nodes/components/ExecApprovals.tsx)
+  - build lolos setelah patch `8681bd4`
 - [ ] Verifikasi `Logs` dan `Skills` bukan dummy data.
 - [ ] Hard refresh dan pastikan state tetap konsisten.
 
