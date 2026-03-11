@@ -57,6 +57,48 @@ Task dianggap belum selesai jika salah satu kondisi berikut masih terjadi:
     [DeleteWorkspaceDialog.tsx](/home/rahman/projects/manef-ui/features/settings/components/DeleteWorkspaceDialog.tsx),
     [CreateWorkspaceDialog.tsx](/home/rahman/projects/manef-ui/features/workspaces/components/CreateWorkspaceDialog.tsx)
 
+## Future context: Feature Store and Superspace
+
+Konteks ini belum dihitung selesai. Ini adalah arah produk yang harus dijaga saat
+menambah feature baru di `manef-ui`.
+
+- [ ] Tambahkan `Feature Store` sebagai surface terpisah dari dashboard operasi.
+- [ ] `Feature Store` harus bisa menampilkan katalog builder:
+  `agent builder`, `workspace app builder`, `shared blocks`, `templates`.
+- [ ] `Agent Builder` harus mendukung dua mode output:
+  `JSON block prerender` dan `custom HTML/TypeScript`.
+- [ ] `JSON block prerender` harus memakai block components yang sudah disiapkan
+  project ini sebagai source of truth.
+- [ ] `custom HTML/TypeScript` harus diperlakukan sebagai advanced mode, dengan
+  preview, schema metadata, dan sandbox policy yang jelas.
+- [ ] Semua app/builder output harus bisa dihubungkan ke workspace aktif, bukan
+  global ke semua workspace.
+- [ ] Store item harus bisa ditandai sebagai:
+  `workspace-only`, `tenant-shared`, atau `general/shared`.
+- [ ] Workspace yang berbeda tidak boleh otomatis mewarisi seluruh app/config
+  root kecuali ada policy inheritance eksplisit.
+- [ ] UI store harus siap menjadi bridge ke project eksternal `Superspace Apps`.
+
+Konteks integrasi eksternal:
+
+- target repo saat ini:
+  `https://github.com/zianinn/v0-remix-of-superspace-app-aazian.git`
+- status: repo eksternal disebut sebagai target integrasi, tetapi isi internalnya
+  belum diverifikasi langsung di tasklist ini
+- implikasi desain:
+  - jangan hardcode struktur Superspace di UI lebih dulu
+  - simpan metadata integrasi sebagai config/backend contract
+  - anggap Superspace sebagai downstream target dari `Feature Store`, bukan
+    source of truth UI saat ini
+
+Definition of done:
+
+- `Feature Store` muncul sebagai menu/halaman nyata
+- item store berasal dari backend live, bukan konstanta frontend
+- `Agent Builder` bisa menghasilkan draft app dari JSON block config
+- workspace aktif menentukan app mana yang terlihat atau dapat diedit
+- integrasi Superspace memakai contract/backend adapter yang jelas
+
 ## Navigator and scope
 
 - [ ] Jadikan navigator OpenClaw sebagai source of truth seluruh halaman
@@ -79,6 +121,9 @@ Definition of done:
 - child switcher hanya muncul bila root punya child
 - pindah scope mengubah query data di halaman OpenClaw
 - tidak ada flicker label ke workspace legacy
+- root workspace aktif tetap sama saat pindah menu
+- child workspace aktif tetap sama saat pindah menu di scope yang sama
+- route slug menjadi source of truth untuk switcher dan sidebar
 
 ## Agents
 
@@ -196,6 +241,44 @@ Definition of done:
 - channel di UI sama dengan record `channels` di DB
 - perubahan channel dari backend/runtime tampil di UI tanpa edit manual
 - update channel dari UI terbaca ulang dari DB dan runtime
+
+## Workspace, users, and channel access
+
+- [ ] Sidebar/menu harus berbeda untuk admin dan user biasa.
+- [ ] User biasa hanya boleh melihat workspace miliknya dan child workspace
+  turunannya.
+- [ ] Admin boleh melihat semua workspace tenant.
+- [ ] Tambahkan surface UI untuk binding `channel/account -> workspace`.
+- [ ] Tambahkan surface UI untuk melihat `user identity -> workspace`.
+- [ ] Tambahkan surface UI untuk membedakan resources:
+  `workspace-local`, `workspace-shared`, `general/shared`.
+
+Definition of done:
+
+- user biasa tidak melihat workspace orang lain
+- workspace switcher hanya menampilkan scope yang boleh diakses viewer
+- channel visibility dan akses app mengikuti workspace binding yang sama
+
+## Auth onboarding
+
+- [x] Login menerima `email atau nomor telepon`.
+  Bukti:
+  - [page.tsx](/home/rahman/projects/manef-ui/app/login/page.tsx)
+  - [auth.ts](/home/rahman/projects/manef-ui/auth.ts)
+- [x] Halaman login punya tab `Masuk` dan `Daftar`.
+  Bukti:
+  - [page.tsx](/home/rahman/projects/manef-ui/app/login/page.tsx)
+- [x] Registrasi menerima `nomor`, `nama`, dan `konteks`.
+  Bukti:
+  - [page.tsx](/home/rahman/projects/manef-ui/app/login/page.tsx)
+- [x] Temporary password harus memaksa user ke halaman ganti password.
+  Bukti:
+  - [page.tsx](/home/rahman/projects/manef-ui/app/set-password/page.tsx)
+  - [proxy.ts](/home/rahman/projects/manef-ui/proxy.ts)
+  - commit `53c63e0`
+- [ ] Tambahkan self-service status untuk request registrasi:
+  `pending`, `matched workspace`, `approved`, `denied`.
+- [ ] Tambahkan history password reset dan notice yang lebih jelas di UI admin.
 
 ## Nodes and exec approvals
 

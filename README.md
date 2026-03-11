@@ -48,6 +48,22 @@ Roadmap aktif untuk parity terhadap OpenClaw resmi ada di:
 
 - [docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-ui/docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md)
 
+Roadmap produk berikutnya yang harus dijaga:
+
+- `Feature Store`
+- `Agent Builder`
+- integrasi `Superspace Apps`
+
+Catatan konteks:
+
+- `Feature Store` direncanakan menjadi tempat katalog app/builder per workspace
+- `Agent Builder` direncanakan mendukung dua mode:
+  `JSON block prerender` dan `custom HTML/TypeScript`
+- target integrasi eksternal yang disebut saat ini:
+  `https://github.com/zianinn/v0-remix-of-superspace-app-aazian.git`
+- repo eksternal tersebut belum menjadi source of truth frontend ini; konteksnya
+  saat ini dicatat sebagai target downstream integration
+
 Task dinyatakan selesai hanya bila:
 
 - CRUD database backend tersedia
