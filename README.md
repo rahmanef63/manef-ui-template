@@ -46,6 +46,7 @@ Debugging dashboard fetch churn:
 
 Roadmap aktif untuk parity terhadap OpenClaw resmi ada di:
 
+- [docs/TARGET_ARCHITECTURE.md](/home/rahman/projects/manef-ui/docs/TARGET_ARCHITECTURE.md)
 - [docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-ui/docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md)
 
 Session handoff references:

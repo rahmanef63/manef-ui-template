@@ -4,6 +4,7 @@ Updated: 2026-03-10
 
 Dokumen aktif yang perlu dipakai untuk operasional repo ini:
 
+- `docs/TARGET_ARCHITECTURE.md`
 - `docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md`
 - `docs/2026-03-11-login-deploy-status.md`
 - `docs/2026-03-10-manef-ui-db-separation-migration-plan.md`
@@ -30,6 +31,16 @@ Remaining tasks yang masih relevan:
 3. Putuskan mode deploy `manef-db`: tetap `Convex Cloud + proxy` atau pindah penuh ke self-hosted, jangan campur env keduanya.
 4. Rapikan sisa legacy frontend yang masih mengganggu lint/typecheck, terutama file lama di `convex/`.
 5. Putuskan distribusi final `@manef/db`: tetap `file:../manef-db`, git dependency, atau private package registry.
+
+Dokumen baru yang harus dipakai sebelum lanjut `Feature Store`:
+
+- [TARGET_ARCHITECTURE.md](/home/rahman/projects/manef-ui/docs/TARGET_ARCHITECTURE.md)
+
+Dokumen ini menetapkan boundary:
+
+- `Superspace` = product shell reference
+- `OpenClaw` = runtime subsystem
+- `manef` = integration layer aktif
 
 Port alignment note (Dokploy):
 
