@@ -64,11 +64,11 @@ function BottomNavContent({
         return normalizeBottomNav(
             portalId,
             workspaceSlug,
-            navigator.selectedScope?.featureKeys?.length
+            !navigator.isAdmin && navigator.selectedScope?.featureKeys?.length
                 ? navigator.selectedScope.featureKeys
                 : undefined,
         );
-    }, [navigator.selectedScope?.featureKeys, portalId, workspaceSlug]);
+    }, [navigator.isAdmin, navigator.selectedScope?.featureKeys, portalId, workspaceSlug]);
 
     if (!mounted) {
         return <BottomNavSkeleton className={className} />;

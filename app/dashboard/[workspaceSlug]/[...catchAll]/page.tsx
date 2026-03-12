@@ -50,6 +50,7 @@ export default function CatchAllPage() {
     }, [fullPath, workspaceSlug, segments]);
 
     const hasWorkspaceFeatureAccess =
+        navigator.isAdmin ||
         !featureId ||
         !navigator.selectedScope?.featureKeys?.length ||
         navigator.selectedScope.featureKeys.includes(featureId);

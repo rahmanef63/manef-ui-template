@@ -22,12 +22,15 @@ export function PageTabsBlock({ className }: PageTabsBlockProps) {
         if (!menu) {
             return [];
         }
+        if (navigator.isAdmin) {
+            return menu.tabs;
+        }
         const featureKeys = navigator.selectedScope?.featureKeys ?? [];
         if (featureKeys.length === 0) {
             return menu.tabs;
         }
         return menu.tabs.filter((tab) => featureKeys.includes(tab.id));
-    }, [menu, navigator.selectedScope?.featureKeys]);
+    }, [menu, navigator.isAdmin, navigator.selectedScope?.featureKeys]);
 
     if (!menu || visibleTabs.length === 0) {
         return null;

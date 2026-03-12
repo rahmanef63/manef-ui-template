@@ -96,10 +96,10 @@ export function SidebarNavTreeBlock({
     }, [authProfile?.roles, navigator.isAdmin]);
     const availableMenuIds = React.useMemo(
         () =>
-            navigator.selectedScope?.featureKeys?.length
+            !navigator.isAdmin && navigator.selectedScope?.featureKeys?.length
                 ? navigator.selectedScope.featureKeys
                 : undefined,
-        [navigator.selectedScope?.featureKeys],
+        [navigator.isAdmin, navigator.selectedScope?.featureKeys],
     );
     const sidebarGroups = React.useMemo(
         () => buildSidebarTree(portalId, workspaceSlug, viewerRole, availableMenuIds),

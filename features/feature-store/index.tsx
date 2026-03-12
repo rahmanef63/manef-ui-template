@@ -364,6 +364,11 @@ export default function FeatureStorePage() {
         () => sortedItems.find((item) => item.itemKey === selectedItemKey) ?? sortedItems[0] ?? null,
         [selectedItemKey, sortedItems],
     );
+    const selectedItemActionKind = selectedItem?.itemType === "dashboard-feature"
+        ? "installable"
+        : selectedItem?.itemType === "agent-builder"
+            ? "builder"
+            : "catalog-only";
 
     useEffect(() => {
         if (!draftDialogOpen) {
@@ -851,17 +856,36 @@ export default function FeatureStorePage() {
                                                 New Draft
                                             </Button>
                                         ) : null}
-                                        <Button
-                                            onClick={() => handleToggleInstall(selectedItem)}
-                                            disabled={busyKey === selectedItem.itemKey}
-                                        >
-                                            {busyKey === selectedItem.itemKey
-                                                ? "Saving..."
-                                                : selectedItem.isInstalled
-                                                    ? "Uninstall"
-                                                    : "Install"}
-                                        </Button>
+                                        {selectedItemActionKind === "installable" ? (
+                                            <Button
+                                                onClick={() => handleToggleInstall(selectedItem)}
+                                                disabled={busyKey === selectedItem.itemKey}
+                                            >
+                                                {busyKey === selectedItem.itemKey
+                                                    ? "Saving..."
+                                                    : selectedItem.isInstalled
+                                                        ? "Uninstall"
+                                                        : "Install"}
+                                            </Button>
+                                        ) : null}
                                     </div>
+                                </div>
+                                <div className="rounded-lg border bg-muted/10 p-4 text-sm text-muted-foreground">
+                                    {selectedItemActionKind === "installable" ? (
+                                        <p>
+                                            Installing a dashboard feature enables that page for the active workspace and grants its capability policy.
+                                            It does not create a new agent automatically.
+                                        </p>
+                                    ) : selectedItemActionKind === "builder" ? (
+                                        <p>
+                                            Agent Builder items are tools for creating drafts. Use <span className="font-medium text-foreground">New Draft</span>.
+                                            They do not create an agent immediately and they do not replace the current sidebar menus.
+                                        </p>
+                                    ) : (
+                                        <p>
+                                            This item is catalog-only for now. It documents a template or external app direction, but it is not installable yet.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ) : (
