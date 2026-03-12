@@ -92,14 +92,25 @@ menambah feature baru di `manef-ui`.
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
   - source backend vendor:
     [api.ts](/home/rahman/projects/manef-ui/vendor/manef-db/convex/features/featureStore/api.ts)
-- [ ] `Agent Builder` harus mendukung dua mode output:
+- [x] `Agent Builder` sekarang punya draft surface untuk dua mode output:
   `JSON block prerender` dan `custom HTML/TypeScript`.
+-  Bukti:
+  - draft panel di:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+  - draft create/edit memakai mutation backend live:
+    `createAgentBuilderDraft`, `updateAgentBuilderDraft`,
+    `archiveAgentBuilderDraft`
 - [ ] `JSON block prerender` harus memakai block components yang sudah disiapkan
   project ini sebagai source of truth.
 - [ ] `custom HTML/TypeScript` harus diperlakukan sebagai advanced mode, dengan
   preview, schema metadata, dan sandbox policy yang jelas.
-- [ ] Semua app/builder output harus bisa dihubungkan ke workspace aktif, bukan
+- [x] Semua app/builder draft sekarang bisa dihubungkan ke workspace aktif, bukan
   global ke semua workspace.
+  Bukti:
+  - draft selalu disimpan dengan `workspaceId` aktif
+  - linked agents default diambil dari `selectedScope.agentIds`
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [x] Store item harus bisa ditandai sebagai:
   `workspace-only`, `tenant-shared`, atau `general/shared`.
   Bukti:
@@ -191,10 +202,17 @@ Remaining phase setelah session ini:
   Bukti:
   - badge + filter scope:
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
-- [ ] Tambahkan draft surface `Agent Builder`:
+- [x] Tambahkan draft surface `Agent Builder`:
   `json_blocks` dan `custom_code`
+  Bukti:
+  - `Agent Builder Drafts` panel
+  - dialog create/edit draft
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [ ] Tambahkan admin guard backend/frontend yang lebih tegas untuk install/uninstall
 - [ ] Tambahkan preview registry tersendiri jika builder output mulai punya komponen interaktif
+- [ ] Tambahkan renderer draft `json_blocks`
+- [ ] Tambahkan editor `custom_code` yang lebih aman dari textarea metadata sederhana
 
 ## Navigator and scope
 

@@ -140,6 +140,10 @@ Progress terbaru:
   - katalog item live dari backend
   - preview metadata live
   - install/uninstall per workspace
+- `Agent Builder Drafts` sekarang sudah hidup di `Feature Store`:
+  - draft `json_blocks`
+  - draft `custom_code`
+  - create/edit/mark-ready/archive per workspace
 - login/registrasi sekarang mendukung:
   - `email atau nomor telepon`
   - request registrasi
@@ -148,8 +152,10 @@ Progress terbaru:
 
 Remaining phase terdekat:
 
-- `Agent Builder`:
-  `json_blocks` dan `custom_code`
+- renderer `Agent Builder`:
+  `json_blocks`
+- editor aman `Agent Builder`:
+  `custom_code`
 - RBAC lebih tegas untuk `Feature Store`
 - publish/downstream bridge ke `Superspace`
 
