@@ -5,6 +5,7 @@ Updated: 2026-03-12
 Dokumen aktif yang perlu dipakai untuk operasional repo ini:
 
 - `docs/TARGET_ARCHITECTURE.md`
+- `docs/FRONTEND_PRD.md`
 - `docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md`
 - `docs/2026-03-11-login-deploy-status.md`
 - `docs/2026-03-10-manef-ui-db-separation-migration-plan.md`
@@ -40,6 +41,7 @@ Pattern UI terbaru yang sudah dipakai:
 Dokumen baru yang harus dipakai sebelum lanjut `Feature Store`:
 
 - [TARGET_ARCHITECTURE.md](/home/rahman/projects/manef-ui/docs/TARGET_ARCHITECTURE.md)
+- [FRONTEND_PRD.md](/home/rahman/projects/manef-ui/docs/FRONTEND_PRD.md)
 
 Dokumen ini menetapkan boundary:
 
