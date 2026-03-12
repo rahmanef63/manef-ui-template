@@ -179,6 +179,11 @@ Progress terbaru:
   - installed features
   - granted skills
   - agent policy rows
+- `Agent Builder Drafts` sekarang juga divalidasi terhadap capability workspace:
+  - requirement feature
+  - requirement skill
+  - linked agent yang tersedia di workspace
+  - gap skill per agent
 - RBAC store sekarang lebih tegas:
   - route leaf dashboard mengikuti `requiredRoles`
   - `Skills Store` menjadi read-only untuk non-admin

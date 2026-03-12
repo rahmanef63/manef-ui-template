@@ -216,6 +216,56 @@ export default function FeatureStorePage() {
             .map((entry) => entry.trim())
             .filter(Boolean);
 
+    const draftCapabilityPreview = useMemo(() => {
+        const workspaceFeatureKeys = capabilityPolicy?.featureKeys ?? selectedScope?.featureKeys ?? [];
+        const workspaceSkillKeys = capabilityPolicy?.grantedSkillKeys ?? [];
+        const availableAgentIds = selectedScope?.agentIds ?? [];
+        const requiredFeatureKeys = parseCommaList(draftForm.requiredFeatureKeys);
+        const requiredSkillKeys = parseCommaList(draftForm.requiredSkillKeys);
+        const linkedAgentIds = parseCommaList(draftForm.linkedAgentIds);
+        const agentPolicies = new Map(
+            (capabilityPolicy?.agentPolicies ?? []).map((policy) => [policy.agentId, policy.skillKeys]),
+        );
+        const missingFeatureKeys = requiredFeatureKeys.filter(
+            (featureKey) => !workspaceFeatureKeys.includes(featureKey),
+        );
+        const missingWorkspaceSkillKeys = requiredSkillKeys.filter(
+            (skillKey) => !workspaceSkillKeys.includes(skillKey),
+        );
+        const unavailableAgentIds = linkedAgentIds.filter(
+            (agentId) => !availableAgentIds.includes(agentId),
+        );
+        const agentCoverage = linkedAgentIds.map((agentId) => {
+            const grantedSkillKeys = agentPolicies.get(agentId) ?? [];
+            return {
+                agentId,
+                missingSkillKeys: requiredSkillKeys.filter(
+                    (skillKey) => !grantedSkillKeys.includes(skillKey),
+                ),
+            };
+        });
+        return {
+            missingFeatureKeys,
+            missingWorkspaceSkillKeys,
+            unavailableAgentIds,
+            agentCoverage,
+            isReady:
+                missingFeatureKeys.length === 0 &&
+                missingWorkspaceSkillKeys.length === 0 &&
+                unavailableAgentIds.length === 0 &&
+                agentCoverage.every((entry) => entry.missingSkillKeys.length === 0),
+        };
+    }, [
+        capabilityPolicy?.agentPolicies,
+        capabilityPolicy?.featureKeys,
+        capabilityPolicy?.grantedSkillKeys,
+        draftForm.linkedAgentIds,
+        draftForm.requiredFeatureKeys,
+        draftForm.requiredSkillKeys,
+        selectedScope?.agentIds,
+        selectedScope?.featureKeys,
+    ]);
+
     const handleSaveDraft = async () => {
         if (!selectedScope?._id || !activeDraftItem) {
             return;
@@ -590,9 +640,9 @@ export default function FeatureStorePage() {
                                                     {draft.description}
                                                 </p>
                                             ) : null}
-                                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                                <span className="rounded-md border px-2 py-1">
-                                                    item: {draft.itemKey}
+                                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                            <span className="rounded-md border px-2 py-1">
+                                                item: {draft.itemKey}
                                                 </span>
                                                 <span className="rounded-md border px-2 py-1">
                                                     agents: {(draft.linkedAgentIds ?? []).length}
@@ -606,14 +656,47 @@ export default function FeatureStorePage() {
                                                 <span className="rounded-md border px-2 py-1">
                                                     required skills: {(draft.requiredSkillKeys ?? []).length}
                                                 </span>
+                                                <span className="rounded-md border px-2 py-1">
+                                                    capability: {draft.capabilityReport?.isReady ? "ready" : "missing requirements"}
+                                                </span>
                                             </div>
+                                            {draft.capabilityReport && !draft.capabilityReport.isReady ? (
+                                                <div className="space-y-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground">
+                                                    {draft.capabilityReport.missingFeatureKeys.length ? (
+                                                        <div>
+                                                            Missing features: {draft.capabilityReport.missingFeatureKeys.join(", ")}
+                                                        </div>
+                                                    ) : null}
+                                                    {draft.capabilityReport.missingWorkspaceSkillKeys.length ? (
+                                                        <div>
+                                                            Missing workspace skills: {draft.capabilityReport.missingWorkspaceSkillKeys.join(", ")}
+                                                        </div>
+                                                    ) : null}
+                                                    {draft.capabilityReport.unavailableAgentIds.length ? (
+                                                        <div>
+                                                            Agents outside workspace: {draft.capabilityReport.unavailableAgentIds.join(", ")}
+                                                        </div>
+                                                    ) : null}
+                                                    {draft.capabilityReport.agentCoverage
+                                                        .filter((coverage) => coverage.missingSkillKeys.length)
+                                                        .map((coverage) => (
+                                                            <div key={coverage.agentId}>
+                                                                {coverage.agentId} missing skills: {coverage.missingSkillKeys.join(", ")}
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            ) : null}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Button variant="outline" onClick={() => handleOpenEditDraft(draft)}>
                                                 Edit
                                             </Button>
                                             {draft.status !== "ready" ? (
-                                                <Button variant="outline" onClick={() => handleMarkReady(draft)}>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => handleMarkReady(draft)}
+                                                    disabled={!draft.capabilityReport?.isReady}
+                                                >
                                                     Mark Ready
                                                 </Button>
                                             ) : null}
@@ -803,6 +886,52 @@ export default function FeatureStorePage() {
                                 }
                                 rows={3}
                             />
+                        </div>
+                        <div className="rounded-lg border bg-muted/10 p-4 text-sm">
+                            <div className="font-medium">Capability check</div>
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                                <span className="rounded-md border px-2 py-1">
+                                    status: {draftCapabilityPreview.isReady ? "ready" : "needs policy"}
+                                </span>
+                                <span className="rounded-md border px-2 py-1">
+                                    workspace features: {(capabilityPolicy?.featureKeys ?? selectedScope?.featureKeys ?? []).length}
+                                </span>
+                                <span className="rounded-md border px-2 py-1">
+                                    workspace skills: {(capabilityPolicy?.grantedSkillKeys ?? []).length}
+                                </span>
+                                <span className="rounded-md border px-2 py-1">
+                                    workspace agents: {(selectedScope?.agentIds ?? []).length}
+                                </span>
+                            </div>
+                            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                                {draftCapabilityPreview.missingFeatureKeys.length ? (
+                                    <div>
+                                        Missing features: {draftCapabilityPreview.missingFeatureKeys.join(", ")}
+                                    </div>
+                                ) : null}
+                                {draftCapabilityPreview.missingWorkspaceSkillKeys.length ? (
+                                    <div>
+                                        Missing workspace skills: {draftCapabilityPreview.missingWorkspaceSkillKeys.join(", ")}
+                                    </div>
+                                ) : null}
+                                {draftCapabilityPreview.unavailableAgentIds.length ? (
+                                    <div>
+                                        Agents outside workspace: {draftCapabilityPreview.unavailableAgentIds.join(", ")}
+                                    </div>
+                                ) : null}
+                                {draftCapabilityPreview.agentCoverage
+                                    .filter((entry) => entry.missingSkillKeys.length)
+                                    .map((entry) => (
+                                        <div key={entry.agentId}>
+                                            {entry.agentId} missing skills: {entry.missingSkillKeys.join(", ")}
+                                        </div>
+                                    ))}
+                                {draftCapabilityPreview.isReady ? (
+                                    <div className="text-foreground">
+                                        Draft requirement sudah cocok dengan capability workspace aktif.
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

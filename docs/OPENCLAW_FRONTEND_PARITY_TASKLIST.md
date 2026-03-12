@@ -255,6 +255,15 @@ Remaining phase setelah session ini:
   - route leaf yang tidak termasuk `featureKeys` sekarang `notFound()`
   - file:
     [page.tsx](/home/rahman/projects/manef-ui/app/dashboard/[workspaceSlug]/[...catchAll]/page.tsx)
+- [x] Sambungkan `Agent Builder Draft` ke capability workspace/agent yang nyata.
+  Bukti:
+  - list draft sekarang menampilkan `capabilityReport` live dari backend
+  - dialog draft sekarang menampilkan status requirement:
+    missing feature, missing workspace skill, agent di luar workspace,
+    dan gap skill per agent
+  - tombol `Mark Ready` hanya aktif jika capability draft sudah terpenuhi
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 
 ## Navigator and scope
 
