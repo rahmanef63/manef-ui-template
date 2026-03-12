@@ -40,6 +40,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Dialog,
     DialogContent,
@@ -267,6 +268,7 @@ export default function FeatureStorePage() {
     const [seeding, setSeeding] = useState(false);
     const [draftDialogOpen, setDraftDialogOpen] = useState(false);
     const [draftBusy, setDraftBusy] = useState(false);
+    const [draftEditorTab, setDraftEditorTab] = useState("basics");
     const [activeDraftItem, setActiveDraftItem] = useState<any | null>(null);
     const [editingDraft, setEditingDraft] = useState<any | null>(null);
     const [draftForm, setDraftForm] = useState({
@@ -431,6 +433,7 @@ export default function FeatureStorePage() {
     const handleOpenCreateDraft = (item: any) => {
         setActiveDraftItem(item);
         setEditingDraft(null);
+        setDraftEditorTab("basics");
         setDraftDialogOpen(true);
     };
 
@@ -438,6 +441,7 @@ export default function FeatureStorePage() {
         const matchedItem = builderItems.find((item) => item.itemKey === draft.itemKey) ?? null;
         setActiveDraftItem(matchedItem);
         setEditingDraft(draft);
+        setDraftEditorTab("basics");
         setDraftDialogOpen(true);
     };
 
@@ -1058,8 +1062,8 @@ export default function FeatureStorePage() {
             )}
 
             <Dialog open={draftDialogOpen} onOpenChange={setDraftDialogOpen}>
-                <DialogContent className="sm:max-w-2xl">
-                    <DialogHeader>
+                <DialogContent className="overflow-hidden p-0 sm:max-w-4xl">
+                    <DialogHeader className="border-b px-6 py-5">
                         <DialogTitle>
                             {editingDraft ? "Edit Agent Builder Draft" : "New Agent Builder Draft"}
                         </DialogTitle>
@@ -1067,7 +1071,17 @@ export default function FeatureStorePage() {
                             Simpan contract draft dulu. Renderer app final belum dibangun di phase ini.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-2">
+                    <div className="border-b px-6 py-3">
+                        <Tabs value={draftEditorTab} onValueChange={setDraftEditorTab}>
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="basics">Basics</TabsTrigger>
+                                <TabsTrigger value="output">Output</TabsTrigger>
+                                <TabsTrigger value="review">Review</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                    </div>
+                    <div className="max-h-[72vh] overflow-y-auto px-6 py-4">
+                    <div className={draftEditorTab === "basics" ? "grid gap-4 py-2" : "hidden"}>
                         <div className="grid gap-2">
                             <Label htmlFor="draft-name">Draft name</Label>
                             <Input
@@ -1232,6 +1246,9 @@ export default function FeatureStorePage() {
                                 rows={3}
                             />
                         </div>
+                    </div>
+                    {draftEditorTab === "output" ? (
+                        <div className="grid gap-4 py-2">
                         {draftForm.builderMode === "json_blocks" ? (
                             <div className="grid gap-2">
                                 <Label htmlFor="draft-json-blocks">json_blocks</Label>
@@ -1347,6 +1364,10 @@ export default function FeatureStorePage() {
                                 </div>
                             </div>
                         ) : null}
+                        </div>
+                    ) : null}
+                    {draftEditorTab === "review" ? (
+                        <div className="grid gap-4 py-2">
                         <div className="rounded-lg border bg-muted/10 p-4 text-sm">
                             <div className="font-medium">Capability check</div>
                             <div className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -1441,8 +1462,10 @@ export default function FeatureStorePage() {
                                 ) : null}
                             </div>
                         ) : null}
+                        </div>
+                    ) : null}
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="border-t px-6 py-4">
                         <Button variant="outline" onClick={() => setDraftDialogOpen(false)}>
                             Cancel
                         </Button>
