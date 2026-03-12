@@ -219,9 +219,11 @@ export default async function LoginPage(props: {
                 }
 
                 await signIn("credentials", {
+                  redirectTo: preflight.mustChangePassword
+                    ? "/set-password"
+                    : searchParams.callbackUrl ?? "/dashboard",
                   identifier: formData.get("identifier"),
                   password: formData.get("password"),
-                  redirectTo: searchParams.callbackUrl ?? "/dashboard",
                 });
               } catch (error) {
                 if (error instanceof AuthError) {

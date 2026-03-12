@@ -70,6 +70,7 @@ import {
 export default function Users() {
     const rawUsers = useQuery(getUsersRef) as Array<{
         _id: Id<"authUsers">;
+        hasPassword: boolean;
         name: string;
         email: string;
         phone?: string;
@@ -794,9 +795,9 @@ export default function Users() {
                                                 <div className="text-xs text-muted-foreground">
                                                     {user.mustChangePassword
                                                         ? "Temporary password active"
-                                                        : user.temporaryPasswordIssuedAt
-                                                            ? `Updated ${formatTime(user.temporaryPasswordIssuedAt)}`
-                                                            : "No temporary password"}
+                                                        : user.hasPassword
+                                                            ? "Password set by user"
+                                                            : "No password yet"}
                                                 </div>
                                                 {revealedPasswords[user._id] ? (
                                                     <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
