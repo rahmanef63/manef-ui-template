@@ -174,6 +174,7 @@ Current state:
 - draft create/edit/archive
 - capability validation against live workspace policy
 - minimal `json_blocks` preview
+- `custom_code` review/editor aman
 - not yet a final app renderer
 
 Current `json_blocks` preview supports:
@@ -182,6 +183,21 @@ Current `json_blocks` preview supports:
 - `section_card`
 - `key_values`
 - `callout`
+
+Current `custom_code` review/editor supports:
+- `language`
+- `entry file`
+- source code draft
+- review summary
+- checklist review:
+  - scope reviewed
+  - secret safe
+  - network reviewed
+  - runtime write reviewed
+
+Important behavior:
+- `custom_code` draft can be saved while incomplete
+- `custom_code` draft cannot be marked `ready` until review requirements are met
 
 ## Capability Model
 

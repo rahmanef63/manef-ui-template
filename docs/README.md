@@ -27,9 +27,9 @@ Ringkasan status:
 
 Remaining tasks yang masih relevan:
 
-1. Bangun editor/review yang lebih aman untuk `Agent Builder` mode `custom_code`.
-2. Tentukan contract publish/downstream ke `Superspace`.
-3. Putuskan distribusi final `@manef/db`: tetap `vendor`, git dependency, atau private package registry.
+1. Tentukan contract publish/downstream ke `Superspace`.
+2. Perluas preview registry `json_blocks` untuk komponen interaktif yang lebih kaya.
+3. Tentukan distribusi final `@manef/db`: tetap `vendor`, git dependency, atau private package registry.
 
 Pattern UI terbaru yang sudah dipakai:
 
@@ -37,6 +37,9 @@ Pattern UI terbaru yang sudah dipakai:
   browse -> detail -> workspace context/drafts
 - search/filter/sort sekarang mulai dipusatkan di shared toolbar:
   [DiscoveryToolbar.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/DiscoveryToolbar.tsx)
+- `Agent Builder` sekarang juga punya review/editor aman untuk `custom_code`
+  di:
+  [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 
 Dokumen baru yang harus dipakai sebelum lanjut `Feature Store`:
 

@@ -109,8 +109,15 @@ menambah feature baru di `manef-ui`.
     `archiveAgentBuilderDraft`
 - [ ] `JSON block prerender` harus memakai block components yang sudah disiapkan
   project ini sebagai source of truth.
-- [ ] `custom HTML/TypeScript` harus diperlakukan sebagai advanced mode, dengan
-  preview, schema metadata, dan sandbox policy yang jelas.
+- [x] `custom HTML/TypeScript` sekarang diperlakukan sebagai advanced mode
+  dengan review/editor yang aman, tanpa runtime execute langsung.
+  Bukti:
+  - draft dialog sekarang punya editor `custom_code`:
+    language, entry file, source code, review summary, checklist review
+  - preview source sekarang ditampilkan read-only di UI
+  - `Mark Ready` sekarang ditahan kalau review checklist belum lengkap
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [x] Semua app/builder draft sekarang bisa dihubungkan ke workspace aktif, bukan
   global ke semua workspace.
   Bukti:
@@ -238,6 +245,20 @@ Remaining phase setelah session ini:
   - editor draft sekarang punya field `json_blocks`
   - preview live mendukung block aman:
     `page_header`, `stats`, `section_card`, `key_values`, `callout`
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [x] Tambahkan editor/review aman untuk draft `custom_code`
+  di `Agent Builder`.
+  Bukti:
+  - editor draft sekarang menyimpan:
+    `customCode.language`, `entryFile`, `sourceCode`, `reviewSummary`,
+    `reviewChecklist`
+  - draft list sekarang menampilkan chip `code review: ready|pending`
+  - `Mark Ready` hanya aktif jika backend dan preview review menyatakan siap
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [ ] Tambahkan preview registry tersendiri untuk block interaktif yang lebih
+  kaya daripada preview minimal saat ini.
   - save draft `json_blocks` sekarang ditolak jika JSON invalid
   - file:
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)

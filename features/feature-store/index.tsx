@@ -282,6 +282,14 @@ export default function FeatureStorePage() {
         previewSummary: "",
         outputNotes: "",
         jsonBlocks: "",
+        customCodeLanguage: "typescript",
+        customCodeEntryFile: "app.tsx",
+        customCodeSource: "",
+        customCodeReviewSummary: "",
+        reviewScopeReviewed: false,
+        reviewSecretSafe: false,
+        reviewNetworkReviewed: false,
+        reviewRuntimeWriteReviewed: false,
         downstreamTarget: "superspace",
     });
 
@@ -375,6 +383,14 @@ export default function FeatureStorePage() {
                 previewSummary: editingDraft.previewConfig?.summary ?? "",
                 outputNotes: editingDraft.outputConfig?.notes ?? "",
                 jsonBlocks: JSON.stringify(editingDraft.outputConfig?.jsonBlocks ?? [], null, 2),
+                customCodeLanguage: editingDraft.outputConfig?.customCode?.language ?? "typescript",
+                customCodeEntryFile: editingDraft.outputConfig?.customCode?.entryFile ?? "app.tsx",
+                customCodeSource: editingDraft.outputConfig?.customCode?.sourceCode ?? "",
+                customCodeReviewSummary: editingDraft.outputConfig?.customCode?.reviewSummary ?? "",
+                reviewScopeReviewed: editingDraft.outputConfig?.customCode?.reviewChecklist?.scopeReviewed === true,
+                reviewSecretSafe: editingDraft.outputConfig?.customCode?.reviewChecklist?.secretSafe === true,
+                reviewNetworkReviewed: editingDraft.outputConfig?.customCode?.reviewChecklist?.networkReviewed === true,
+                reviewRuntimeWriteReviewed: editingDraft.outputConfig?.customCode?.reviewChecklist?.runtimeWriteReviewed === true,
                 downstreamTarget: editingDraft.downstreamTarget ?? "superspace",
             });
             return;
@@ -395,6 +411,14 @@ export default function FeatureStorePage() {
                 activeDraftItem?.builderMode === "json_blocks"
                     ? createDefaultJsonBlocks(selectedScope)
                     : "",
+            customCodeLanguage: "typescript",
+            customCodeEntryFile: "app.tsx",
+            customCodeSource: "",
+            customCodeReviewSummary: "",
+            reviewScopeReviewed: false,
+            reviewSecretSafe: false,
+            reviewNetworkReviewed: false,
+            reviewRuntimeWriteReviewed: false,
             downstreamTarget: "superspace",
         });
     }, [activeDraftItem, draftDialogOpen, editingDraft, selectedScope]);
@@ -471,6 +495,35 @@ export default function FeatureStorePage() {
         () => parseJsonBlocks(draftForm.jsonBlocks),
         [draftForm.jsonBlocks],
     );
+    const customCodeReviewPreview = useMemo(() => {
+        const missingChecklistKeys = [
+            draftForm.reviewScopeReviewed ? null : "scopeReviewed",
+            draftForm.reviewSecretSafe ? null : "secretSafe",
+            draftForm.reviewNetworkReviewed ? null : "networkReviewed",
+            draftForm.reviewRuntimeWriteReviewed ? null : "runtimeWriteReviewed",
+        ].filter(Boolean);
+        const sourceLength = draftForm.customCodeSource.trim().length;
+        return {
+            sourceLength,
+            hasSourceCode: sourceLength > 0,
+            hasEntryFile: draftForm.customCodeEntryFile.trim().length > 0,
+            hasReviewSummary: draftForm.customCodeReviewSummary.trim().length > 0,
+            missingChecklistKeys,
+            isReady:
+                sourceLength > 0 &&
+                draftForm.customCodeEntryFile.trim().length > 0 &&
+                draftForm.customCodeReviewSummary.trim().length > 0 &&
+                missingChecklistKeys.length === 0,
+        };
+    }, [
+        draftForm.customCodeEntryFile,
+        draftForm.customCodeReviewSummary,
+        draftForm.customCodeSource,
+        draftForm.reviewNetworkReviewed,
+        draftForm.reviewRuntimeWriteReviewed,
+        draftForm.reviewScopeReviewed,
+        draftForm.reviewSecretSafe,
+    ]);
 
     const handleSaveDraft = async () => {
         if (!selectedScope?._id || !activeDraftItem) {
@@ -497,6 +550,20 @@ export default function FeatureStorePage() {
                     notes: draftForm.outputNotes || undefined,
                     jsonBlocks: draftForm.builderMode === "json_blocks"
                         ? jsonBlocksPreview.blocks
+                        : undefined,
+                    customCode: draftForm.builderMode === "custom_code"
+                        ? {
+                            language: draftForm.customCodeLanguage,
+                            entryFile: draftForm.customCodeEntryFile || undefined,
+                            sourceCode: draftForm.customCodeSource || undefined,
+                            reviewSummary: draftForm.customCodeReviewSummary || undefined,
+                            reviewChecklist: {
+                                scopeReviewed: draftForm.reviewScopeReviewed,
+                                secretSafe: draftForm.reviewSecretSafe,
+                                networkReviewed: draftForm.reviewNetworkReviewed,
+                                runtimeWriteReviewed: draftForm.reviewRuntimeWriteReviewed,
+                            },
+                        }
                         : undefined,
                 },
                 downstreamTarget: draftForm.downstreamTarget || undefined,
@@ -903,6 +970,11 @@ export default function FeatureStorePage() {
                                                 <span className="rounded-md border px-2 py-1">
                                                     capability: {draft.capabilityReport?.isReady ? "ready" : "missing requirements"}
                                                 </span>
+                                                {draft.builderMode === "custom_code" ? (
+                                                    <span className="rounded-md border px-2 py-1">
+                                                        code review: {draft.customCodeReport?.isReady ? "ready" : "pending"}
+                                                    </span>
+                                                ) : null}
                                             </div>
                                             {draft.capabilityReport && !draft.capabilityReport.isReady ? (
                                                 <div className="space-y-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground">
@@ -939,7 +1011,10 @@ export default function FeatureStorePage() {
                                                 <Button
                                                     variant="outline"
                                                     onClick={() => handleMarkReady(draft)}
-                                                    disabled={!draft.capabilityReport?.isReady}
+                                                    disabled={
+                                                        !draft.capabilityReport?.isReady ||
+                                                        (draft.builderMode === "custom_code" && !draft.customCodeReport?.isReady)
+                                                    }
                                                 >
                                                     Mark Ready
                                                 </Button>
@@ -1154,6 +1229,100 @@ export default function FeatureStorePage() {
                                 </p>
                             </div>
                         ) : null}
+                        {draftForm.builderMode === "custom_code" ? (
+                            <div className="space-y-4 rounded-lg border bg-muted/10 p-4">
+                                <div className="grid gap-2 lg:grid-cols-2">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="draft-code-language">Language</Label>
+                                        <select
+                                            id="draft-code-language"
+                                            className="h-10 rounded-md border bg-background px-3 text-sm"
+                                            value={draftForm.customCodeLanguage}
+                                            onChange={(event) =>
+                                                setDraftForm((current) => ({
+                                                    ...current,
+                                                    customCodeLanguage: event.target.value,
+                                                }))
+                                            }
+                                        >
+                                            <option value="typescript">TypeScript</option>
+                                            <option value="tsx">TSX</option>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="html">HTML</option>
+                                        </select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="draft-code-entry">Entry file</Label>
+                                        <Input
+                                            id="draft-code-entry"
+                                            value={draftForm.customCodeEntryFile}
+                                            onChange={(event) =>
+                                                setDraftForm((current) => ({
+                                                    ...current,
+                                                    customCodeEntryFile: event.target.value,
+                                                }))
+                                            }
+                                            placeholder="app.tsx"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="draft-code-source">Source code</Label>
+                                    <Textarea
+                                        id="draft-code-source"
+                                        value={draftForm.customCodeSource}
+                                        onChange={(event) =>
+                                            setDraftForm((current) => ({
+                                                ...current,
+                                                customCodeSource: event.target.value,
+                                            }))
+                                        }
+                                        rows={16}
+                                        className="font-mono text-xs"
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="draft-code-review">Review summary</Label>
+                                    <Textarea
+                                        id="draft-code-review"
+                                        value={draftForm.customCodeReviewSummary}
+                                        onChange={(event) =>
+                                            setDraftForm((current) => ({
+                                                ...current,
+                                                customCodeReviewSummary: event.target.value,
+                                            }))
+                                        }
+                                        rows={4}
+                                        placeholder="Explain scope, data access, network assumptions, and why this code is safe for workspace use."
+                                    />
+                                </div>
+                                <div className="grid gap-2 md:grid-cols-2">
+                                    {[
+                                        ["reviewScopeReviewed", "Workspace scope reviewed"],
+                                        ["reviewSecretSafe", "No secrets embedded"],
+                                        ["reviewNetworkReviewed", "Network behavior reviewed"],
+                                        ["reviewRuntimeWriteReviewed", "Runtime write impact reviewed"],
+                                    ].map(([field, label]) => (
+                                        <label
+                                            key={field}
+                                            className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={Boolean(draftForm[field])}
+                                                onChange={(event) =>
+                                                    setDraftForm((current) => ({
+                                                        ...current,
+                                                        [field]: event.target.checked,
+                                                    }))
+                                                }
+                                            />
+                                            <span>{label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
                         <div className="rounded-lg border bg-muted/10 p-4 text-sm">
                             <div className="font-medium">Capability check</div>
                             <div className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -1207,6 +1376,45 @@ export default function FeatureStorePage() {
                                     blocks={jsonBlocksPreview.blocks}
                                     error={jsonBlocksPreview.error}
                                 />
+                            </div>
+                        ) : null}
+                        {draftForm.builderMode === "custom_code" ? (
+                            <div className="rounded-lg border bg-muted/10 p-4">
+                                <div className="mb-3 font-medium">custom_code review</div>
+                                <div className="flex flex-wrap gap-2 text-xs">
+                                    <span className="rounded-md border px-2 py-1">
+                                        status: {customCodeReviewPreview.isReady ? "ready" : "review required"}
+                                    </span>
+                                    <span className="rounded-md border px-2 py-1">
+                                        language: {draftForm.customCodeLanguage}
+                                    </span>
+                                    <span className="rounded-md border px-2 py-1">
+                                        source length: {customCodeReviewPreview.sourceLength}
+                                    </span>
+                                </div>
+                                <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                                    {!customCodeReviewPreview.hasEntryFile ? (
+                                        <div>Entry file is required.</div>
+                                    ) : null}
+                                    {!customCodeReviewPreview.hasSourceCode ? (
+                                        <div>Source code is required.</div>
+                                    ) : null}
+                                    {!customCodeReviewPreview.hasReviewSummary ? (
+                                        <div>Review summary is required.</div>
+                                    ) : null}
+                                    {customCodeReviewPreview.missingChecklistKeys.length ? (
+                                        <div>
+                                            Checklist pending: {customCodeReviewPreview.missingChecklistKeys.join(", ")}
+                                        </div>
+                                    ) : null}
+                                </div>
+                                {draftForm.customCodeSource.trim() ? (
+                                    <div className="mt-4">
+                                        <CodeBlock title={draftForm.customCodeEntryFile || "custom_code"}>
+                                            {draftForm.customCodeSource}
+                                        </CodeBlock>
+                                    </div>
+                                ) : null}
                             </div>
                         ) : null}
                     </div>
