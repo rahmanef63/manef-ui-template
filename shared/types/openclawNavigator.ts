@@ -4,6 +4,7 @@ export interface OpenClawScopeNode {
   _id: Id<"workspaceTrees">;
   agentId?: string;
   agentIds: string[];
+  featureKeys: string[];
   name: string;
   ownerEmail?: string;
   ownerId?: Id<"userProfiles">;

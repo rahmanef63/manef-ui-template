@@ -8,3 +8,4 @@ export const listAuditLogsRef = typedApi.features.users.api.listAuditLogs;
 export const listRegistrationRequestsRef = typedApi.features.auth.api.listRegistrationRequests;
 export const approveRegistrationRequestRef = typedApi.features.auth.api.approveRegistrationRequest;
 export const denyRegistrationRequestRef = typedApi.features.auth.api.denyRegistrationRequest;
+export const issueTemporaryPasswordForUserRef = typedApi.features.auth.api.issueTemporaryPasswordForUser;

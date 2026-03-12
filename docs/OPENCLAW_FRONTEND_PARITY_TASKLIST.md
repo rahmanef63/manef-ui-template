@@ -243,6 +243,11 @@ Remaining phase setelah session ini:
   - backend navigator sekarang menghitung `agentIds` dari `workspaceAgents`
   - build produksi `manef-ui` lolos setelah perubahan backend model
 - [ ] Hilangkan fallback ke workspace legacy untuk halaman OpenClaw-only.
+- [x] `WorkspaceRouteGuard` harus mengakui scope OpenClaw, bukan hanya workspace legacy.
+  Bukti:
+  - guard sekarang memeriksa slug terhadap `openclawNavigator`
+  - file:
+    [WorkspaceRouteGuard.tsx](/home/rahman/projects/manef-ui/features/workspaces/components/WorkspaceRouteGuard.tsx)
 
 Definition of done:
 
@@ -471,6 +476,13 @@ Definition of done:
 - [ ] Tambahkan self-service status untuk request registrasi:
   `pending`, `matched workspace`, `approved`, `denied`.
 - [ ] Tambahkan history password reset dan notice yang lebih jelas di UI admin.
+- [x] Tambahkan kolom `Password` di `Admin -> Users`.
+  Bukti:
+  - admin dapat melihat status temporary password
+  - admin dapat `Issue Temp Password` atau `Reset Temp Password`
+  - daftar workspace user juga ditampilkan beserta `featureKeys`
+  - file:
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
 
 ## Nodes and exec approvals
 

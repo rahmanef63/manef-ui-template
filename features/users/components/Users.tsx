@@ -6,6 +6,7 @@ import {
     approveRegistrationRequestRef,
     denyRegistrationRequestRef,
     getUsersRef,
+    issueTemporaryPasswordForUserRef,
     listRegistrationRequestsRef,
     updateUserStatusRef,
 } from "@/shared/convex/admin";
@@ -73,8 +74,15 @@ export default function Users() {
         email: string;
         phone?: string;
         mustChangePassword?: boolean;
+        temporaryPasswordIssuedAt?: number;
         roles: string[];
         status: string;
+        workspaces: Array<{
+            featureKeys: string[];
+            name: string;
+            slug: string;
+            workspaceId: Id<"workspaceTrees">;
+        }>;
         createdAt: number;
         updatedAt: number;
     }> | undefined;
@@ -98,6 +106,7 @@ export default function Users() {
     const updateStatus = useMutation(updateUserStatusRef);
     const approveRegistration = useMutation(approveRegistrationRequestRef);
     const denyRegistration = useMutation(denyRegistrationRequestRef);
+    const issueTemporaryPassword = useMutation(issueTemporaryPasswordForUserRef);
     const channelBindings = (useQuery(listChannelWorkspaceBindingsRef, {}) as Array<{
         access?: string;
         agentId?: string;
@@ -136,6 +145,7 @@ export default function Users() {
     const [search, setSearch] = useState("");
     const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
     const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
+    const [busyUserPasswordId, setBusyUserPasswordId] = useState<string | null>(null);
     const [channelWorkspaceId, setChannelWorkspaceId] = useState("");
     const [channelId, setChannelId] = useState("");
     const [channelBusy, setChannelBusy] = useState(false);
@@ -217,6 +227,19 @@ export default function Users() {
             });
         } finally {
             setBusyRequestId(null);
+        }
+    };
+
+    const handleIssueUserPassword = async (userId: Id<"authUsers">) => {
+        setBusyUserPasswordId(userId);
+        try {
+            const result = await issueTemporaryPassword({ userId });
+            setRevealedPasswords((current) => ({
+                ...current,
+                [userId]: result.temporaryPassword,
+            }));
+        } finally {
+            setBusyUserPasswordId(null);
         }
     };
 
@@ -686,7 +709,9 @@ export default function Users() {
                         <TableHeader>
                             <TableRow className="bg-muted/10">
                                 <TableHead className="w-[300px]">User</TableHead>
+                                <TableHead>Workspaces</TableHead>
                                 <TableHead>Roles</TableHead>
+                                <TableHead>Password</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Last Updated</TableHead>
@@ -696,7 +721,7 @@ export default function Users() {
                         <TableBody>
                             {filteredUsers.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                                         No users found.
                                     </TableCell>
                                 </TableRow>
@@ -719,6 +744,37 @@ export default function Users() {
                                                 </div>
                                             </div>
                                         </TableCell>
+                                        <TableCell className="align-top">
+                                            <div className="flex max-w-md flex-wrap gap-1">
+                                                {user.workspaces.length === 0 ? (
+                                                    <span className="text-xs text-muted-foreground">No workspace</span>
+                                                ) : (
+                                                    user.workspaces.map((workspace) => (
+                                                        <div
+                                                            key={workspace.workspaceId}
+                                                            className="rounded-md border px-2 py-1 text-xs"
+                                                        >
+                                                            <div className="font-medium">{workspace.name}</div>
+                                                            <div className="text-muted-foreground">{workspace.slug}</div>
+                                                            {workspace.featureKeys.length > 0 ? (
+                                                                <div className="mt-1 flex flex-wrap gap-1">
+                                                                    {workspace.featureKeys.slice(0, 4).map((featureKey) => (
+                                                                        <Badge key={featureKey} variant="secondary" className="font-normal text-[10px]">
+                                                                            {featureKey}
+                                                                        </Badge>
+                                                                    ))}
+                                                                    {workspace.featureKeys.length > 4 ? (
+                                                                        <Badge variant="outline" className="font-normal text-[10px]">
+                                                                            +{workspace.featureKeys.length - 4}
+                                                                        </Badge>
+                                                                    ) : null}
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex gap-1 flex-wrap">
                                                 {user.roles.map((role) => (
@@ -731,6 +787,34 @@ export default function Users() {
                                                         Temp password
                                                     </Badge>
                                                 ) : null}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="align-top">
+                                            <div className="space-y-2">
+                                                <div className="text-xs text-muted-foreground">
+                                                    {user.mustChangePassword
+                                                        ? "Temporary password active"
+                                                        : user.temporaryPasswordIssuedAt
+                                                            ? `Updated ${formatTime(user.temporaryPasswordIssuedAt)}`
+                                                            : "No temporary password"}
+                                                </div>
+                                                {revealedPasswords[user._id] ? (
+                                                    <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+                                                        <div className="font-mono font-semibold">{revealedPasswords[user._id]}</div>
+                                                        <div>Berikan sekali ke user. Setelah login, password ini harus diganti.</div>
+                                                    </div>
+                                                ) : null}
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    disabled={busyUserPasswordId === user._id}
+                                                    onClick={() => handleIssueUserPassword(user._id)}
+                                                >
+                                                    {busyUserPasswordId === user._id ? (
+                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    ) : null}
+                                                    {user.temporaryPasswordIssuedAt ? "Reset Temp Password" : "Issue Temp Password"}
+                                                </Button>
                                             </div>
                                         </TableCell>
                                         <TableCell>

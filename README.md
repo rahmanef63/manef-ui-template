@@ -157,6 +157,13 @@ Progress terbaru:
   - request registrasi
   - temporary password
   - wajib ganti password saat first login
+- `Admin -> Users` sekarang menampilkan:
+  - daftar workspace per user
+  - daftar feature workspace
+  - kolom password sementara + reset password sementara
+- `WorkspaceRouteGuard` sekarang mengakui slug workspace OpenClaw langsung,
+  jadi admin bisa membuka workspace non-legacy tanpa kena error
+  `Workspace tidak ditemukan`
 
 Remaining phase terdekat:
 
