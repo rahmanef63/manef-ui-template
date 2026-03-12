@@ -4,6 +4,7 @@ import { Suspense, useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
 import { FEATURE_REGISTRY } from "@/features/registry";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
+import { featureRegistry } from "@/shared/config/registry";
 import { getActiveTab } from "@/shared/config/menu-utils";
 import { Loader2 } from "lucide-react";
 import { PageTabsBlock } from "@/shared/block/ui/layout/PageTabsBlock";
@@ -52,8 +53,17 @@ export default function CatchAllPage() {
         !featureId ||
         !navigator.selectedScope?.featureKeys?.length ||
         navigator.selectedScope.featureKeys.includes(featureId);
+    const featureManifest = featureId
+        ? featureRegistry.find((feature) => feature.id === featureId)
+        : null;
+    const requiredRoles = featureManifest?.requiredRoles as readonly string[] | undefined;
+    const hasRoleAccess =
+        !requiredRoles?.length ||
+        (navigator.isAdmin
+            ? requiredRoles.includes("Admin")
+            : requiredRoles.includes("Member"));
 
-    if (!isFound || !Component || !hasWorkspaceFeatureAccess) {
+    if (!isFound || !Component || !hasWorkspaceFeatureAccess || !hasRoleAccess) {
         notFound();
     }
 

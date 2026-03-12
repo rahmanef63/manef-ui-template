@@ -222,7 +222,15 @@ Remaining phase setelah session ini:
   - dialog create/edit draft
   - file:
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
-- [ ] Tambahkan admin guard backend/frontend yang lebih tegas untuk install/uninstall
+- [x] Tambahkan admin guard backend/frontend yang lebih tegas untuk install/uninstall
+  dan grant/revoke skill workspace.
+  Bukti:
+  - halaman dashboard leaf sekarang menolak feature jika role viewer tidak
+    cocok dengan `requiredRoles` feature:
+    [page.tsx](/home/rahman/projects/manef-ui/app/dashboard/[workspaceSlug]/[...catchAll]/page.tsx)
+  - halaman `Skills` sekarang read-only untuk non-admin di workspace aktif:
+    [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
+    [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
 - [ ] Tambahkan preview registry tersendiri jika builder output mulai punya komponen interaktif
 - [ ] Tambahkan renderer draft `json_blocks`
 - [ ] Tambahkan editor `custom_code` yang lebih aman dari textarea metadata sederhana

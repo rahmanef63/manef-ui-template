@@ -179,6 +179,10 @@ Progress terbaru:
   - installed features
   - granted skills
   - agent policy rows
+- RBAC store sekarang lebih tegas:
+  - route leaf dashboard mengikuti `requiredRoles`
+  - `Skills Store` menjadi read-only untuk non-admin
+  - menu/tab workspace mengikuti `featureKeys`
 
 Remaining phase terdekat:
 
@@ -186,7 +190,6 @@ Remaining phase terdekat:
   `json_blocks`
 - editor aman `Agent Builder`:
   `custom_code`
-- RBAC lebih tegas untuk `Feature Store`
 - publish/downstream bridge ke `Superspace`
 
 Skills Store note:

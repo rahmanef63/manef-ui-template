@@ -26,7 +26,7 @@ Ringkasan status:
 
 Remaining tasks yang masih relevan:
 
-1. Hardening RBAC dan UX `Feature Store`.
+1. Turunkan `Skills Store` menjadi policy yang lebih tegas untuk `workspace -> agents -> skills`.
 2. Bangun `Agent Builder` mode `json_blocks`.
 3. Bangun `Agent Builder` mode `custom_code`.
 4. Tentukan contract publish/downstream ke `Superspace`.

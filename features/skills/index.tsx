@@ -12,7 +12,7 @@ import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNav
 
 export default function SkillsPage() {
     const router = useRouter();
-    const { selectedScope } = useOpenClawNavigator();
+    const { selectedScope, isAdmin } = useOpenClawNavigator();
     const [filter, setFilter] = useState("");
     const [sourceType, setSourceType] = useState("all");
     const [isRefreshing, startRefresh] = useTransition();
@@ -79,6 +79,7 @@ export default function SkillsPage() {
                 </div>
             ) : (
                 <SkillsList
+                    isAdmin={isAdmin}
                     selectedScopeName={selectedScope?.name}
                     filter={filter}
                     onFilterChange={setFilter}

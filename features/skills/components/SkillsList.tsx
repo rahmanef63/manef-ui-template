@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 
 interface SkillsListProps {
+    isAdmin: boolean;
     selectedScopeName?: string;
     filter: string;
     onFilterChange: (val: string) => void;
@@ -20,6 +21,7 @@ interface SkillsListProps {
 }
 
 export function SkillsList({
+    isAdmin,
     selectedScopeName,
     filter,
     onFilterChange,
@@ -87,7 +89,7 @@ export function SkillsList({
                         <div className="font-medium text-foreground">Workspace policy target</div>
                         <div>
                             {selectedScopeName
-                                ? `${selectedScopeName} sekarang bisa grant/revoke skill ke semua agent di scope aktif.`
+                                ? `${selectedScopeName} ${isAdmin ? "sekarang bisa grant/revoke skill ke semua agent di scope aktif." : "sedang dibaca dalam mode read-only karena Anda bukan admin."}`
                                 : "Pilih workspace untuk memberi policy skill ke scope aktif."}
                         </div>
                     </div>
@@ -155,7 +157,7 @@ export function SkillsList({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        disabled={isGranting}
+                                        disabled={isGranting || !isAdmin}
                                         onClick={() => onWorkspaceGrant(skill._id, !skill.workspacePolicyEnabled)}
                                     >
                                         {skill.workspacePolicyEnabled ? "Revoke from Workspace" : "Grant to Workspace"}
@@ -163,7 +165,7 @@ export function SkillsList({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        disabled={isToggling}
+                                        disabled={isToggling || !isAdmin}
                                         onClick={() => onToggle(skill._id, !skill.enabled)}
                                     >
                                         {skill.enabled ? "Disable" : "Enable"}
