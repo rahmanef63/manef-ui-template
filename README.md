@@ -138,8 +138,11 @@ Progress terbaru:
   - `identity -> workspace`
 - `Feature Store` sekarang sudah hidup di admin menu:
   - katalog item live dari backend
+  - daftar feature `manef` yang nyata
   - preview metadata live
   - install/uninstall per workspace
+  - metadata capability:
+    `featureKey`, `route`, `requiredRoles`, `grantedSkillKeys`, `runtimeDomains`
 - `Agent Builder Drafts` sekarang sudah hidup di `Feature Store`:
   - draft `json_blocks`
   - draft `custom_code`
@@ -156,6 +159,7 @@ Remaining phase terdekat:
   `json_blocks`
 - editor aman `Agent Builder`:
   `custom_code`
+- turunkan install feature menjadi policy skill/capability agent per workspace
 - RBAC lebih tegas untuk `Feature Store`
 - publish/downstream bridge ke `Superspace`
 

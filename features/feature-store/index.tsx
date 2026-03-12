@@ -2,7 +2,31 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Box, Blocks, Code2, LayoutTemplate, Package2, Rocket } from "lucide-react";
+import {
+    BarChart2,
+    Blocks,
+    Bot,
+    Box,
+    Bug,
+    Clock,
+    FileClock,
+    FileText,
+    History,
+    Inbox,
+    LayoutDashboard,
+    LayoutTemplate,
+    Link,
+    MessageSquare,
+    Monitor,
+    Package2,
+    Rocket,
+    Settings,
+    Shield,
+    ShieldCheck,
+    Store,
+    Users,
+    Zap,
+} from "lucide-react";
 import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
@@ -23,12 +47,30 @@ import {
 } from "@/components/ui/dialog";
 
 const ICON_MAP = {
+    BarChart2,
+    Bot,
     AppWindow: Box,
     Blocks,
+    Bug,
+    Clock,
     Code2,
+    FileClock,
+    FileText,
+    History,
+    Inbox,
     LayoutTemplate,
+    LayoutDashboard,
+    Link,
+    MessageSquare,
+    Monitor,
     Package2,
     Rocket,
+    Settings,
+    Shield,
+    ShieldCheck,
+    Store,
+    Users,
+    Zap,
 };
 
 const SCOPE_LABELS = {
@@ -361,6 +403,47 @@ export default function FeatureStorePage() {
                                                     {tag}
                                                 </span>
                                             ))}
+                                        </div>
+
+                                        <div className="grid gap-3 rounded-lg border bg-muted/10 p-3 text-xs text-muted-foreground lg:grid-cols-3">
+                                            <div className="space-y-1">
+                                                <div className="font-medium text-foreground">Feature key</div>
+                                                <div>{item.featureKey ?? "-"}</div>
+                                                <div className="break-all">{item.route ?? "-"}</div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="font-medium text-foreground">Grants skills</div>
+                                                {(item.grantedSkillKeys ?? []).length ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {item.grantedSkillKeys.map((skill: string) => (
+                                                            <span key={skill} className="rounded-md border px-2 py-1">
+                                                                {skill}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div>-</div>
+                                                )}
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="font-medium text-foreground">Runtime domains</div>
+                                                {(item.runtimeDomains ?? []).length ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {item.runtimeDomains.map((domain: string) => (
+                                                            <span key={domain} className="rounded-md border px-2 py-1">
+                                                                {domain}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div>-</div>
+                                                )}
+                                                {(item.requiredRoles ?? []).length ? (
+                                                    <div className="pt-1">
+                                                        Roles: {item.requiredRoles.join(", ")}
+                                                    </div>
+                                                ) : null}
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center justify-between gap-3">

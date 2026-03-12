@@ -92,6 +92,13 @@ menambah feature baru di `manef-ui`.
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
   - source backend vendor:
     [api.ts](/home/rahman/projects/manef-ui/vendor/manef-db/convex/features/featureStore/api.ts)
+- [x] `Feature Store` sekarang juga menampilkan daftar feature `manef` yang nyata,
+  bukan hanya item generik.
+  Bukti:
+  - card sekarang menampilkan `featureKey`, `route`, `requiredRoles`,
+    `grantedSkillKeys`, dan `runtimeDomains`
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [x] `Agent Builder` sekarang punya draft surface untuk dua mode output:
   `JSON block prerender` dan `custom HTML/TypeScript`.
 -  Bukti:
@@ -118,6 +125,8 @@ menambah feature baru di `manef-ui`.
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [ ] Workspace yang berbeda tidak boleh otomatis mewarisi seluruh app/config
   root kecuali ada policy inheritance eksplisit.
+- [ ] Install feature ke workspace harus bisa diturunkan menjadi policy agent:
+  agent di workspace tersebut otomatis mewarisi skill/capability feature itu.
 - [ ] UI store harus siap menjadi bridge ke project eksternal `Superspace Apps`.
 
 Konteks integrasi eksternal:
@@ -202,6 +211,10 @@ Remaining phase setelah session ini:
   Bukti:
   - badge + filter scope:
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [x] Tampilkan metadata RBAC/capability per feature:
+  `featureKey`, `route`, `requiredRoles`, `grantedSkillKeys`, `runtimeDomains`
+  Bukti:
+  - [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [x] Tambahkan draft surface `Agent Builder`:
   `json_blocks` dan `custom_code`
   Bukti:
@@ -213,6 +226,7 @@ Remaining phase setelah session ini:
 - [ ] Tambahkan preview registry tersendiri jika builder output mulai punya komponen interaktif
 - [ ] Tambahkan renderer draft `json_blocks`
 - [ ] Tambahkan editor `custom_code` yang lebih aman dari textarea metadata sederhana
+- [ ] Turunkan `grantedSkillKeys` feature menjadi policy agent/workspace yang nyata
 
 ## Navigator and scope
 
