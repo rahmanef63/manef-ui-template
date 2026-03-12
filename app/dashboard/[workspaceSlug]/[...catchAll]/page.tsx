@@ -3,13 +3,15 @@
 import { Suspense, useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
 import { FEATURE_REGISTRY } from "@/features/registry";
-import { getMenuFromPath, getActiveTab } from "@/shared/config/menu-utils";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
+import { getActiveTab } from "@/shared/config/menu-utils";
 import { Loader2 } from "lucide-react";
 import { PageTabsBlock } from "@/shared/block/ui/layout/PageTabsBlock";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
 export default function CatchAllPage() {
     const params = useParams();
+    const navigator = useOpenClawNavigator();
 
     // params.catchAll is string[] e.g. ['tasks', 'my'] or ['tasks'] or ['dashboard', 'overview']
     const catchAll = params?.catchAll;
@@ -22,15 +24,15 @@ export default function CatchAllPage() {
     const pathSuffix = segments.join("/");
     const fullPath = `/dashboard/${workspaceSlug}/${pathSuffix}`;
 
-    const { Component, isFound } = useMemo(() => {
-        if (!workspaceSlug || segments.length === 0) return { Component: null, isFound: false };
+    const { Component, isFound, featureId } = useMemo(() => {
+        if (!workspaceSlug || segments.length === 0) return { Component: null, isFound: false, featureId: null };
 
         // 1. Resolve which feature maps to this path using our robust matcher
         // We use getActiveTab because it finds the specific leaf node (tab) matching the route
         const activeTab = getActiveTab(fullPath);
 
         if (!activeTab) {
-            return { Component: null, isFound: false };
+            return { Component: null, isFound: false, featureId: null };
         }
 
         const featureId = activeTab.id;
@@ -40,13 +42,18 @@ export default function CatchAllPage() {
 
         if (!Component) {
             console.warn(`Feature found for path ${fullPath} (id: ${featureId}) but no component registered in FEATURE_REGISTRY`);
-            return { Component: null, isFound: false };
+            return { Component: null, isFound: false, featureId };
         }
 
-        return { Component, isFound: true };
+        return { Component, isFound: true, featureId };
     }, [fullPath, workspaceSlug, segments]);
 
-    if (!isFound || !Component) {
+    const hasWorkspaceFeatureAccess =
+        !featureId ||
+        !navigator.selectedScope?.featureKeys?.length ||
+        navigator.selectedScope.featureKeys.includes(featureId);
+
+    if (!isFound || !Component || !hasWorkspaceFeatureAccess) {
         notFound();
     }
 

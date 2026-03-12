@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { getMenuFromPath, getActiveTab } from "@/shared/config";
 import type { MenuTab } from "@/shared/config";
 import { cn } from "@/lib/utils";
@@ -13,18 +14,29 @@ interface PageTabsBlockProps {
 
 export function PageTabsBlock({ className }: PageTabsBlockProps) {
     const pathname = usePathname();
+    const navigator = useOpenClawNavigator();
 
     const menu = React.useMemo(() => getMenuFromPath(pathname), [pathname]);
     const activeTab = React.useMemo(() => getActiveTab(pathname), [pathname]);
+    const visibleTabs = React.useMemo(() => {
+        if (!menu) {
+            return [];
+        }
+        const featureKeys = navigator.selectedScope?.featureKeys ?? [];
+        if (featureKeys.length === 0) {
+            return menu.tabs;
+        }
+        return menu.tabs.filter((tab) => featureKeys.includes(tab.id));
+    }, [menu, navigator.selectedScope?.featureKeys]);
 
-    if (!menu || menu.tabs.length === 0) {
+    if (!menu || visibleTabs.length === 0) {
         return null;
     }
 
     return (
         <div className={cn("border-b", className)}>
             <nav className="flex gap-1 overflow-x-auto px-4 py-2" role="tablist">
-                {menu.tabs.map((tab: MenuTab) => {
+                {visibleTabs.map((tab: MenuTab) => {
                     const isActive = activeTab?.id === tab.id;
 
                     return (

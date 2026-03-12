@@ -6,6 +6,7 @@ import { usePathname, useParams } from "next/navigation";
 import { useSidebar } from "@/components/ui/sidebar";
 import { normalizeBottomNav, resolveIcon } from "@/shared/config";
 import type { BottomNavItem } from "@/shared/config";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -50,6 +51,7 @@ function BottomNavContent({
     const pathname = usePathname();
     const params = useParams();
     const { toggleSidebar } = useSidebar();
+    const navigator = useOpenClawNavigator();
     const [mounted, setMounted] = React.useState(false);
 
     const workspaceSlug = typeof params?.workspaceSlug === 'string' ? params.workspaceSlug : undefined;
@@ -59,8 +61,14 @@ function BottomNavContent({
     }, []);
 
     const items = React.useMemo(() => {
-        return normalizeBottomNav(portalId, workspaceSlug);
-    }, [portalId, workspaceSlug]);
+        return normalizeBottomNav(
+            portalId,
+            workspaceSlug,
+            navigator.selectedScope?.featureKeys?.length
+                ? navigator.selectedScope.featureKeys
+                : undefined,
+        );
+    }, [navigator.selectedScope?.featureKeys, portalId, workspaceSlug]);
 
     if (!mounted) {
         return <BottomNavSkeleton className={className} />;

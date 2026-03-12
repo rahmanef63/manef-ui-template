@@ -147,6 +147,8 @@ Progress terbaru:
   - draft `json_blocks`
   - draft `custom_code`
   - create/edit/mark-ready/archive per workspace
+  - contract output minimum:
+    `requiredFeatureKeys`, `requiredSkillKeys`, linked agents/channels
 - `Skills` sekarang diposisikan sebagai `Skills Store`:
   - filter source-aware
   - label `by Rahman`, `by ClawHub`, `by OpenClaw`
@@ -165,6 +167,16 @@ Progress terbaru:
 - `WorkspaceRouteGuard` sekarang mengakui slug workspace OpenClaw langsung,
   jadi admin bisa membuka workspace non-legacy tanpa kena error
   `Workspace tidak ditemukan`
+- workspace dengan `featureKeys` eksplisit sekarang membatasi:
+  - sidebar
+  - bottom navigation
+  - page tabs
+  - route leaf dashboard
+- `Feature Store` sekarang juga menampilkan capability policy live untuk workspace
+  aktif:
+  - installed features
+  - granted skills
+  - agent policy rows
 
 Remaining phase terdekat:
 
@@ -172,7 +184,6 @@ Remaining phase terdekat:
   `json_blocks`
 - editor aman `Agent Builder`:
   `custom_code`
-- turunkan install feature menjadi policy skill/capability agent per workspace
 - turunkan `Skills Store` menjadi policy skill/capability agent per workspace
 - RBAC lebih tegas untuk `Feature Store`
 - publish/downstream bridge ke `Superspace`

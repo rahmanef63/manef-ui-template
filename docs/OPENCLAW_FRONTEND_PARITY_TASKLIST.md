@@ -226,7 +226,27 @@ Remaining phase setelah session ini:
 - [ ] Tambahkan preview registry tersendiri jika builder output mulai punya komponen interaktif
 - [ ] Tambahkan renderer draft `json_blocks`
 - [ ] Tambahkan editor `custom_code` yang lebih aman dari textarea metadata sederhana
-- [ ] Turunkan `grantedSkillKeys` feature menjadi policy agent/workspace yang nyata
+- [x] Turunkan `grantedSkillKeys` feature menjadi policy agent/workspace yang nyata
+  Bukti:
+  - halaman store sekarang membaca policy workspace live:
+    `getWorkspaceCapabilityPolicy`
+  - card capability policy dan draft requirement ada di
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+  - route, sidebar, bottom-nav, dan page tabs sekarang memfilter feature dari
+    `selectedScope.featureKeys`
+  - file:
+    [SidebarNavTreeBlock.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/SidebarNavTreeBlock.tsx)
+    [BottomNavBlock.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/BottomNavBlock.tsx)
+    [PageTabsBlock.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/PageTabsBlock.tsx)
+    [menu-utils.ts](/home/rahman/projects/manef-ui/shared/config/menu-utils.ts)
+
+- [x] Perketat access matrix per workspace di permukaan navigasi utama.
+  Bukti:
+  - workspace dengan `featureKeys` eksplisit sekarang hanya melihat menu/tab yang
+    sesuai
+  - route leaf yang tidak termasuk `featureKeys` sekarang `notFound()`
+  - file:
+    [page.tsx](/home/rahman/projects/manef-ui/app/dashboard/[workspaceSlug]/[...catchAll]/page.tsx)
 
 ## Navigator and scope
 

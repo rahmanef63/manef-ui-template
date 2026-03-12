@@ -83,7 +83,21 @@ function resolveRoute(href: string, workspaceSlug?: string): string {
     return href;
 }
 
-function resolveFeatureHref(feature: FeatureManifest, workspaceSlug?: string): string {
+function canAccessFeature(
+    featureId: string,
+    availableMenuIds?: readonly MenuId[],
+) {
+    if (!availableMenuIds || availableMenuIds.length === 0) {
+        return true;
+    }
+    return availableMenuIds.includes(featureId);
+}
+
+function resolveFeatureHref(
+    feature: FeatureManifest,
+    workspaceSlug?: string,
+    availableMenuIds?: readonly MenuId[],
+): string {
     const navConfig: { children: readonly string[]; defaultChild?: string } | undefined =
         feature.id in NAVIGATION_REGISTRY
             ? (NAVIGATION_REGISTRY[
@@ -94,7 +108,14 @@ function resolveFeatureHref(feature: FeatureManifest, workspaceSlug?: string): s
         return resolveRoute(feature.route, workspaceSlug);
     }
 
-    const defaultChildId = navConfig.defaultChild ?? navConfig.children[0];
+    const availableChildren = navConfig.children.filter((childId) =>
+        canAccessFeature(childId, availableMenuIds),
+    );
+    const defaultChildId =
+        availableChildren.find((childId) => childId === navConfig.defaultChild) ??
+        availableChildren[0] ??
+        navConfig.defaultChild ??
+        navConfig.children[0];
     const defaultChild = featureRegistry.find((item) => item.id === defaultChildId) as FeatureManifest | undefined;
     if (!defaultChild) {
         return resolveRoute(feature.route, workspaceSlug);
@@ -143,7 +164,7 @@ export function normalizeBottomNav(
             id: feature.id,
             label: feature.label,
             icon: icon ?? "Menu", // Default icon if missing
-            href: resolveFeatureHref(feature, workspaceSlug),
+            href: resolveFeatureHref(feature, workspaceSlug, availableMenuIds),
         });
         return true;
     };
@@ -187,7 +208,8 @@ export function normalizeBottomNav(
 export function buildSidebarTree(
     portalId: string,
     workspaceSlug?: string,
-    viewerRole?: Role | null
+    viewerRole?: Role | null,
+    availableMenuIds?: readonly MenuId[],
 ): SidebarGroup[] {
     const config = getPortalConfig(portalId);
     const groups: SidebarGroup[] = [];
@@ -202,21 +224,39 @@ export function buildSidebarTree(
         ) {
             return null;
         }
-
-        // Get children from NAVIGATION_REGISTRY if any
-        // We use keyof typeof NAVIGATION_REGISTRY checking to avoid any
-        let tabs: MenuTab[] = [];
-        if (id in NAVIGATION_REGISTRY) {
-            const navConfig = NAVIGATION_REGISTRY[id as keyof typeof NAVIGATION_REGISTRY];
-            tabs = navConfig.children.map((childId: string) => {
-                const childFeature = featureRegistry.find(f => f.id === childId) as FeatureManifest | undefined;
-                if (!childFeature) return null;
-                return {
-                    id: childFeature.id,
-                    label: childFeature.label,
-                    href: resolveRoute(childFeature.route, workspaceSlug),
-                };
-            }).filter(Boolean) as MenuTab[];
+        const navConfig =
+            id in NAVIGATION_REGISTRY
+                ? NAVIGATION_REGISTRY[id as keyof typeof NAVIGATION_REGISTRY]
+                : undefined;
+        const tabs: MenuTab[] = navConfig
+            ? navConfig.children
+                .map((childId: string) => {
+                    const childFeature = featureRegistry.find(f => f.id === childId) as FeatureManifest | undefined;
+                    if (!childFeature) return null;
+                    if (
+                        viewerRole &&
+                        childFeature.requiredRoles?.length &&
+                        !childFeature.requiredRoles.includes(viewerRole)
+                    ) {
+                        return null;
+                    }
+                    if (!canAccessFeature(childFeature.id, availableMenuIds)) {
+                        return null;
+                    }
+                    return {
+                        id: childFeature.id,
+                        label: childFeature.label,
+                        href: resolveRoute(childFeature.route, workspaceSlug),
+                    };
+                })
+                .filter(Boolean) as MenuTab[]
+            : [];
+        const isParentFeature = tabs.length > 0 || Boolean(navConfig);
+        if (!isParentFeature && !canAccessFeature(feature.id, availableMenuIds)) {
+            return null;
+        }
+        if (navConfig && tabs.length === 0) {
+            return null;
         }
 
         const icon = feature.icon;
@@ -225,7 +265,7 @@ export function buildSidebarTree(
             id: feature.id,
             label: feature.label,
             icon: icon ?? "Menu", // Fallback
-            href: resolveFeatureHref(feature, workspaceSlug),
+            href: resolveFeatureHref(feature, workspaceSlug, availableMenuIds),
             tabs,
         };
     };

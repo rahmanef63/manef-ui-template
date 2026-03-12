@@ -94,9 +94,16 @@ export function SidebarNavTreeBlock({
         }
         return "Member";
     }, [authProfile?.roles, navigator.isAdmin]);
+    const availableMenuIds = React.useMemo(
+        () =>
+            navigator.selectedScope?.featureKeys?.length
+                ? navigator.selectedScope.featureKeys
+                : undefined,
+        [navigator.selectedScope?.featureKeys],
+    );
     const sidebarGroups = React.useMemo(
-        () => buildSidebarTree(portalId, workspaceSlug, viewerRole),
-        [portalId, workspaceSlug, viewerRole]
+        () => buildSidebarTree(portalId, workspaceSlug, viewerRole, availableMenuIds),
+        [availableMenuIds, portalId, workspaceSlug, viewerRole]
     );
 
     React.useEffect(() => {
@@ -108,10 +115,12 @@ export function SidebarNavTreeBlock({
             userPayloadName: userPayload.name,
             viewerRole,
             workspaceSlug: workspace?.slug ?? null,
+            availableFeatureKeys: availableMenuIds ?? null,
         });
     }, [
         authProfile?.name,
         authProfile?.roles,
+        availableMenuIds,
         viewerRole,
         session?.user?.name,
         session?.user?.email,

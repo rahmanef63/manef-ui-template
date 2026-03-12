@@ -95,6 +95,16 @@ export default function FeatureStorePage() {
         q: filter || undefined,
         scope: scopeFilter === "all" ? undefined : scopeFilter,
     }) as any[] | undefined;
+    const capabilityPolicy = useAppQuery(
+        appApi.features.featureStore.api.getWorkspaceCapabilityPolicy,
+        selectedScope?._id ? { workspaceId: selectedScope._id } : "skip",
+    ) as
+        | {
+            featureKeys: string[];
+            grantedSkillKeys: string[];
+            agentPolicies: Array<{ agentId: string; skillKeys: string[]; sourceItemKeys: string[] }>;
+        }
+        | undefined;
     const installItem = useAppMutation(appApi.features.featureStore.api.installFeatureStoreItem);
     const uninstallItem = useAppMutation(appApi.features.featureStore.api.uninstallFeatureStoreItem);
     const seedCatalog = useAppMutation(appApi.features.featureStore.api.seedFeatureStoreCatalog);
@@ -117,6 +127,8 @@ export default function FeatureStorePage() {
         builderMode: "json_blocks",
         linkedAgentIds: "",
         linkedChannelKeys: "",
+        requiredFeatureKeys: "",
+        requiredSkillKeys: "",
         previewHeadline: "",
         previewSummary: "",
         outputNotes: "",
@@ -160,6 +172,8 @@ export default function FeatureStorePage() {
                 builderMode: editingDraft.builderMode ?? activeDraftItem?.builderMode ?? "json_blocks",
                 linkedAgentIds: (editingDraft.linkedAgentIds ?? []).join(", "),
                 linkedChannelKeys: (editingDraft.linkedChannelKeys ?? []).join(", "),
+                requiredFeatureKeys: (editingDraft.requiredFeatureKeys ?? []).join(", "),
+                requiredSkillKeys: (editingDraft.requiredSkillKeys ?? []).join(", "),
                 previewHeadline: editingDraft.previewConfig?.headline ?? "",
                 previewSummary: editingDraft.previewConfig?.summary ?? "",
                 outputNotes: editingDraft.outputConfig?.notes ?? "",
@@ -174,6 +188,8 @@ export default function FeatureStorePage() {
             builderMode: activeDraftItem?.builderMode ?? "json_blocks",
             linkedAgentIds: (selectedScope?.agentIds ?? []).join(", "),
             linkedChannelKeys: "",
+            requiredFeatureKeys: activeDraftItem?.featureKey ? [activeDraftItem.featureKey].join(", ") : "",
+            requiredSkillKeys: (activeDraftItem?.grantedSkillKeys ?? []).join(", "),
             previewHeadline: activeDraftItem?.preview?.headline ?? "",
             previewSummary: activeDraftItem?.preview?.summary ?? "",
             outputNotes: "",
@@ -212,6 +228,8 @@ export default function FeatureStorePage() {
                 description: draftForm.description || undefined,
                 linkedAgentIds: parseCommaList(draftForm.linkedAgentIds),
                 linkedChannelKeys: parseCommaList(draftForm.linkedChannelKeys),
+                requiredFeatureKeys: parseCommaList(draftForm.requiredFeatureKeys),
+                requiredSkillKeys: parseCommaList(draftForm.requiredSkillKeys),
                 previewConfig: {
                     headline: draftForm.previewHeadline || undefined,
                     summary: draftForm.previewSummary || undefined,
@@ -251,6 +269,8 @@ export default function FeatureStorePage() {
             description: draft.description,
             linkedAgentIds: draft.linkedAgentIds,
             linkedChannelKeys: draft.linkedChannelKeys,
+            requiredFeatureKeys: draft.requiredFeatureKeys,
+            requiredSkillKeys: draft.requiredSkillKeys,
             previewConfig: draft.previewConfig,
             outputConfig: draft.outputConfig,
             downstreamTarget: draft.downstreamTarget,
@@ -347,6 +367,62 @@ export default function FeatureStorePage() {
                 </div>
             ) : (
                 <div className="space-y-6">
+                    <Card className="border-border/70">
+                        <CardHeader>
+                            <CardTitle className="text-base">Workspace Capability Policy</CardTitle>
+                            <CardDescription>
+                                Installed features in this workspace are materialized into granted skills per workspace and per linked agent.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 lg:grid-cols-3">
+                            <div className="rounded-lg border bg-muted/10 p-4">
+                                <div className="text-sm font-medium">Installed features</div>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {(capabilityPolicy?.featureKeys ?? selectedScope.featureKeys ?? []).length ? (
+                                        (capabilityPolicy?.featureKeys ?? selectedScope.featureKeys ?? []).map((featureKey: string) => (
+                                            <span key={featureKey} className="rounded-md border px-2 py-1 text-xs">
+                                                {featureKey}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground">No explicit feature policy yet.</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="rounded-lg border bg-muted/10 p-4">
+                                <div className="text-sm font-medium">Granted skills</div>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {(capabilityPolicy?.grantedSkillKeys ?? []).length ? (
+                                        capabilityPolicy?.grantedSkillKeys.map((skillKey: string) => (
+                                            <span key={skillKey} className="rounded-md border px-2 py-1 text-xs">
+                                                {skillKey}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground">No skills granted from installed features.</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="rounded-lg border bg-muted/10 p-4">
+                                <div className="text-sm font-medium">Agent policy rows</div>
+                                <div className="mt-2 space-y-2 text-xs">
+                                    {(capabilityPolicy?.agentPolicies ?? []).length ? (
+                                        capabilityPolicy?.agentPolicies.map((policy) => (
+                                            <div key={policy.agentId} className="rounded-md border px-3 py-2">
+                                                <div className="font-medium">{policy.agentId}</div>
+                                                <div className="mt-1 text-muted-foreground">
+                                                    {policy.skillKeys.join(", ") || "-"}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-sm text-muted-foreground">No agent-specific capability policy yet.</div>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <div className="grid gap-4 xl:grid-cols-2">
                         {items.map((item) => {
                             const Icon = ICON_MAP[item.icon] ?? Package2;
@@ -524,6 +600,12 @@ export default function FeatureStorePage() {
                                                 <span className="rounded-md border px-2 py-1">
                                                     channels: {(draft.linkedChannelKeys ?? []).length}
                                                 </span>
+                                                <span className="rounded-md border px-2 py-1">
+                                                    required features: {(draft.requiredFeatureKeys ?? []).length}
+                                                </span>
+                                                <span className="rounded-md border px-2 py-1">
+                                                    required skills: {(draft.requiredSkillKeys ?? []).length}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -633,6 +715,36 @@ export default function FeatureStorePage() {
                                         }))
                                     }
                                     placeholder="whatsapp, telegram"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid gap-2 lg:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="draft-required-features">Required feature keys</Label>
+                                <Input
+                                    id="draft-required-features"
+                                    value={draftForm.requiredFeatureKeys}
+                                    onChange={(event) =>
+                                        setDraftForm((current) => ({
+                                            ...current,
+                                            requiredFeatureKeys: event.target.value,
+                                        }))
+                                    }
+                                    placeholder="feature-store, agents, channels"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="draft-required-skills">Required skill keys</Label>
+                                <Input
+                                    id="draft-required-skills"
+                                    value={draftForm.requiredSkillKeys}
+                                    onChange={(event) =>
+                                        setDraftForm((current) => ({
+                                            ...current,
+                                            requiredSkillKeys: event.target.value,
+                                        }))
+                                    }
+                                    placeholder="agent-management, channel-routing"
                                 />
                             </div>
                         </div>
