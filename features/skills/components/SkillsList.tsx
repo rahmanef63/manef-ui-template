@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 
 interface SkillsListProps {
+    selectedScopeName?: string;
     filter: string;
     onFilterChange: (val: string) => void;
     sourceType: string;
@@ -13,10 +14,13 @@ interface SkillsListProps {
     onRefresh: () => void;
     isToggling: boolean;
     onToggle: (skillId: string, enabled: boolean) => void;
+    isGranting: boolean;
+    onWorkspaceGrant: (skillId: string, enabled: boolean) => void;
     skills: any[];
 }
 
 export function SkillsList({
+    selectedScopeName,
     filter,
     onFilterChange,
     sourceType,
@@ -26,6 +30,8 @@ export function SkillsList({
     onRefresh,
     isToggling,
     onToggle,
+    isGranting,
+    onWorkspaceGrant,
     skills,
 }: SkillsListProps) {
     return (
@@ -77,6 +83,14 @@ export function SkillsList({
                                 : "Belum ada skill ClawHub terdeteksi. Pull sync akan aktif saat lockfile/instalasi ClawHub tersedia."}
                         </div>
                     </div>
+                    <div className="space-y-1 lg:col-span-2">
+                        <div className="font-medium text-foreground">Workspace policy target</div>
+                        <div>
+                            {selectedScopeName
+                                ? `${selectedScopeName} sekarang bisa grant/revoke skill ke semua agent di scope aktif.`
+                                : "Pilih workspace untuk memberi policy skill ke scope aktif."}
+                        </div>
+                    </div>
                 </div>
             ) : null}
 
@@ -120,6 +134,15 @@ export function SkillsList({
                                 <div>Trust: {skill.trustLevel ?? "-"}</div>
                                 <div>Scope: {skill.skillScope ?? "-"}</div>
                                 <div>Install: {skill.installState ?? "-"}</div>
+                                <div>
+                                    Workspace access: {skill.workspacePolicyEnabled ? "granted" : "not granted"}
+                                </div>
+                                <div>
+                                    Workspace sources: {(skill.workspacePolicySources ?? []).join(", ") || "-"}
+                                </div>
+                                <div>
+                                    Assigned agents: {skill.workspaceAssignedAgentCount ?? 0}
+                                </div>
                                 {skill.homepage ? (
                                     <div className="break-all">Homepage: {skill.homepage}</div>
                                 ) : null}
@@ -128,14 +151,24 @@ export function SkillsList({
                                 <p className="text-[11px] text-muted-foreground">
                                     Runtime: {skill.runtimeEnabled ? "enabled" : "disabled"}
                                 </p>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={isToggling}
-                                    onClick={() => onToggle(skill._id, !skill.enabled)}
-                                >
-                                    {skill.enabled ? "Disable" : "Enable"}
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isGranting}
+                                        onClick={() => onWorkspaceGrant(skill._id, !skill.workspacePolicyEnabled)}
+                                    >
+                                        {skill.workspacePolicyEnabled ? "Revoke from Workspace" : "Grant to Workspace"}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isToggling}
+                                        onClick={() => onToggle(skill._id, !skill.enabled)}
+                                    >
+                                        {skill.enabled ? "Disable" : "Enable"}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ))}

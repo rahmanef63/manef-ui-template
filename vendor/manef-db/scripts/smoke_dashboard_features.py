@@ -56,6 +56,22 @@ def main() -> int:
 
     channels = run_convex("features/channels/api:listChannels", {})
     require(isinstance(channels, list) and len(channels) > 0, "channels must be non-empty")
+    workspace_channel_bindings = run_convex(
+        "features/channels/api:listChannelWorkspaceBindings",
+        {},
+    )
+    require(
+        isinstance(workspace_channel_bindings, list),
+        "workspace channel bindings response must be a list",
+    )
+    identity_workspace_bindings = run_convex(
+        "features/channels/api:listIdentityWorkspaceBindings",
+        {},
+    )
+    require(
+        isinstance(identity_workspace_bindings, list),
+        "identity workspace bindings response must be a list",
+    )
 
     config_entries = run_convex("features/config/api:listConfig", {"tenantId": "rahman-main"})
     require(
@@ -74,6 +90,36 @@ def main() -> int:
 
     cron_jobs = run_convex("features/crons/api:listJobs", {})
     require(isinstance(cron_jobs, list), "cron jobs response must be a list")
+
+    capability_policy = (
+        run_convex(
+            "features/featureStore/api:getWorkspaceCapabilityPolicy",
+            {"workspaceId": roots[0]["_id"]},
+        )
+        if roots
+        else {"featureKeys": [], "grantedSkillKeys": [], "agentPolicies": []}
+    )
+    require(
+        isinstance(capability_policy, dict),
+        "workspace capability policy response must be an object",
+    )
+    workspace_scoped_skills = (
+        run_convex(
+            "features/skills/api:listSkills",
+            {"workspaceId": roots[0]["_id"]},
+        )
+        if roots
+        else []
+    )
+    require(
+        isinstance(workspace_scoped_skills, list),
+        "workspace scoped skills response must be a list",
+    )
+    if workspace_scoped_skills:
+        require(
+            "workspacePolicyEnabled" in workspace_scoped_skills[0],
+            "workspace scoped skills must expose workspace policy status",
+        )
 
     logs = run_convex("features/logs/api:getRecentLogs", {"limit": 5})
     require(isinstance(logs, list), "logs response must be a list")
@@ -134,9 +180,12 @@ def main() -> int:
                 "agents": len(agents),
                 "skills": len(skills),
                 "channels": len(channels),
+                "workspaceChannelBindings": len(workspace_channel_bindings),
+                "identityWorkspaceBindings": len(identity_workspace_bindings),
                 "configEntries": len(config_entries),
                 "workspaceDocs": len(workspace_docs),
                 "cronJobs": len(cron_jobs),
+                "workspacePolicySkills": len(capability_policy.get("grantedSkillKeys", [])),
                 "logsChecked": len(logs),
                 "nodes": len(nodes),
                 "timestamp": int(time.time() * 1000),

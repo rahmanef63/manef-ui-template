@@ -8,19 +8,24 @@ import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { SkillsList } from "./components/SkillsList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Zap } from "lucide-react";
+import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 
 export default function SkillsPage() {
     const router = useRouter();
+    const { selectedScope } = useOpenClawNavigator();
     const [filter, setFilter] = useState("");
     const [sourceType, setSourceType] = useState("all");
     const [isRefreshing, startRefresh] = useTransition();
     const [isToggling, startToggle] = useTransition();
+    const [isGranting, startGrant] = useTransition();
     const skills: any = useAppQuery(appApi.features.skills.api.listSkills, {
         sourceType: sourceType === "all" ? undefined : sourceType,
         filter: filter || undefined,
+        workspaceId: selectedScope?._id,
     });
     const storeStatus: any = useAppQuery(appApi.features.skills.api.getSkillStoreStatus, {});
     const toggleSkill = useAppMutation(appApi.features.skills.api.toggleSkill);
+    const setWorkspaceSkillPolicy = useAppMutation(appApi.features.skills.api.setWorkspaceSkillPolicy);
 
     const handleRefresh = () => {
         startRefresh(() => {
@@ -31,6 +36,20 @@ export default function SkillsPage() {
     const handleToggle = (skillId: string, enabled: boolean) => {
         startToggle(async () => {
             await toggleSkill({ id: skillId, enabled });
+        });
+    };
+
+    const handleWorkspaceGrant = (skillId: string, enabled: boolean) => {
+        if (!selectedScope?._id) {
+            return;
+        }
+        startGrant(async () => {
+            await setWorkspaceSkillPolicy({
+                workspaceId: selectedScope._id,
+                skillId,
+                enabled,
+                agentIds: selectedScope.agentIds,
+            });
         });
     };
 
@@ -60,6 +79,7 @@ export default function SkillsPage() {
                 </div>
             ) : (
                 <SkillsList
+                    selectedScopeName={selectedScope?.name}
                     filter={filter}
                     onFilterChange={setFilter}
                     sourceType={sourceType}
@@ -70,6 +90,8 @@ export default function SkillsPage() {
                     skills={skills}
                     isToggling={isToggling}
                     onToggle={handleToggle}
+                    isGranting={isGranting}
+                    onWorkspaceGrant={handleWorkspaceGrant}
                 />
             )}
         </div>

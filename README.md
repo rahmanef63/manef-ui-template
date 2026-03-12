@@ -154,6 +154,8 @@ Progress terbaru:
   - label `by Rahman`, `by ClawHub`, `by OpenClaw`
   - metadata `trust`, `scope`, dan `install state`
   - summary status store live dari backend
+  - grant/revoke skill ke workspace aktif
+  - assigned agent count per scope aktif
 - login/registrasi sekarang mendukung:
   - `email atau nomor telepon`
   - request registrasi
@@ -184,7 +186,6 @@ Remaining phase terdekat:
   `json_blocks`
 - editor aman `Agent Builder`:
   `custom_code`
-- turunkan `Skills Store` menjadi policy skill/capability agent per workspace
 - RBAC lebih tegas untuk `Feature Store`
 - publish/downstream bridge ke `Superspace`
 

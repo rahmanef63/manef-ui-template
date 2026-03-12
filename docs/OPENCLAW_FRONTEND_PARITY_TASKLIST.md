@@ -622,6 +622,17 @@ Definition of done:
   - source label dan status store dirender langsung dari backend
   - belum ada webhook eksternal di frontend; sinkronisasi tetap mengikuti
     local runtime sync backend
+- [x] Turunkan `Skills Store` menjadi policy nyata untuk workspace aktif dan
+  semua agent di scope tersebut.
+  Bukti:
+  - halaman `Skills` sekarang mengirim `workspaceId` aktif ke query live
+  - card skill sekarang menampilkan:
+    `Workspace access`, `Workspace sources`, `Assigned agents`
+  - tombol `Grant to Workspace` / `Revoke from Workspace` memanggil mutation
+    policy backend
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
+    [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
 
 Definition of done:
 
@@ -631,6 +642,7 @@ Definition of done:
 - source label `by Rahman` dan `by OpenClaw` muncul untuk skill yang ada saat ini
 - jika nanti lockfile/metadata ClawHub tersedia di host, item `by ClawHub`
   muncul tanpa patch frontend lagi
+- grant/revoke skill ke workspace aktif mengubah policy skill di backend
 
 ## Sessions
 
