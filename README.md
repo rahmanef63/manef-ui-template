@@ -188,6 +188,10 @@ Progress terbaru:
   - block aman yang didukung:
     `page_header`, `stats`, `section_card`, `key_values`, `callout`
   - JSON invalid tidak bisa disimpan
+- UX store sekarang lebih terarah:
+  - `Feature Store` memakai three-panel layout ringan ala Superspace
+  - search/filter/sort mulai dipusatkan ke shared toolbar
+  - `Skills Store` mengikuti pattern toolbar yang sama
 - RBAC store sekarang lebih tegas:
   - route leaf dashboard mengikuti `requiredRoles`
   - `Skills Store` menjadi read-only untuk non-admin

@@ -1,15 +1,11 @@
 import { SectionCard, RefreshButton, EmptyState, Chip } from "@/shared/block/ui/openclaw-blocks";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 
 interface SkillsListProps {
     isAdmin: boolean;
     selectedScopeName?: string;
-    filter: string;
-    onFilterChange: (val: string) => void;
-    sourceType: string;
-    onSourceTypeChange: (val: string) => void;
+    sortBy: string;
     storeStatus?: any;
     isRefreshing: boolean;
     onRefresh: () => void;
@@ -23,10 +19,7 @@ interface SkillsListProps {
 export function SkillsList({
     isAdmin,
     selectedScopeName,
-    filter,
-    onFilterChange,
-    sourceType,
-    onSourceTypeChange,
+    sortBy,
     storeStatus,
     isRefreshing,
     onRefresh,
@@ -43,26 +36,8 @@ export function SkillsList({
             action={<RefreshButton onClick={onRefresh} loading={isRefreshing} />}
         >
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">Filter</p>
+                <p className="text-xs text-muted-foreground">Inventory</p>
                 <span className="text-xs text-muted-foreground">{skills.length} shown</span>
-            </div>
-            <div className="mb-4 grid gap-3 lg:grid-cols-[2fr,1fr]">
-                <Input
-                    value={filter}
-                    onChange={(e) => onFilterChange(e.target.value)}
-                    placeholder="Search skills..."
-                    className="bg-muted/50"
-                />
-                <select
-                    className="h-10 rounded-md border bg-background px-3 text-sm"
-                    value={sourceType}
-                    onChange={(event) => onSourceTypeChange(event.target.value)}
-                >
-                    <option value="all">All sources</option>
-                    <option value="rahman_local">By Rahman</option>
-                    <option value="clawhub">By ClawHub</option>
-                    <option value="openclaw_bundled">By OpenClaw</option>
-                </select>
             </div>
 
             {storeStatus ? (
@@ -92,6 +67,10 @@ export function SkillsList({
                                 ? `${selectedScopeName} ${isAdmin ? "sekarang bisa grant/revoke skill ke semua agent di scope aktif." : "sedang dibaca dalam mode read-only karena Anda bukan admin."}`
                                 : "Pilih workspace untuk memberi policy skill ke scope aktif."}
                         </div>
+                    </div>
+                    <div className="space-y-1 lg:col-span-2">
+                        <div className="font-medium text-foreground">Sort mode</div>
+                        <div>{sortBy}</div>
                     </div>
                 </div>
             ) : null}

@@ -241,6 +241,18 @@ Remaining phase setelah session ini:
   - save draft `json_blocks` sekarang ditolak jika JSON invalid
   - file:
     [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [x] Rapikan UX `Feature Store` dan `Skills Store` dengan pattern shared
+  search/filter/sort dan three-panel navigation ringan.
+  Bukti:
+  - shared toolbar:
+    [DiscoveryToolbar.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/DiscoveryToolbar.tsx)
+  - shared layout:
+    [ThreePanelLayout.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/ThreePanelLayout.tsx)
+  - `Feature Store` sekarang memakai browse/detail/context split:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+  - `Skills Store` sekarang memakai toolbar shared untuk search/source/sort:
+    [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
+    [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
 - [ ] Tambahkan editor `custom_code` yang lebih aman dari textarea metadata sederhana
 - [x] Turunkan `grantedSkillKeys` feature menjadi policy agent/workspace yang nyata
   Bukti:

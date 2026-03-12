@@ -30,6 +30,13 @@ Remaining tasks yang masih relevan:
 2. Tentukan contract publish/downstream ke `Superspace`.
 3. Putuskan distribusi final `@manef/db`: tetap `vendor`, git dependency, atau private package registry.
 
+Pattern UI terbaru yang sudah dipakai:
+
+- `Feature Store` memakai three-panel layout ringan:
+  browse -> detail -> workspace context/drafts
+- search/filter/sort sekarang mulai dipusatkan di shared toolbar:
+  [DiscoveryToolbar.tsx](/home/rahman/projects/manef-ui/shared/block/ui/layout/DiscoveryToolbar.tsx)
+
 Dokumen baru yang harus dipakai sebelum lanjut `Feature Store`:
 
 - [TARGET_ARCHITECTURE.md](/home/rahman/projects/manef-ui/docs/TARGET_ARCHITECTURE.md)

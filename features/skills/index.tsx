@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
+import { DiscoveryToolbar } from "@/shared/block/ui/layout/DiscoveryToolbar";
 import { SkillsList } from "./components/SkillsList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Zap } from "lucide-react";
@@ -15,6 +16,7 @@ export default function SkillsPage() {
     const { selectedScope, isAdmin } = useOpenClawNavigator();
     const [filter, setFilter] = useState("");
     const [sourceType, setSourceType] = useState("all");
+    const [sortBy, setSortBy] = useState("workspace");
     const [isRefreshing, startRefresh] = useTransition();
     const [isToggling, startToggle] = useTransition();
     const [isGranting, startGrant] = useTransition();
@@ -26,6 +28,23 @@ export default function SkillsPage() {
     const storeStatus: any = useAppQuery(appApi.features.skills.api.getSkillStoreStatus, {});
     const toggleSkill = useAppMutation(appApi.features.skills.api.toggleSkill);
     const setWorkspaceSkillPolicy = useAppMutation(appApi.features.skills.api.setWorkspaceSkillPolicy);
+    const displaySkills = [...(skills ?? [])].sort((left: any, right: any) => {
+        switch (sortBy) {
+            case "name":
+                return left.name.localeCompare(right.name, "en");
+            case "source":
+                return `${left.sourceType ?? ""}:${left.name}`.localeCompare(
+                    `${right.sourceType ?? ""}:${right.name}`,
+                    "en",
+                );
+            case "workspace":
+            default:
+                if (Boolean(left.workspacePolicyEnabled) !== Boolean(right.workspacePolicyEnabled)) {
+                    return left.workspacePolicyEnabled ? -1 : 1;
+                }
+                return left.name.localeCompare(right.name, "en");
+        }
+    });
 
     const handleRefresh = () => {
         startRefresh(() => {
@@ -68,8 +87,41 @@ export default function SkillsPage() {
                 title="Skills Store"
                 description="Live skill store for workspace capabilities, with source labels from OpenClaw, Rahman local skills, and ClawHub-ready sync."
             />
+            <DiscoveryToolbar
+                searchValue={filter}
+                onSearchChange={setFilter}
+                searchPlaceholder="Search skills, source, publisher…"
+                summary={
+                    selectedScope?.name
+                        ? `${displaySkills.length} skills in ${selectedScope.name}. Workspace-granted skills stay on top.`
+                        : `${displaySkills.length} skills available.`
+                }
+                filters={[
+                    {
+                        label: "Source",
+                        value: sourceType,
+                        onChange: setSourceType,
+                        options: [
+                            { value: "all", label: "All sources" },
+                            { value: "rahman_local", label: "By Rahman" },
+                            { value: "clawhub", label: "By ClawHub" },
+                            { value: "openclaw_bundled", label: "By OpenClaw" },
+                        ],
+                    },
+                    {
+                        label: "Sort",
+                        value: sortBy,
+                        onChange: setSortBy,
+                        options: [
+                            { value: "workspace", label: "Workspace first" },
+                            { value: "name", label: "Name A-Z" },
+                            { value: "source", label: "Source" },
+                        ],
+                    },
+                ]}
+            />
 
-            {skills.length === 0 ? (
+            {displaySkills.length === 0 ? (
                 <div className="rounded-xl border border-dashed bg-muted/10">
                     <EmptyState
                         icon={Zap}
@@ -85,10 +137,11 @@ export default function SkillsPage() {
                     onFilterChange={setFilter}
                     sourceType={sourceType}
                     onSourceTypeChange={setSourceType}
+                    sortBy={sortBy}
                     storeStatus={storeStatus}
                     isRefreshing={isRefreshing}
                     onRefresh={handleRefresh}
-                    skills={skills}
+                    skills={displaySkills}
                     isToggling={isToggling}
                     onToggle={handleToggle}
                     isGranting={isGranting}

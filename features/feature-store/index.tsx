@@ -31,6 +31,8 @@ import {
 import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
 import { CodeBlock, EmptyState, PageHeader, SectionCard, StatCard } from "@/shared/block/ui/openclaw-blocks";
+import { DiscoveryToolbar } from "@/shared/block/ui/layout/DiscoveryToolbar";
+import { ThreePanelLayout } from "@/shared/block/ui/layout/ThreePanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -235,6 +237,8 @@ export default function FeatureStorePage() {
     const { selectedScope } = useOpenClawNavigator();
     const [filter, setFilter] = useState("");
     const [scopeFilter, setScopeFilter] = useState("all");
+    const [sortBy, setSortBy] = useState("installed");
+    const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
     const items = useAppQuery(appApi.features.featureStore.api.listFeatureStoreItems, {
         workspaceId: selectedScope?._id,
         q: filter || undefined,
@@ -291,6 +295,15 @@ export default function FeatureStorePage() {
         ],
         [],
     );
+    const sortOptions = useMemo(
+        () => [
+            { value: "installed", label: "Installed first" },
+            { value: "name", label: "Name A-Z" },
+            { value: "type", label: "Type" },
+            { value: "builder", label: "Builder first" },
+        ],
+        [],
+    );
 
     const handleSeed = async () => {
         setSeeding(true);
@@ -304,6 +317,44 @@ export default function FeatureStorePage() {
     const builderItems = useMemo(
         () => (items ?? []).filter((item) => item.itemType === "agent-builder"),
         [items],
+    );
+    const sortedItems = useMemo(() => {
+        const next = [...(items ?? [])];
+        next.sort((left, right) => {
+            switch (sortBy) {
+                case "name":
+                    return left.name.localeCompare(right.name, "en");
+                case "type":
+                    return `${left.itemType}:${left.name}`.localeCompare(`${right.itemType}:${right.name}`, "en");
+                case "builder":
+                    if (left.itemType === right.itemType) {
+                        return left.name.localeCompare(right.name, "en");
+                    }
+                    return left.itemType === "agent-builder" ? -1 : 1;
+                case "installed":
+                default:
+                    if (Boolean(left.isInstalled) !== Boolean(right.isInstalled)) {
+                        return left.isInstalled ? -1 : 1;
+                    }
+                    return left.name.localeCompare(right.name, "en");
+            }
+        });
+        return next;
+    }, [items, sortBy]);
+
+    useEffect(() => {
+        if (!sortedItems.length) {
+            setSelectedItemKey(null);
+            return;
+        }
+        if (!selectedItemKey || !sortedItems.some((item) => item.itemKey === selectedItemKey)) {
+            setSelectedItemKey(sortedItems[0].itemKey);
+        }
+    }, [selectedItemKey, sortedItems]);
+
+    const selectedItem = useMemo(
+        () => sortedItems.find((item) => item.itemKey === selectedItemKey) ?? sortedItems[0] ?? null,
+        [selectedItemKey, sortedItems],
     );
 
     useEffect(() => {
@@ -540,25 +591,30 @@ export default function FeatureStorePage() {
                 </Button>
             </PageHeader>
 
-            <div className="grid gap-3 lg:grid-cols-[2fr,1fr]">
-                <Input
-                    value={filter}
-                    onChange={(event) => setFilter(event.target.value)}
-                    placeholder="Search feature store items"
-                    className="bg-muted/50"
-                />
-                <select
-                    className="h-10 rounded-md border bg-background px-3 text-sm"
-                    value={scopeFilter}
-                    onChange={(event) => setScopeFilter(event.target.value)}
-                >
-                    {scopeOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <DiscoveryToolbar
+                searchValue={filter}
+                onSearchChange={setFilter}
+                searchPlaceholder="Search feature store items"
+                summary={
+                    selectedScope?._id
+                        ? `${sortedItems.length} items in ${selectedScope.name}. Left panel to browse, center for details, right panel for workspace capability and builder drafts.`
+                        : "Pilih workspace aktif dulu agar store bisa dipakai."
+                }
+                filters={[
+                    {
+                        label: "Scope",
+                        value: scopeFilter,
+                        onChange: setScopeFilter,
+                        options: scopeOptions,
+                    },
+                    {
+                        label: "Sort",
+                        value: sortBy,
+                        onChange: setSortBy,
+                        options: sortOptions,
+                    },
+                ]}
+            />
 
             {!selectedScope?._id ? (
                 <div className="rounded-xl border border-dashed bg-muted/10">
@@ -577,214 +633,241 @@ export default function FeatureStorePage() {
                     />
                 </div>
             ) : (
-                <div className="space-y-6">
-                    <Card className="border-border/70">
-                        <CardHeader>
-                            <CardTitle className="text-base">Workspace Capability Policy</CardTitle>
-                            <CardDescription>
-                                Installed features in this workspace are materialized into granted skills per workspace and per linked agent.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 lg:grid-cols-3">
-                            <div className="rounded-lg border bg-muted/10 p-4">
-                                <div className="text-sm font-medium">Installed features</div>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    {(capabilityPolicy?.featureKeys ?? selectedScope.featureKeys ?? []).length ? (
-                                        (capabilityPolicy?.featureKeys ?? selectedScope.featureKeys ?? []).map((featureKey: string) => (
-                                            <span key={featureKey} className="rounded-md border px-2 py-1 text-xs">
-                                                {featureKey}
-                                            </span>
-                                        ))
-                                    ) : (
-                                        <span className="text-sm text-muted-foreground">No explicit feature policy yet.</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="rounded-lg border bg-muted/10 p-4">
-                                <div className="text-sm font-medium">Granted skills</div>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    {(capabilityPolicy?.grantedSkillKeys ?? []).length ? (
-                                        capabilityPolicy?.grantedSkillKeys.map((skillKey: string) => (
-                                            <span key={skillKey} className="rounded-md border px-2 py-1 text-xs">
-                                                {skillKey}
-                                            </span>
-                                        ))
-                                    ) : (
-                                        <span className="text-sm text-muted-foreground">No skills granted from installed features.</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="rounded-lg border bg-muted/10 p-4">
-                                <div className="text-sm font-medium">Agent policy rows</div>
-                                <div className="mt-2 space-y-2 text-xs">
-                                    {(capabilityPolicy?.agentPolicies ?? []).length ? (
-                                        capabilityPolicy?.agentPolicies.map((policy) => (
-                                            <div key={policy.agentId} className="rounded-md border px-3 py-2">
-                                                <div className="font-medium">{policy.agentId}</div>
-                                                <div className="mt-1 text-muted-foreground">
-                                                    {policy.skillKeys.join(", ") || "-"}
+                <ThreePanelLayout
+                    left={{
+                        title: "Catalog",
+                        description: "Browse store items by scope, install state, and builder type.",
+                        children: (
+                            <div className="space-y-3">
+                                {sortedItems.map((item) => {
+                                    const Icon = ICON_MAP[item.icon] ?? Package2;
+                                    const isActive = selectedItem?.itemKey === item.itemKey;
+                                    return (
+                                        <button
+                                            key={item.itemKey}
+                                            type="button"
+                                            onClick={() => setSelectedItemKey(item.itemKey)}
+                                            className={[
+                                                "w-full rounded-xl border p-3 text-left transition-colors",
+                                                isActive
+                                                    ? "border-primary bg-primary/5"
+                                                    : "hover:bg-muted/40",
+                                            ].join(" ")}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0 space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Icon className="h-4 w-4 text-muted-foreground" />
+                                                        <div className="truncate text-sm font-medium">{item.name}</div>
+                                                    </div>
+                                                    <div className="line-clamp-2 text-xs text-muted-foreground">
+                                                        {item.description}
+                                                    </div>
                                                 </div>
+                                                <Badge variant={item.isInstalled ? "default" : "secondary"}>
+                                                    {item.isInstalled ? "On" : "Off"}
+                                                </Badge>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-sm text-muted-foreground">No agent-specific capability policy yet.</div>
-                                    )}
-                                </div>
+                                            <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                                                <span className="rounded-md border px-2 py-1">{item.itemType}</span>
+                                                <span className="rounded-md border px-2 py-1">
+                                                    {SCOPE_LABELS[item.scope] ?? item.scope}
+                                                </span>
+                                                {item.builderMode ? (
+                                                    <span className="rounded-md border px-2 py-1">{item.builderMode}</span>
+                                                ) : null}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
-                        </CardContent>
-                    </Card>
+                        ),
+                    }}
+                    center={{
+                        title: selectedItem?.name ?? "Details",
+                        description: selectedItem?.description ?? "Pilih item di panel kiri untuk melihat detail dan aksi.",
+                        children: selectedItem ? (
+                            <div className="space-y-4">
+                                {selectedItem.preview ? (
+                                    <div className="rounded-lg border bg-muted/20 p-4">
+                                        <div className="text-sm font-medium">
+                                            {selectedItem.preview.headline ?? "Preview"}
+                                        </div>
+                                        {selectedItem.preview.summary ? (
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                {selectedItem.preview.summary}
+                                            </p>
+                                        ) : null}
+                                        {selectedItem.preview.bullets?.length ? (
+                                            <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                                                {selectedItem.preview.bullets.map((bullet: string) => (
+                                                    <li key={bullet}>- {bullet}</li>
+                                                ))}
+                                            </ul>
+                                        ) : null}
+                                    </div>
+                                ) : null}
 
-                    <div className="grid gap-4 xl:grid-cols-2">
-                        {items.map((item) => {
-                            const Icon = ICON_MAP[item.icon] ?? Package2;
-                            return (
-                                <Card key={item.itemKey} className="border-border/70">
-                                    <CardHeader className="space-y-3">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <Icon className="h-4 w-4 text-muted-foreground" />
-                                                    <CardTitle className="text-base">{item.name}</CardTitle>
-                                                </div>
-                                                <CardDescription>{item.description}</CardDescription>
-                                            </div>
-                                            <Badge variant={item.isInstalled ? "default" : "secondary"}>
-                                                {item.isInstalled ? "Installed" : "Available"}
-                                            </Badge>
+                                <div className="flex flex-wrap gap-2 text-xs">
+                                    <Badge variant="outline">{selectedItem.itemType}</Badge>
+                                    <Badge variant="outline">
+                                        {SCOPE_LABELS[selectedItem.scope] ?? selectedItem.scope}
+                                    </Badge>
+                                    <Badge variant="outline">{selectedItem.status}</Badge>
+                                    {selectedItem.builderMode ? (
+                                        <Badge variant="outline">{selectedItem.builderMode}</Badge>
+                                    ) : null}
+                                    {(selectedItem.tags ?? []).map((tag: string) => (
+                                        <span key={tag} className="rounded-md border px-2 py-1 text-muted-foreground">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <div className="grid gap-3 rounded-lg border bg-muted/10 p-4 text-sm text-muted-foreground">
+                                    <div>
+                                        <div className="mb-1 text-xs font-medium uppercase tracking-wide text-foreground">
+                                            Feature key
                                         </div>
-                                        <div className="flex flex-wrap gap-2 text-xs">
-                                            <Badge variant="outline">{item.itemType}</Badge>
-                                            <Badge variant="outline">
-                                                {SCOPE_LABELS[item.scope] ?? item.scope}
-                                            </Badge>
-                                            <Badge variant="outline">{item.status}</Badge>
-                                            {item.builderMode ? (
-                                                <Badge variant="outline">{item.builderMode}</Badge>
-                                            ) : null}
+                                        <div>{selectedItem.featureKey ?? "-"}</div>
+                                        <div className="break-all text-xs">{selectedItem.route ?? "-"}</div>
+                                    </div>
+                                    <div>
+                                        <div className="mb-1 text-xs font-medium uppercase tracking-wide text-foreground">
+                                            Grants skills
                                         </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {item.preview ? (
-                                            <div className="rounded-lg border bg-muted/20 p-4">
-                                                <div className="text-sm font-medium">
-                                                    {item.preview.headline ?? "Preview"}
-                                                </div>
-                                                {item.preview.summary ? (
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {item.preview.summary}
-                                                    </p>
-                                                ) : null}
-                                                {item.preview.bullets?.length ? (
-                                                    <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                                                        {item.preview.bullets.map((bullet: string) => (
-                                                            <li key={bullet}>- {bullet}</li>
-                                                        ))}
-                                                    </ul>
-                                                ) : null}
+                                        <div className="flex flex-wrap gap-2">
+                                            {(selectedItem.grantedSkillKeys ?? []).length ? (
+                                                selectedItem.grantedSkillKeys.map((skill: string) => (
+                                                    <span key={skill} className="rounded-md border px-2 py-1 text-xs">
+                                                        {skill}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span>-</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="mb-1 text-xs font-medium uppercase tracking-wide text-foreground">
+                                            Runtime domains
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(selectedItem.runtimeDomains ?? []).length ? (
+                                                selectedItem.runtimeDomains.map((domain: string) => (
+                                                    <span key={domain} className="rounded-md border px-2 py-1 text-xs">
+                                                        {domain}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span>-</span>
+                                            )}
+                                        </div>
+                                        {(selectedItem.requiredRoles ?? []).length ? (
+                                            <div className="mt-2 text-xs">
+                                                Roles: {selectedItem.requiredRoles.join(", ")}
                                             </div>
                                         ) : null}
-
-                                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                            {(item.tags ?? []).map((tag: string) => (
-                                                <span key={tag} className="rounded-md border px-2 py-1">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-
-                                        <div className="grid gap-3 rounded-lg border bg-muted/10 p-3 text-xs text-muted-foreground lg:grid-cols-3">
-                                            <div className="space-y-1">
-                                                <div className="font-medium text-foreground">Feature key</div>
-                                                <div>{item.featureKey ?? "-"}</div>
-                                                <div className="break-all">{item.route ?? "-"}</div>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <div className="font-medium text-foreground">Grants skills</div>
-                                                {(item.grantedSkillKeys ?? []).length ? (
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {item.grantedSkillKeys.map((skill: string) => (
-                                                            <span key={skill} className="rounded-md border px-2 py-1">
-                                                                {skill}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div>-</div>
-                                                )}
-                                            </div>
-                                            <div className="space-y-1">
-                                                <div className="font-medium text-foreground">Runtime domains</div>
-                                                {(item.runtimeDomains ?? []).length ? (
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {item.runtimeDomains.map((domain: string) => (
-                                                            <span key={domain} className="rounded-md border px-2 py-1">
-                                                                {domain}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div>-</div>
-                                                )}
-                                                {(item.requiredRoles ?? []).length ? (
-                                                    <div className="pt-1">
-                                                        Roles: {item.requiredRoles.join(", ")}
-                                                    </div>
-                                                ) : null}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="text-xs text-muted-foreground">
-                                                Scope target: {selectedScope.name}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {item.itemType === "agent-builder" ? (
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => handleOpenCreateDraft(item)}
-                                                    >
-                                                        New Draft
-                                                    </Button>
-                                                ) : null}
-                                                <Button
-                                                    onClick={() => handleToggleInstall(item)}
-                                                    disabled={busyKey === item.itemKey}
-                                                >
-                                                    {busyKey === item.itemKey
-                                                        ? "Saving..."
-                                                        : item.isInstalled
-                                                            ? "Uninstall"
-                                                            : "Install"}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </div>
-
-                    <Card className="border-border/70">
-                        <CardHeader>
-                            <CardTitle className="text-base">Agent Builder Drafts</CardTitle>
-                            <CardDescription>
-                                Draft builder output per workspace. Ini baru contract/editor,
-                                belum renderer final.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {drafts === undefined ? (
-                                <Skeleton className="h-24 rounded-xl" />
-                            ) : drafts.length === 0 ? (
-                                <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-                                    Belum ada draft builder untuk workspace ini.
+                                    </div>
                                 </div>
-                            ) : (
-                                drafts.map((draft) => (
-                                    <div
-                                        key={draft._id}
-                                        className="flex flex-col gap-3 rounded-lg border p-4 lg:flex-row lg:items-start lg:justify-between"
-                                    >
+
+                                <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/10 p-4">
+                                    <div className="text-xs text-muted-foreground">
+                                        Scope target: {selectedScope.name}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {selectedItem.itemType === "agent-builder" ? (
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => handleOpenCreateDraft(selectedItem)}
+                                            >
+                                                New Draft
+                                            </Button>
+                                        ) : null}
+                                        <Button
+                                            onClick={() => handleToggleInstall(selectedItem)}
+                                            disabled={busyKey === selectedItem.itemKey}
+                                        >
+                                            {busyKey === selectedItem.itemKey
+                                                ? "Saving..."
+                                                : selectedItem.isInstalled
+                                                    ? "Uninstall"
+                                                    : "Install"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <EmptyState message="Select a store item to inspect details." icon={Package2} />
+                        ),
+                    }}
+                    right={{
+                        title: "Workspace Context",
+                        description: "Capability state and builder drafts for the active workspace.",
+                        children: (
+                            <div className="space-y-4">
+                                <div className="grid gap-3">
+                                    <div className="rounded-lg border bg-muted/10 p-4">
+                                        <div className="text-sm font-medium">Installed features</div>
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {(capabilityPolicy?.featureKeys ?? selectedScope.featureKeys ?? []).length ? (
+                                                (capabilityPolicy?.featureKeys ?? selectedScope.featureKeys ?? []).map((featureKey: string) => (
+                                                    <span key={featureKey} className="rounded-md border px-2 py-1 text-xs">
+                                                        {featureKey}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground">No explicit feature policy yet.</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-muted/10 p-4">
+                                        <div className="text-sm font-medium">Granted skills</div>
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {(capabilityPolicy?.grantedSkillKeys ?? []).length ? (
+                                                capabilityPolicy?.grantedSkillKeys.map((skillKey: string) => (
+                                                    <span key={skillKey} className="rounded-md border px-2 py-1 text-xs">
+                                                        {skillKey}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground">No skills granted from installed features.</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-muted/10 p-4">
+                                        <div className="text-sm font-medium">Agent policy rows</div>
+                                        <div className="mt-2 space-y-2 text-xs">
+                                            {(capabilityPolicy?.agentPolicies ?? []).length ? (
+                                                capabilityPolicy?.agentPolicies.map((policy) => (
+                                                    <div key={policy.agentId} className="rounded-md border px-3 py-2">
+                                                        <div className="font-medium">{policy.agentId}</div>
+                                                        <div className="mt-1 text-muted-foreground">
+                                                            {policy.skillKeys.join(", ") || "-"}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-sm text-muted-foreground">No agent-specific capability policy yet.</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="text-sm font-medium">Agent Builder Drafts</div>
+                                    {drafts === undefined ? (
+                                        <Skeleton className="h-24 rounded-xl" />
+                                    ) : drafts.length === 0 ? (
+                                        <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+                                            Belum ada draft builder untuk workspace ini.
+                                        </div>
+                                    ) : (
+                                        drafts.map((draft) => (
+                                            <div
+                                                key={draft._id}
+                                                className="flex flex-col gap-3 rounded-lg border p-4"
+                                            >
                                         <div className="space-y-2">
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <div className="font-medium">{draft.name}</div>
@@ -861,16 +944,18 @@ export default function FeatureStorePage() {
                                                     Mark Ready
                                                 </Button>
                                             ) : null}
-                                            <Button variant="destructive" onClick={() => handleArchiveDraft(draft)}>
-                                                Archive
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                                                <Button variant="destructive" onClick={() => handleArchiveDraft(draft)}>
+                                                    Archive
+                                                </Button>
+                                            </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        ),
+                    }}
+                />
             )}
 
             <Dialog open={draftDialogOpen} onOpenChange={setDraftDialogOpen}>
