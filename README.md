@@ -136,6 +136,10 @@ Progress terbaru:
 - `Channels` sekarang juga menampilkan binding live:
   - `channel -> workspace`
   - `identity -> workspace`
+- `Feature Store` sekarang sudah hidup di admin menu:
+  - katalog item live dari backend
+  - preview metadata live
+  - install/uninstall per workspace
 - login/registrasi sekarang mendukung:
   - `email atau nomor telepon`
   - request registrasi
@@ -144,9 +148,10 @@ Progress terbaru:
 
 Remaining phase terdekat:
 
-- policy resource scope:
-  `workspace-local`, `workspace-shared`, `general/shared`
-- `Feature Store` dan `Agent Builder`
+- `Agent Builder`:
+  `json_blocks` dan `custom_code`
+- RBAC lebih tegas untuk `Feature Store`
+- publish/downstream bridge ke `Superspace`
 
 Admin tooling terbaru:
 

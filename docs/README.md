@@ -1,6 +1,6 @@
 # Docs Index
 
-Updated: 2026-03-10
+Updated: 2026-03-12
 
 Dokumen aktif yang perlu dipakai untuk operasional repo ini:
 
@@ -26,11 +26,11 @@ Ringkasan status:
 
 Remaining tasks yang masih relevan:
 
-1. Verifikasi deploy Dokploy end-to-end untuk `manef-ui` dan `manef-db`.
-2. Pastikan `dbgg.rahmanef.com` tidak lagi `502` dan `gg.rahmanef.com/api/convex-auth/.well-known/jwks.json` tidak lagi `500`.
-3. Putuskan mode deploy `manef-db`: tetap `Convex Cloud + proxy` atau pindah penuh ke self-hosted, jangan campur env keduanya.
-4. Rapikan sisa legacy frontend yang masih mengganggu lint/typecheck, terutama file lama di `convex/`.
-5. Putuskan distribusi final `@manef/db`: tetap `file:../manef-db`, git dependency, atau private package registry.
+1. Hardening RBAC dan UX `Feature Store`.
+2. Bangun `Agent Builder` mode `json_blocks`.
+3. Bangun `Agent Builder` mode `custom_code`.
+4. Tentukan contract publish/downstream ke `Superspace`.
+5. Putuskan distribusi final `@manef/db`: tetap `vendor`, git dependency, atau private package registry.
 
 Dokumen baru yang harus dipakai sebelum lanjut `Feature Store`:
 

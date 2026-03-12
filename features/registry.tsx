@@ -31,6 +31,7 @@ const Config = lazy(() => import("@/features/config"));
 const Logs = lazy(() => import("@/features/logs"));
 const Debug = lazy(() => import("@/features/debug"));
 const TeamTasks = lazy(() => import("@/features/team-tasks"));
+const FeatureStore = lazy(() => import("@/features/feature-store"));
 
 // Help Features
 const Docs = lazy(() => import("@/features/docs"));
@@ -71,6 +72,7 @@ export const FEATURE_REGISTRY: Record<string, React.ComponentType<any>> = {
     logs: Logs,
     debug: Debug,
     "team-tasks": TeamTasks,
+    "feature-store": FeatureStore,
 
     // Help
     docs: Docs,

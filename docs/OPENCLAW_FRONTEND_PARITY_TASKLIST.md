@@ -1,6 +1,6 @@
 # OpenClaw Frontend Parity Tasklist
 
-Updated: 2026-03-11
+Updated: 2026-03-12
 
 Dokumen ini melacak pekerjaan `manef-ui` agar makin dekat dengan frontend resmi
 OpenClaw, tetapi tetap berjalan di arsitektur `Next.js + Convex`.
@@ -75,9 +75,23 @@ Task dianggap belum selesai jika salah satu kondisi berikut masih terjadi:
 Konteks ini belum dihitung selesai. Ini adalah arah produk yang harus dijaga saat
 menambah feature baru di `manef-ui`.
 
-- [ ] Tambahkan `Feature Store` sebagai surface terpisah dari dashboard operasi.
-- [ ] `Feature Store` harus bisa menampilkan katalog builder:
+- [x] Tambahkan `Feature Store` sebagai surface terpisah dari dashboard operasi.
+  Bukti:
+  - config feature:
+    [config.ts](/home/rahman/projects/manef-ui/features/feature-store/config.ts)
+  - halaman:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+  - registry:
+    [registry.tsx](/home/rahman/projects/manef-ui/features/registry.tsx)
+  - menu admin:
+    [index.ts](/home/rahman/projects/manef-ui/project/registry/navigation/index.ts)
+- [x] `Feature Store` harus bisa menampilkan katalog builder:
   `agent builder`, `workspace app builder`, `shared blocks`, `templates`.
+  Bukti:
+  - page katalog live membaca item dari backend:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+  - source backend vendor:
+    [api.ts](/home/rahman/projects/manef-ui/vendor/manef-db/convex/features/featureStore/api.ts)
 - [ ] `Agent Builder` harus mendukung dua mode output:
   `JSON block prerender` dan `custom HTML/TypeScript`.
 - [ ] `JSON block prerender` harus memakai block components yang sudah disiapkan
@@ -86,8 +100,11 @@ menambah feature baru di `manef-ui`.
   preview, schema metadata, dan sandbox policy yang jelas.
 - [ ] Semua app/builder output harus bisa dihubungkan ke workspace aktif, bukan
   global ke semua workspace.
-- [ ] Store item harus bisa ditandai sebagai:
+- [x] Store item harus bisa ditandai sebagai:
   `workspace-only`, `tenant-shared`, atau `general/shared`.
+  Bukti:
+  - UI filter scope dan badge scope:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [ ] Workspace yang berbeda tidak boleh otomatis mewarisi seluruh app/config
   root kecuali ada policy inheritance eksplisit.
 - [ ] UI store harus siap menjadi bridge ke project eksternal `Superspace Apps`.
@@ -155,13 +172,29 @@ Implikasi untuk `manef-ui`:
 
 Remaining phase setelah session ini:
 
-- [ ] Tambahkan menu/route `Feature Store`
-- [ ] Tampilkan katalog item live dari backend, bukan konstanta frontend
-- [ ] Tambahkan preview registry untuk `Feature Store`
-- [ ] Tambahkan status scope item:
-  `workspace-local`, `workspace-shared`, `general/shared`
+- [x] Tambahkan menu/route `Feature Store`
+  Bukti:
+  - [config.ts](/home/rahman/projects/manef-ui/features/feature-store/config.ts)
+  - [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [x] Tampilkan katalog item live dari backend, bukan konstanta frontend
+  Bukti:
+  - query live:
+    `features/featureStore/api:listFeatureStoreItems`
+  - halaman:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [x] Tambahkan preview metadata untuk `Feature Store`
+  Bukti:
+  - render preview headline/summary/bullets dari backend:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
+- [x] Tambahkan status scope item:
+  `workspace-local`, `workspace-shared`, `general/shared`, `tenant-shared`
+  Bukti:
+  - badge + filter scope:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [ ] Tambahkan draft surface `Agent Builder`:
   `json_blocks` dan `custom_code`
+- [ ] Tambahkan admin guard backend/frontend yang lebih tegas untuk install/uninstall
+- [ ] Tambahkan preview registry tersendiri jika builder output mulai punya komponen interaktif
 
 ## Navigator and scope
 

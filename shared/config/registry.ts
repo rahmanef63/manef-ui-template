@@ -17,6 +17,7 @@ import { historyFeature } from "@/features/chat-history/config";
 import { usersFeature } from "@/features/users/config";
 import { rolesFeature } from "@/features/roles/config";
 import { auditFeature } from "@/features/audit/config";
+import { featureStoreFeature } from "@/features/feature-store/config";
 
 // Help Sub-features
 import { docsFeature } from "@/features/docs/config";
@@ -91,6 +92,7 @@ export const featureRegistry = [
   usersFeature,
   rolesFeature,
   auditFeature,
+  featureStoreFeature,
   docsFeature,
   faqFeature,
   supportFeature,

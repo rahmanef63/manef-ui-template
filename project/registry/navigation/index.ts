@@ -45,7 +45,7 @@ export const NAVIGATION_REGISTRY = {
 
     // Admin
     [PARENT_FEATURES.admin]: {
-        children: ["users", "roles", "audit"],
+        children: ["users", "roles", "audit", "feature-store"],
         defaultChild: "users",
     },
 
