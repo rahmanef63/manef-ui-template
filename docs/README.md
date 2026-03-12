@@ -26,10 +26,9 @@ Ringkasan status:
 
 Remaining tasks yang masih relevan:
 
-1. Bangun preview minimal `Agent Builder` mode `json_blocks`.
-2. Bangun editor/review yang lebih aman untuk `Agent Builder` mode `custom_code`.
-3. Tentukan contract publish/downstream ke `Superspace`.
-4. Putuskan distribusi final `@manef/db`: tetap `vendor`, git dependency, atau private package registry.
+1. Bangun editor/review yang lebih aman untuk `Agent Builder` mode `custom_code`.
+2. Tentukan contract publish/downstream ke `Superspace`.
+3. Putuskan distribusi final `@manef/db`: tetap `vendor`, git dependency, atau private package registry.
 
 Dokumen baru yang harus dipakai sebelum lanjut `Feature Store`:
 

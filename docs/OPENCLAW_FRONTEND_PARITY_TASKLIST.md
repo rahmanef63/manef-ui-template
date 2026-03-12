@@ -232,7 +232,15 @@ Remaining phase setelah session ini:
     [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
     [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
 - [ ] Tambahkan preview registry tersendiri jika builder output mulai punya komponen interaktif
-- [ ] Tambahkan renderer draft `json_blocks`
+- [x] Tambahkan preview minimal draft `json_blocks`
+  di `Agent Builder`.
+  Bukti:
+  - editor draft sekarang punya field `json_blocks`
+  - preview live mendukung block aman:
+    `page_header`, `stats`, `section_card`, `key_values`, `callout`
+  - save draft `json_blocks` sekarang ditolak jika JSON invalid
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/feature-store/index.tsx)
 - [ ] Tambahkan editor `custom_code` yang lebih aman dari textarea metadata sederhana
 - [x] Turunkan `grantedSkillKeys` feature menjadi policy agent/workspace yang nyata
   Bukti:

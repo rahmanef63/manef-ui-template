@@ -184,6 +184,10 @@ Progress terbaru:
   - requirement skill
   - linked agent yang tersedia di workspace
   - gap skill per agent
+- `Agent Builder` mode `json_blocks` sekarang punya preview minimal:
+  - block aman yang didukung:
+    `page_header`, `stats`, `section_card`, `key_values`, `callout`
+  - JSON invalid tidak bisa disimpan
 - RBAC store sekarang lebih tegas:
   - route leaf dashboard mengikuti `requiredRoles`
   - `Skills Store` menjadi read-only untuk non-admin

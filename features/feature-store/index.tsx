@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { appApi, useAppMutation, useAppQuery } from "@/lib/convex/client";
 import { useOpenClawNavigator } from "@/features/workspaces/hooks/useOpenClawNavigator";
-import { EmptyState, PageHeader } from "@/shared/block/ui/openclaw-blocks";
+import { CodeBlock, EmptyState, PageHeader, SectionCard, StatCard } from "@/shared/block/ui/openclaw-blocks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +86,150 @@ const DRAFT_STATUS_LABELS = {
     archived: "Archived",
 };
 
+function createDefaultJsonBlocks(scope: { name?: string; agentIds?: string[]; featureKeys?: string[] } | null | undefined) {
+    return JSON.stringify(
+        [
+            {
+                type: "page_header",
+                title: `${scope?.name ?? "Workspace"} App`,
+                description: "App draft preview generated from Agent Builder.",
+            },
+            {
+                type: "stats",
+                items: [
+                    { label: "Agents", value: String(scope?.agentIds?.length ?? 0), description: "Linked workspace agents" },
+                    { label: "Features", value: String(scope?.featureKeys?.length ?? 0), description: "Installed workspace features" },
+                ],
+            },
+            {
+                type: "section_card",
+                title: "Next step",
+                description: "Refine blocks before publishing downstream.",
+                body: "This preview uses the minimal json_blocks renderer in manef-ui.",
+            },
+        ],
+        null,
+        2,
+    );
+}
+
+function parseJsonBlocks(rawValue: string) {
+    if (!rawValue.trim()) {
+        return { blocks: [], error: null as string | null };
+    }
+    try {
+        const parsed = JSON.parse(rawValue);
+        if (!Array.isArray(parsed)) {
+            return { blocks: [], error: "json_blocks must be an array of blocks." };
+        }
+        return { blocks: parsed, error: null as string | null };
+    } catch (error) {
+        return {
+            blocks: [],
+            error: error instanceof Error ? error.message : "Invalid JSON",
+        };
+    }
+}
+
+function JsonBlocksPreview({ blocks, error }: { blocks: any[]; error: string | null }) {
+    if (error) {
+        return <CodeBlock title="json_blocks error">{error}</CodeBlock>;
+    }
+    if (!blocks.length) {
+        return (
+            <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+                Tambahkan blocks JSON untuk melihat preview.
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            {blocks.map((block, index) => {
+                const key = `${block?.type ?? "unknown"}:${index}`;
+                switch (block?.type) {
+                    case "page_header":
+                        return (
+                            <PageHeader
+                                key={key}
+                                title={block.title ?? "Untitled app"}
+                                description={block.description}
+                                className="rounded-xl border bg-muted/10 p-4"
+                            />
+                        );
+                    case "stats":
+                        return (
+                            <div key={key} className="grid gap-3 md:grid-cols-2">
+                                {(block.items ?? []).map((item: any, itemIndex: number) => (
+                                    <StatCard
+                                        key={`${key}:stat:${itemIndex}`}
+                                        label={item.label ?? `Metric ${itemIndex + 1}`}
+                                        value={item.value ?? "-"}
+                                        description={item.description}
+                                        status={item.status ?? "neutral"}
+                                    />
+                                ))}
+                            </div>
+                        );
+                    case "section_card":
+                        return (
+                            <SectionCard
+                                key={key}
+                                title={block.title ?? "Section"}
+                                description={block.description}
+                            >
+                                <div className="text-sm text-muted-foreground">
+                                    {block.body ?? "No body provided."}
+                                </div>
+                            </SectionCard>
+                        );
+                    case "key_values":
+                        return (
+                            <SectionCard
+                                key={key}
+                                title={block.title ?? "Details"}
+                                description={block.description}
+                            >
+                                <div className="space-y-2 text-sm text-muted-foreground">
+                                    {(block.items ?? []).map((item: any, itemIndex: number) => (
+                                        <div
+                                            key={`${key}:kv:${itemIndex}`}
+                                            className="flex items-center justify-between border-b pb-2 last:border-b-0"
+                                        >
+                                            <span>{item.label ?? `Field ${itemIndex + 1}`}</span>
+                                            <span className="font-medium text-foreground">
+                                                {item.value ?? "-"}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </SectionCard>
+                        );
+                    case "callout":
+                        return (
+                            <SectionCard
+                                key={key}
+                                title={block.title ?? "Callout"}
+                                description={block.tone ? `tone: ${block.tone}` : undefined}
+                                variant={block.tone === "highlight" ? "highlight" : "default"}
+                            >
+                                <div className="text-sm text-muted-foreground">
+                                    {block.body ?? "No content provided."}
+                                </div>
+                            </SectionCard>
+                        );
+                    default:
+                        return (
+                            <CodeBlock key={key} title={`Unsupported block: ${block?.type ?? "unknown"}`}>
+                                {JSON.stringify(block, null, 2)}
+                            </CodeBlock>
+                        );
+                }
+            })}
+        </div>
+    );
+}
+
 export default function FeatureStorePage() {
     const { selectedScope } = useOpenClawNavigator();
     const [filter, setFilter] = useState("");
@@ -132,6 +276,7 @@ export default function FeatureStorePage() {
         previewHeadline: "",
         previewSummary: "",
         outputNotes: "",
+        jsonBlocks: "",
         downstreamTarget: "superspace",
     });
 
@@ -177,6 +322,7 @@ export default function FeatureStorePage() {
                 previewHeadline: editingDraft.previewConfig?.headline ?? "",
                 previewSummary: editingDraft.previewConfig?.summary ?? "",
                 outputNotes: editingDraft.outputConfig?.notes ?? "",
+                jsonBlocks: JSON.stringify(editingDraft.outputConfig?.jsonBlocks ?? [], null, 2),
                 downstreamTarget: editingDraft.downstreamTarget ?? "superspace",
             });
             return;
@@ -193,9 +339,13 @@ export default function FeatureStorePage() {
             previewHeadline: activeDraftItem?.preview?.headline ?? "",
             previewSummary: activeDraftItem?.preview?.summary ?? "",
             outputNotes: "",
+            jsonBlocks:
+                activeDraftItem?.builderMode === "json_blocks"
+                    ? createDefaultJsonBlocks(selectedScope)
+                    : "",
             downstreamTarget: "superspace",
         });
-    }, [activeDraftItem, draftDialogOpen, editingDraft, selectedScope?.agentIds, selectedScope?.name]);
+    }, [activeDraftItem, draftDialogOpen, editingDraft, selectedScope]);
 
     const handleOpenCreateDraft = (item: any) => {
         setActiveDraftItem(item);
@@ -265,9 +415,16 @@ export default function FeatureStorePage() {
         selectedScope?.agentIds,
         selectedScope?.featureKeys,
     ]);
+    const jsonBlocksPreview = useMemo(
+        () => parseJsonBlocks(draftForm.jsonBlocks),
+        [draftForm.jsonBlocks],
+    );
 
     const handleSaveDraft = async () => {
         if (!selectedScope?._id || !activeDraftItem) {
+            return;
+        }
+        if (draftForm.builderMode === "json_blocks" && jsonBlocksPreview.error) {
             return;
         }
         setDraftBusy(true);
@@ -286,6 +443,9 @@ export default function FeatureStorePage() {
                 },
                 outputConfig: {
                     notes: draftForm.outputNotes || undefined,
+                    jsonBlocks: draftForm.builderMode === "json_blocks"
+                        ? jsonBlocksPreview.blocks
+                        : undefined,
                 },
                 downstreamTarget: draftForm.downstreamTarget || undefined,
             };
@@ -887,6 +1047,27 @@ export default function FeatureStorePage() {
                                 rows={3}
                             />
                         </div>
+                        {draftForm.builderMode === "json_blocks" ? (
+                            <div className="grid gap-2">
+                                <Label htmlFor="draft-json-blocks">json_blocks</Label>
+                                <Textarea
+                                    id="draft-json-blocks"
+                                    value={draftForm.jsonBlocks}
+                                    onChange={(event) =>
+                                        setDraftForm((current) => ({
+                                            ...current,
+                                            jsonBlocks: event.target.value,
+                                        }))
+                                    }
+                                    rows={14}
+                                    className="font-mono text-xs"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Preview ini hanya mendukung block aman:
+                                    `page_header`, `stats`, `section_card`, `key_values`, dan `callout`.
+                                </p>
+                            </div>
+                        ) : null}
                         <div className="rounded-lg border bg-muted/10 p-4 text-sm">
                             <div className="font-medium">Capability check</div>
                             <div className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -933,12 +1114,28 @@ export default function FeatureStorePage() {
                                 ) : null}
                             </div>
                         </div>
+                        {draftForm.builderMode === "json_blocks" ? (
+                            <div className="rounded-lg border bg-muted/10 p-4">
+                                <div className="mb-3 font-medium">json_blocks preview</div>
+                                <JsonBlocksPreview
+                                    blocks={jsonBlocksPreview.blocks}
+                                    error={jsonBlocksPreview.error}
+                                />
+                            </div>
+                        ) : null}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDraftDialogOpen(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={handleSaveDraft} disabled={draftBusy || !draftForm.name.trim()}>
+                        <Button
+                            onClick={handleSaveDraft}
+                            disabled={
+                                draftBusy ||
+                                !draftForm.name.trim() ||
+                                (draftForm.builderMode === "json_blocks" && Boolean(jsonBlocksPreview.error))
+                            }
+                        >
                             {draftBusy ? "Saving..." : editingDraft ? "Update Draft" : "Create Draft"}
                         </Button>
                     </DialogFooter>
