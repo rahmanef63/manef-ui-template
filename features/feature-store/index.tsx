@@ -9,6 +9,7 @@ import {
     Box,
     Bug,
     Clock,
+    Code2,
     FileClock,
     FileText,
     History,
