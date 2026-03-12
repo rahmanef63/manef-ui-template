@@ -6,6 +6,7 @@ import { fetchMutation } from "@/lib/convex/server";
 import { getErrorPresentationFromCode } from "@/shared/errors/appErrorPresentation";
 import {
   authorizePasswordLoginRef,
+  submitPasswordResetRequestRef,
   submitRegistrationRequestRef,
 } from "@/shared/convex/auth";
 import { AuthError } from "next-auth";
@@ -29,6 +30,11 @@ const REGISTRATION_NOTICES = {
       "Password Anda sudah diperbarui. Silakan login lagi menggunakan password baru Anda.",
     title: "Password berhasil diganti",
   },
+  password_reset_requested: {
+    description:
+      "Permintaan reset password sudah dikirim ke admin. Hubungi Rahman untuk mendapatkan password sementara Anda.",
+    title: "Permintaan reset password terkirim",
+  },
 } as const;
 
 export default async function LoginPage(props: {
@@ -41,7 +47,12 @@ export default async function LoginPage(props: {
   }>;
 }) {
   const searchParams = await props.searchParams;
-  const mode = searchParams.mode === "register" ? "register" : "login";
+  const mode =
+    searchParams.mode === "register"
+      ? "register"
+      : searchParams.mode === "forgot"
+        ? "forgot"
+        : "login";
   const errorKey = searchParams.code ?? searchParams.error;
   const errorPresentation = errorKey
     ? getErrorPresentationFromCode(errorKey, "auth")
@@ -88,6 +99,16 @@ export default async function LoginPage(props: {
             }`}
           >
             Daftar
+          </Link>
+        </div>
+        <div className="text-right text-sm">
+          <Link
+            href="/login?mode=forgot"
+            className={`font-medium transition-colors ${
+              mode === "forgot" ? "text-foreground" : "text-primary hover:opacity-80"
+            }`}
+          >
+            Lupa password?
           </Link>
         </div>
         {errorPresentation && (
@@ -169,6 +190,57 @@ export default async function LoginPage(props: {
               className="w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-semibold hover:opacity-90 transition-colors"
             >
               Kirim permintaan akses
+            </button>
+          </form>
+        ) : mode === "forgot" ? (
+          <form
+            action={async (formData: FormData) => {
+              "use server";
+              try {
+                await fetchMutation(submitPasswordResetRequestRef, {
+                  context: String(formData.get("context") ?? ""),
+                  identifier: String(formData.get("identifier") ?? ""),
+                });
+                redirect("/login?mode=forgot&notice=password_reset_requested");
+              } catch (error) {
+                if (isConvexNetworkError(error)) {
+                  redirect("/login?mode=forgot&code=service_unavailable");
+                }
+                throw error;
+              }
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-1">
+              <label htmlFor="identifier" className="text-sm font-medium">
+                Email atau nomor telepon
+              </label>
+              <input
+                id="identifier"
+                name="identifier"
+                type="text"
+                required
+                className="w-full rounded-lg border border-input bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="rahmanef63@gmail.com atau +628..."
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="context" className="text-sm font-medium">
+                Catatan untuk admin
+              </label>
+              <textarea
+                id="context"
+                name="context"
+                rows={4}
+                className="w-full rounded-lg border border-input bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Opsional. Jelaskan konteks reset password Anda."
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-semibold hover:opacity-90 transition-colors"
+            >
+              Kirim permintaan reset password
             </button>
           </form>
         ) : (

@@ -155,6 +155,7 @@ Progress terbaru:
 - login/registrasi sekarang mendukung:
   - `email atau nomor telepon`
   - request registrasi
+  - request forgot-password
   - temporary password
   - wajib ganti password saat first login
 - `Admin -> Users` sekarang menampilkan:

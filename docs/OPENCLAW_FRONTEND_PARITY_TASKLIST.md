@@ -483,6 +483,14 @@ Definition of done:
   - daftar workspace user juga ditampilkan beserta `featureKeys`
   - file:
     [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
+- [x] Tambahkan flow `Forgot password` di portal auth.
+  Bukti:
+  - halaman login sekarang punya mode `forgot`
+  - submit request reset password akan mengirim antrean ke admin
+  - admin melihatnya di panel `Password Reset Requests`
+  - file:
+    [page.tsx](/home/rahman/projects/manef-ui/app/login/page.tsx),
+    [Users.tsx](/home/rahman/projects/manef-ui/features/users/components/Users.tsx)
 
 ## Nodes and exec approvals
 

@@ -3,10 +3,13 @@
 import { useQuery, useMutation } from "convex/react";
 import { useMemo, useState } from "react";
 import {
+    approvePasswordResetRequestRef,
     approveRegistrationRequestRef,
+    denyPasswordResetRequestRef,
     denyRegistrationRequestRef,
     getUsersRef,
     issueTemporaryPasswordForUserRef,
+    listPasswordResetRequestsRef,
     listRegistrationRequestsRef,
     updateUserStatusRef,
 } from "@/shared/convex/admin";
@@ -104,9 +107,25 @@ export default function Users() {
         temporaryPasswordIssuedAt?: number;
         updatedAt: number;
     }> | undefined) ?? [];
+    const passwordResetRequests = (useQuery(listPasswordResetRequestsRef) as Array<{
+        _id: Id<"authPasswordResetRequests">;
+        authUserId?: Id<"authUsers">;
+        context?: string;
+        createdAt: number;
+        email?: string;
+        hasMatchedUser: boolean;
+        identifier: string;
+        name: string;
+        phone?: string;
+        status: "pending" | "approved" | "denied";
+        temporaryPasswordIssuedAt?: number;
+        updatedAt: number;
+    }> | undefined) ?? [];
     const updateStatus = useMutation(updateUserStatusRef);
     const approveRegistration = useMutation(approveRegistrationRequestRef);
+    const approvePasswordReset = useMutation(approvePasswordResetRequestRef);
     const denyRegistration = useMutation(denyRegistrationRequestRef);
+    const denyPasswordReset = useMutation(denyPasswordResetRequestRef);
     const issueTemporaryPassword = useMutation(issueTemporaryPasswordForUserRef);
     const channelBindings = (useQuery(listChannelWorkspaceBindingsRef, {}) as Array<{
         access?: string;
@@ -241,6 +260,37 @@ export default function Users() {
             }));
         } finally {
             setBusyUserPasswordId(null);
+        }
+    };
+
+    const handleApprovePasswordReset = async (
+        requestId: Id<"authPasswordResetRequests">,
+    ) => {
+        setBusyRequestId(requestId);
+        try {
+            const result = await approvePasswordReset({ requestId });
+            setRevealedPasswords((current) => ({
+                ...current,
+                [requestId]: result.temporaryPassword,
+            }));
+        } finally {
+            setBusyRequestId(null);
+        }
+    };
+
+    const handleDenyPasswordReset = async (
+        requestId: Id<"authPasswordResetRequests">,
+    ) => {
+        setBusyRequestId(requestId);
+        try {
+            await denyPasswordReset({ requestId });
+            setRevealedPasswords((current) => {
+                const next = { ...current };
+                delete next[requestId];
+                return next;
+            });
+        } finally {
+            setBusyRequestId(null);
         }
     };
 
@@ -671,6 +721,113 @@ export default function Users() {
                                                                 variant="ghost"
                                                                 disabled={isBusy}
                                                                 onClick={() => handleDenyRequest(request._id)}
+                                                            >
+                                                                <X className="mr-2 h-4 w-4" />
+                                                                Deny
+                                                            </Button>
+                                                        </>
+                                                    ) : request.status === "approved" ? (
+                                                        <div className="text-xs text-emerald-700 flex items-center justify-end">
+                                                            <Check className="mr-1 h-4 w-4" />
+                                                            Approved
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-xs text-destructive flex items-center justify-end">
+                                                            <X className="mr-1 h-4 w-4" />
+                                                            Denied
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            <Card className="shadow-sm flex-1 mt-4 overflow-hidden border">
+                <CardHeader className="bg-muted/30 pb-4 border-b">
+                    <CardTitle>Password Reset Requests</CardTitle>
+                    <CardDescription>
+                        Incoming forgot-password requests from the auth portal. Approve a request to issue a temporary password.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/10">
+                                <TableHead>Requester</TableHead>
+                                <TableHead>Context</TableHead>
+                                <TableHead>Match</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Updated</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {passwordResetRequests.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                        No password reset requests yet.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                passwordResetRequests.map((request) => {
+                                    const revealedPassword = revealedPasswords[request._id];
+                                    const isBusy = busyRequestId === request._id;
+                                    return (
+                                        <TableRow key={request._id} className="hover:bg-muted/50 transition-colors align-top">
+                                            <TableCell className="space-y-1">
+                                                <div className="font-medium text-sm">{request.name}</div>
+                                                <div className="text-xs text-muted-foreground">{request.phone ?? request.email ?? request.identifier}</div>
+                                            </TableCell>
+                                            <TableCell className="max-w-sm">
+                                                <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                                    {request.context || "No note"}
+                                                </div>
+                                                {revealedPassword ? (
+                                                    <div className="mt-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+                                                        Password sementara: <span className="font-mono font-semibold">{revealedPassword}</span>
+                                                        <div>Berikan sekali ke user. Setelah login, password ini harus diganti.</div>
+                                                    </div>
+                                                ) : null}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="font-normal">
+                                                    {request.hasMatchedUser ? "Matched user" : "No matched user"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="capitalize">
+                                                    {request.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-sm text-muted-foreground">
+                                                {formatTime(request.updatedAt)}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    {request.status === "pending" ? (
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                disabled={isBusy || !request.hasMatchedUser}
+                                                                onClick={() => handleApprovePasswordReset(request._id)}
+                                                            >
+                                                                {isBusy ? (
+                                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                ) : null}
+                                                                Issue Password
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                disabled={isBusy}
+                                                                onClick={() => handleDenyPasswordReset(request._id)}
                                                             >
                                                                 <X className="mr-2 h-4 w-4" />
                                                                 Deny
