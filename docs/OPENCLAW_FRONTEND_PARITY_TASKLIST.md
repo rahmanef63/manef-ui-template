@@ -542,6 +542,13 @@ Definition of done:
   - query `features.skills.api.listSkills`
   - [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
   - sync runtime backend mengisi tabel `skills`
+- [x] Ubah halaman `Skills` menjadi `Skills Store`.
+  Bukti:
+  - judul, deskripsi, dan filter halaman sekarang memakai konsep store
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx)
+  - daftar card dirender dari:
+    [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
 - [x] Tambahkan write UI untuk enable/disable skill.
   Bukti:
   - tombol enable/disable memanggil `features.skills.api.toggleSkill`
@@ -552,17 +559,38 @@ Definition of done:
   Bukti:
   - badge source dirender dari field `skill.source`
   - [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
+- [x] Tambahkan source label store:
+  `by Rahman`, `by ClawHub`, `by OpenClaw`.
+  Bukti:
+  - filter source type aktif di halaman
+  - card skill menampilkan `publisherLabel`, `sourceType`, `trustLevel`,
+    `skillScope`, `installState`
+  - query status store:
+    `features.skills.api.getSkillStoreStatus`
+  - file:
+    [index.tsx](/home/rahman/projects/manef-ui/features/skills/index.tsx),
+    [SkillsList.tsx](/home/rahman/projects/manef-ui/features/skills/components/SkillsList.tsx)
 - [x] Tambahkan refresh nyata dari runtime OpenClaw.
   Bukti:
   - data di page sekarang berasal dari tabel `skills` yang diisi timer sync runtime
   - scheduler backend:
     [manef-openclaw-runtime-sync.timer](/home/rahman/projects/manef-db/scripts/systemd/manef-openclaw-runtime-sync.timer)
+- [x] Siapkan mode `ClawHub pull-ready`, bukan webhook push.
+  Bukti:
+  - UI sekarang siap menampilkan item `clawhub` jika backend sync lokal
+    menemukannya
+  - source label dan status store dirender langsung dari backend
+  - belum ada webhook eksternal di frontend; sinkronisasi tetap mengikuti
+    local runtime sync backend
 
 Definition of done:
 
 - daftar skill sama dengan `skills` table
 - toggle enabled/disabled terbaca ulang dari DB
 - sync runtime memperbarui daftar skill tanpa edit manual frontend
+- source label `by Rahman` dan `by OpenClaw` muncul untuk skill yang ada saat ini
+- jika nanti lockfile/metadata ClawHub tersedia di host, item `by ClawHub`
+  muncul tanpa patch frontend lagi
 
 ## Sessions
 

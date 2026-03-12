@@ -12,11 +12,14 @@ import { Zap } from "lucide-react";
 export default function SkillsPage() {
     const router = useRouter();
     const [filter, setFilter] = useState("");
+    const [sourceType, setSourceType] = useState("all");
     const [isRefreshing, startRefresh] = useTransition();
     const [isToggling, startToggle] = useTransition();
     const skills: any = useAppQuery(appApi.features.skills.api.listSkills, {
+        sourceType: sourceType === "all" ? undefined : sourceType,
         filter: filter || undefined,
     });
+    const storeStatus: any = useAppQuery(appApi.features.skills.api.getSkillStoreStatus, {});
     const toggleSkill = useAppMutation(appApi.features.skills.api.toggleSkill);
 
     const handleRefresh = () => {
@@ -43,8 +46,8 @@ export default function SkillsPage() {
     return (
         <div className="space-y-6 px-4 lg:px-6">
             <PageHeader
-                title="Skills"
-                description="Live mirror of OpenClaw runtime skills."
+                title="Skills Store"
+                description="Live skill store for workspace capabilities, with source labels from OpenClaw, Rahman local skills, and ClawHub-ready sync."
             />
 
             {skills.length === 0 ? (
@@ -59,6 +62,9 @@ export default function SkillsPage() {
                 <SkillsList
                     filter={filter}
                     onFilterChange={setFilter}
+                    sourceType={sourceType}
+                    onSourceTypeChange={setSourceType}
+                    storeStatus={storeStatus}
                     isRefreshing={isRefreshing}
                     onRefresh={handleRefresh}
                     skills={skills}

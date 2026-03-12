@@ -147,6 +147,11 @@ Progress terbaru:
   - draft `json_blocks`
   - draft `custom_code`
   - create/edit/mark-ready/archive per workspace
+- `Skills` sekarang diposisikan sebagai `Skills Store`:
+  - filter source-aware
+  - label `by Rahman`, `by ClawHub`, `by OpenClaw`
+  - metadata `trust`, `scope`, dan `install state`
+  - summary status store live dari backend
 - login/registrasi sekarang mendukung:
   - `email atau nomor telepon`
   - request registrasi
@@ -160,8 +165,18 @@ Remaining phase terdekat:
 - editor aman `Agent Builder`:
   `custom_code`
 - turunkan install feature menjadi policy skill/capability agent per workspace
+- turunkan `Skills Store` menjadi policy skill/capability agent per workspace
 - RBAC lebih tegas untuk `Feature Store`
 - publish/downstream bridge ke `Superspace`
+
+Skills Store note:
+
+- integrasi `ClawHub` saat ini diperlakukan sebagai `pull-ready`, bukan webhook
+  push
+- source of truth tetap runtime sync lokal backend:
+  `openclaw skills list --json` + metadata skill lokal yang ada di host
+- jika metadata/lockfile `ClawHub` tersedia di host, item akan otomatis muncul
+  sebagai `by ClawHub` tanpa perlu ubah komponen frontend lagi
 
 Admin tooling terbaru:
 
