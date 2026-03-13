@@ -8,21 +8,103 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showErrorToast } from "@/shared/errors/appErrorPresentation";
 import { typedApi } from "@/shared/convex/api";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { buildPersonalWorkspaceName } from "@manef/db/workspaces";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { appApi, useAppQuery } from "@/lib/convex/client";
+import { formatDistanceToNow } from "date-fns";
+
+const REGISTRATION_STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; description: string }> = {
+  pending_workspace: {
+    label: "Pending Workspace",
+    variant: "secondary",
+    description: "Permintaan Anda tercatat. Admin sedang mencocokkan workspace yang sesuai.",
+  },
+  ready_for_access: {
+    label: "Ready for Access",
+    variant: "default",
+    description: "Workspace Anda sudah ditemukan. Hubungi admin untuk mendapatkan password sementara.",
+  },
+  approved: {
+    label: "Approved",
+    variant: "default",
+    description: "Akun Anda sudah disetujui dan aktif.",
+  },
+  denied: {
+    label: "Denied",
+    variant: "destructive",
+    description: "Permintaan akses Anda ditolak. Hubungi admin untuk informasi lebih lanjut.",
+  },
+};
+
+function RegistrationStatusCard({ userId }: { userId: string }) {
+  const request = useAppQuery(appApi.features.auth.api.getMyRegistrationRequest, { userId });
+
+  if (request === undefined) return null;
+  if (request === null) return null;
+
+  const statusInfo = REGISTRATION_STATUS_LABELS[request.status] ?? {
+    label: request.status,
+    variant: "outline",
+    description: "",
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Registration Request</CardTitle>
+          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+        </div>
+        <CardDescription>{statusInfo.description}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+          <span>Name</span><span className="text-foreground">{request.name}</span>
+          <span>Phone</span><span className="text-foreground">{request.phone}</span>
+          {request.matchedWorkspaceCount > 0 && (
+            <>
+              <span>Matched Workspaces</span>
+              <span className="text-foreground">{request.matchedWorkspaceNames.join(", ")}</span>
+            </>
+          )}
+          {request.reviewNote && (
+            <>
+              <span>Admin Note</span>
+              <span className="text-foreground">{request.reviewNote}</span>
+            </>
+          )}
+          {request.temporaryPasswordIssuedAt && (
+            <>
+              <span>Temp Password</span>
+              <span className="text-foreground">
+                Issued {formatDistanceToNow(request.temporaryPasswordIssuedAt, { addSuffix: true })}
+              </span>
+            </>
+          )}
+          <span>Submitted</span>
+          <span className="text-foreground">
+            {formatDistanceToNow(request.createdAt, { addSuffix: true })}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function GeneralSettingsPage() {
   const workspace = useCurrentWorkspace();
@@ -162,6 +244,7 @@ export default function GeneralSettingsPage() {
         )}
       </Card>
       <DeleteWorkspaceDialog open={showDeleteDialog} setOpen={setShowDeleteDialog} />
+      {session?.user?.id && <RegistrationStatusCard userId={session.user.id} />}
     </>
   );
 }
