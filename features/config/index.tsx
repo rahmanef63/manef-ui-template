@@ -30,7 +30,11 @@ export default function ConfigPage() {
                     />
                 }
             >
-                <ConfigPanel />
+                <ConfigPanel
+                    activeCategory={activeCategory}
+                    searchQuery={searchQuery}
+                    viewMode={viewMode}
+                />
             </MasterDetailLayout>
         </div>
     );

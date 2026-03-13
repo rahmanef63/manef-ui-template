@@ -10,13 +10,5 @@ export const LEVEL_COLORS: Record<LogLevel, string> = {
     error: "bg-red-500/10 text-red-600 dark:text-red-400",
 };
 
-export const MOCK_LOGS: LogEntry[] = [
-    { time: "07:31:45", level: "info", msg: "Gateway heartbeat OK", source: "gateway" },
-    { time: "07:31:40", level: "debug", msg: "WebSocket ping/pong cycle completed", source: "ws" },
-    { time: "07:31:35", level: "info", msg: "Session agent:main:main context loaded (75010 tokens)", source: "session" },
-    { time: "07:31:30", level: "warn", msg: "Telegram channel not running — polling stopped", source: "channels" },
-    { time: "07:31:25", level: "debug", msg: "Presence beacon from openclaw-control-ui", source: "instances" },
-    { time: "07:31:20", level: "info", msg: "Cron scheduler tick — next wake in 16h", source: "cron" },
-    { time: "07:31:15", level: "trace", msg: "Config reload check — no changes detected", source: "config" },
-    { time: "07:31:10", level: "info", msg: "WhatsApp auth refreshed — age 8m", source: "channels" },
-];
+// MOCK_LOGS removed — data comes from Convex live via features/logs/api:getRecentLogs
+export type { LogEntry };

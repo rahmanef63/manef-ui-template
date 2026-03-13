@@ -6,7 +6,17 @@ Convex backend repo for Manef.
 
 - [Deployment status 2026-03-11](./DEPLOYMENT_STATUS_2026-03-11.md)
 - [Docs index](./docs/README.md)
+- [Target architecture](./docs/TARGET_ARCHITECTURE.md)
 - [OpenClaw backend parity tasklist](./docs/OPENCLAW_BACKEND_PARITY_TASKLIST.md)
+
+Session handoff references:
+
+- backend tasklist:
+  [OPENCLAW_BACKEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-db/docs/OPENCLAW_BACKEND_PARITY_TASKLIST.md)
+- frontend tasklist:
+  [OPENCLAW_FRONTEND_PARITY_TASKLIST.md](/home/rahman/projects/manef-ui/docs/OPENCLAW_FRONTEND_PARITY_TASKLIST.md)
+- Superspace repo clone:
+  [superspace](/home/rahman/projects/superspace)
 
 ## Responsibilities
 
@@ -95,6 +105,8 @@ Status parity saat ini:
 - `channels`: live config/binding mirror aktif
 - `gatewayLogs`: live journal snapshot aktif
 - `nodes`: belum full runtime mirror
+- `workspaceChannelBindings`: live runtime mirror aktif
+- `identityWorkspaceBindings`: live runtime mirror aktif
 
 Workspace runtime note:
 
@@ -131,6 +143,135 @@ Write-through note:
   overwrite buta jika runtime/local file berubah lebih dulu
 - langkah berikutnya adalah menyambungkan outbox ini ke worker lokal atau webhook
   `n8n`/Gateway executor
+
+Progress terbaru:
+
+- binding `channel/account -> workspace` sekarang sudah termirror dari runtime
+- binding `userIdentity -> workspace` sekarang sudah termirror dari runtime
+- `Feature Store` backend sekarang sudah punya:
+  - catalog schema
+  - daftar feature `manef` yang nyata sebagai store items
+  - preview metadata
+  - install/uninstall per workspace
+  - metadata capability:
+    `featureKey`, `route`, `requiredRoles`, `grantedSkillKeys`, `runtimeDomains`
+- `skills` sekarang juga berfungsi sebagai `Skills Store` backend:
+  - source-aware metadata
+  - label publisher:
+    `by Rahman`, `by ClawHub`, `by OpenClaw`
+  - metadata `trust`, `scope`, `install state`, `homepage`
+  - query status store untuk ringkasan inventory
+  - query workspace-aware untuk policy grant:
+    `listSkills({ workspaceId })`
+  - mutation manual grant/revoke:
+    `setWorkspaceSkillPolicy`
+- `Agent Builder` backend sekarang sudah punya:
+  - draft schema per workspace
+  - create/update/archive API
+  - contract output minimum:
+    `requiredFeatureKeys`, `requiredSkillKeys`, linked agents/channels
+  - evaluasi capability nyata:
+    workspace features, workspace skills, available agents, dan gap skill per agent
+  - contract review minimum untuk `custom_code`:
+    `language`, `entryFile`, `sourceCode`, `reviewSummary`,
+    `reviewChecklist`
+  - `customCodeReport` untuk menentukan apakah draft aman ditandai `ready`
+- `workspaceTrees` sekarang juga menyimpan `featureKeys`:
+  - daftar feature yang terpasang pada workspace tersebut
+  - ikut dikembalikan oleh `openclawNavigator`
+- RBAC store sekarang lebih ketat:
+  - install/uninstall feature dibatasi oleh akses workspace + role admin
+  - grant/revoke skill workspace dibatasi oleh akses workspace + role admin
+  - draft builder workspace dibatasi oleh akses workspace + role admin
+- install feature sekarang juga menurunkan policy capability:
+  - `workspaceSkillPolicies`
+  - `workspaceAgentSkillPolicies`
+  - query ringkasan:
+    `getWorkspaceCapabilityPolicy`
+- auth admin sekarang juga punya mutation reset password sementara untuk user:
+  - dipakai oleh `Admin -> Users` di frontend
+- backend auth sekarang mendukung:
+  - login `email/phone`
+  - registration request
+  - forgot-password request
+  - temporary password
+  - first-login password change
+
+Remaining phase terdekat:
+
+- write-through/publish downstream untuk `Feature Store`
+- renderer/publish contract `Agent Builder`:
+  `json_blocks`
+- sandbox execution/publish contract `Agent Builder`:
+  `custom_code`
+- hardening RBAC untuk install/uninstall store items
+
+Skills Store note:
+
+- sumber runtime utama tetap `openclaw skills list --json`
+- klasifikasi `ClawHub` saat ini `pull-ready`, bukan webhook push
+- worker sync lokal memeriksa metadata/lockfile `ClawHub` yang tersedia di host
+  dan memetakannya ke source type `clawhub` bila ditemukan
+
+Admin write surface yang sudah siap:
+
+- backend mutation:
+  - `attachWorkspaceChannel`
+  - `detachWorkspaceChannel`
+  - `attachIdentityWorkspace`
+  - `detachIdentityWorkspace`
+- policy mutation:
+  - `setChannelBindingPolicy`
+- `manef-ui` sekarang sudah punya panel admin untuk memakai mutation tersebut
+
+Write-through lokal terbaru:
+
+- outbox event untuk binding manual sekarang diproses oleh
+  [process_openclaw_outbox.py](/home/rahman/projects/manef-db/scripts/process_openclaw_outbox.py)
+- worker ini menulis ke namespace aman `manef.dashboard.*` di file
+  `~/.openclaw/openclaw.json`
+- sync runtime berikutnya membaca namespace itu kembali dan memirror hasilnya ke
+  Convex
+
+## Future product context
+
+Repo ini juga perlu menyiapkan contract backend untuk roadmap berikut:
+
+- `Feature Store`
+- `Agent Builder`
+- integrasi `Superspace Apps`
+
+Target downstream yang disebut saat ini:
+
+- `https://github.com/zianinn/v0-remix-of-superspace-app-aazian.git`
+
+Catatan:
+
+- repo eksternal di atas belum menjadi source of truth backend
+- model data `manef-db` harus tetap netral dan workspace-aware
+- integrasi Superspace sebaiknya dilakukan lewat adapter/publish contract, bukan
+  dengan meniru struktur repo eksternal secara langsung
+
+Temuan Superspace yang sudah diverifikasi:
+
+- acuan `Feature Store` yang paling relevan adalah `menu-store`
+- acuan `Workspace Store` yang paling relevan adalah `workspace-store`
+- file referensi penting:
+  - [menuItems.ts](/home/rahman/projects/superspace/convex/features/menus/menuItems.ts)
+  - [menu_manifest_data.ts](/home/rahman/projects/superspace/convex/features/menus/menu_manifest_data.ts)
+  - [optional_features_catalog.ts](/home/rahman/projects/superspace/convex/features/menus/optional_features_catalog.ts)
+  - [MenuStorePage.tsx](/home/rahman/projects/superspace/frontend/features/menus/MenuStorePage.tsx)
+  - [WorkspaceStorePage.tsx](/home/rahman/projects/superspace/frontend/features/workspace-store/WorkspaceStorePage.tsx)
+
+Kesimpulan implementasi:
+
+- `Feature Store` `manef-db` nanti harus menyediakan catalog/install contract
+  per workspace
+- `Workspace Store` tetap dipisahkan dari `Feature Store`
+- `Agent Builder` menjadi item store khusus dengan dua mode:
+  `json_blocks` dan `custom_code`
+- semua itu tetap harus mengikuti boundary:
+  `workspace`, `sub-workspace`, `agents`, `channels`, dan mirror runtime OpenClaw
 
 Sessions volume note:
 

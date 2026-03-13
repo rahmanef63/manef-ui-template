@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 SCRIPTS = [
+    "process_openclaw_outbox.py",
     "sync_openclaw_agents_to_convex.py",
     "sync_openclaw_workspaces_to_convex.py",
     "sync_openclaw_sessions_to_convex.py",
@@ -16,6 +17,7 @@ SCRIPTS = [
     "sync_openclaw_skills_to_convex.py",
     "sync_openclaw_channels_to_convex.py",
     "sync_openclaw_logs_to_convex.py",
+    "sync_openclaw_nodes_to_convex.py",
 ]
 
 

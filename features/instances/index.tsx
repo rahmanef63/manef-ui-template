@@ -5,7 +5,6 @@ import { useState } from "react";
 import { appApi, useAppAction, useAppQuery } from "@/lib/convex/client";
 import { PageHeader } from "@/shared/block/ui/openclaw-blocks";
 import { InstancesList } from "./components/InstancesList";
-import { MOCK_INSTANCES } from "./constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { InstanceData } from "./types";
 import { formatDistanceToNow } from "date-fns";
@@ -35,22 +34,20 @@ export default function InstancesPage() {
         );
     }
 
-    const displayInstances: InstanceData[] = dbInstances.length > 0
-        ? dbInstances.map((i: any) => ({
-            id: i._id.toString(),
-            name: i.name,
-            role: i.role === "gateway" || i.role === "node" || i.role === "client" ? i.role : "client",
-            arch: i.platform || "unknown",
-            os: i.platform || "unknown",
-            v: i.version || "unknown",
-            lastSeen: i.lastSeenAt ? formatDistanceToNow(i.lastSeenAt, { addSuffix: true }) : "n/a",
-            info: i.info || "",
-            status: "online",
-            tags: i.tags || [],
-            lastInput: "n/a",
-            reason: ""
-        }))
-        : MOCK_INSTANCES;
+    const displayInstances: InstanceData[] = dbInstances.map((i: any) => ({
+        id: i._id.toString(),
+        name: i.name,
+        role: i.role === "gateway" || i.role === "node" || i.role === "client" ? i.role : "client",
+        arch: i.platform || "unknown",
+        os: i.platform || "unknown",
+        v: i.version || "unknown",
+        lastSeen: i.lastSeenAt ? formatDistanceToNow(i.lastSeenAt, { addSuffix: true }) : "n/a",
+        info: i.info || "",
+        status: "online",
+        tags: i.tags || [],
+        lastInput: "n/a",
+        reason: ""
+    }));
 
     return (
         <div className="space-y-6 px-4 lg:px-6">

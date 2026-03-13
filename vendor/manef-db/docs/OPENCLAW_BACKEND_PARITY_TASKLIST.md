@@ -1,6 +1,6 @@
 # OpenClaw Backend Parity Tasklist
 
-Updated: 2026-03-11
+Updated: 2026-03-12
 
 Dokumen ini melacak pekerjaan `manef-db` agar menjadi backend mirror yang
 konsisten terhadap runtime OpenClaw, sekaligus melayani `manef-ui`.
@@ -20,6 +20,19 @@ Task belum selesai bila:
 - write berhasil ke Convex tetapi tidak pernah muncul di runtime OpenClaw
 - runtime berubah tetapi Convex tidak ikut berubah
 
+Session handoff references:
+
+- backend repo aktif:
+  [manef-db](/home/rahman/projects/manef-db)
+- frontend repo aktif:
+  [manef-ui](/home/rahman/projects/manef-ui)
+- repo acuan feature store:
+  [superspace](/home/rahman/projects/superspace)
+- backend menu store acuan:
+  [menuItems.ts](/home/rahman/projects/superspace/convex/features/menus/menuItems.ts)
+- frontend menu store acuan:
+  [MenuStorePage.tsx](/home/rahman/projects/superspace/frontend/features/menus/MenuStorePage.tsx)
+
 ## Global rules
 
 - [ ] Semua action `refresh*` atau `sync*` untuk feature OpenClaw harus nyata,
@@ -30,6 +43,215 @@ Task belum selesai bila:
 - [ ] Semua mirror job harus idempotent.
 - [ ] Semua tabel OpenClaw harus punya strategi reconcile:
   insert, patch, soft delete atau mark stale.
+
+## Future context: Feature Store and Superspace
+
+Konteks ini belum selesai dan belum menjadi contract backend resmi, tetapi harus
+diakomodasi mulai sekarang agar model data tidak buntu saat integrasi app
+builder dimulai.
+
+- [x] Tambahkan model backend untuk `feature store items`.
+  Bukti:
+  - schema:
+    [schema.ts](/home/rahman/projects/manef-db/convex/features/featureStore/schema.ts)
+  - seed catalog:
+    [catalog.ts](/home/rahman/projects/manef-db/convex/features/featureStore/catalog.ts)
+  - API:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [x] Bedakan item store:
+  `workspace-app`, `agent-builder`, `shared-block-set`, `template`, `external app`.
+  Bukti:
+  - katalog sekarang juga memuat `dashboard-feature` untuk feature `manef` yang nyata
+  - field item:
+    `featureKey`, `route`, `requiredRoles`, `grantedSkillKeys`, `runtimeDomains`
+    di [schema.ts](/home/rahman/projects/manef-db/convex/features/featureStore/schema.ts)
+- [x] `Agent Builder` sekarang menyimpan draft untuk dua mode source:
+  `json_blocks` dan `custom_code`.
+-  Bukti:
+  - schema draft:
+    `agentBuilderDrafts` di
+    [schema.ts](/home/rahman/projects/manef-db/convex/features/featureStore/schema.ts)
+  - API:
+    `listAgentBuilderDrafts`, `createAgentBuilderDraft`,
+    `updateAgentBuilderDraft`, `archiveAgentBuilderDraft`
+    di [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [ ] `json_blocks` harus bisa dirender ulang dari schema/metadata backend tanpa
+  kehilangan struktur block.
+- [x] `custom_code` sekarang punya contract review/safety minimum, tidak lagi
+  hanya blob string.
+  Bukti:
+  - `listAgentBuilderDrafts` sekarang mengembalikan `customCodeReport`
+  - `updateAgentBuilderDraft` menolak status `ready` jika review belum lengkap
+  - review minimum meliputi:
+    `scopeReviewed`, `secretSafe`, `networkReviewed`,
+    `runtimeWriteReviewed`
+  - file:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [x] Setiap store item harus punya scope:
+  `workspace`, `tenant`, `global`.
+- [x] Setiap store item harus bisa dikaitkan ke satu atau banyak workspace.
+  Bukti:
+  - install table:
+    `workspaceFeatureInstalls`
+  - mutation:
+    `installFeatureStoreItem`, `uninstallFeatureStoreItem`
+    di [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [x] Setiap workspace sekarang menyimpan array `featureKeys` yang dimiliki.
+  Bukti:
+  - schema:
+    [workspace/schema.ts](/home/rahman/projects/manef-db/convex/features/workspace/schema.ts)
+  - install/uninstall feature sekarang menyinkronkan `workspaceTrees.featureKeys`
+  - file:
+    [featureStore/api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [x] Install feature sekarang menurunkan `grantedSkillKeys` menjadi policy nyata
+  `workspace -> skills` dan `workspace -> agents -> skills`.
+  Bukti:
+  - tabel baru:
+    `workspaceSkillPolicies`, `workspaceAgentSkillPolicies`
+  - sinkronisasi turunan:
+    `syncWorkspaceCapabilityPolicies`
+  - query policy:
+    `getWorkspaceCapabilityPolicy`
+  - file:
+    [schema.ts](/home/rahman/projects/manef-db/convex/features/featureStore/schema.ts)
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [x] `Agent Builder` draft sekarang menyimpan kontrak output policy minimum:
+  workspace target, linked agents/channels, required feature keys, required skill keys.
+  Bukti:
+  - field baru:
+    `requiredFeatureKeys`, `requiredSkillKeys`
+  - file:
+    [schema.ts](/home/rahman/projects/manef-db/convex/features/featureStore/schema.ts)
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [x] `Agent Builder` draft sekarang punya evaluasi capability nyata terhadap
+  workspace dan agent target.
+  Bukti:
+  - helper snapshot:
+    `buildWorkspaceCapabilitySnapshot`
+  - evaluator draft:
+    `buildDraftCapabilityReport`
+  - query draft sekarang mengembalikan `capabilityReport`
+  - status `ready` sekarang ditolak backend jika capability belum terpenuhi
+  - file:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+- [ ] Backend harus siap menyimpan metadata target integrasi `Superspace`.
+
+Konteks integrasi eksternal:
+
+- target repo saat ini:
+  `https://github.com/zianinn/v0-remix-of-superspace-app-aazian.git`
+- status:
+  - repo ini disebut sebagai target downstream
+  - isi internals repo belum diverifikasi langsung oleh tasklist backend ini
+- implikasi arsitektur:
+  - jangan jadikan struktur repo eksternal itu sebagai SSOT backend
+  - siapkan adapter/backend contract agar `Feature Store` bisa publish atau
+    sinkron ke target eksternal tersebut nanti
+
+Definition of done:
+
+- ada schema/table/contract jelas untuk store items
+- item bisa dibaca per workspace dan per visibility scope
+- output builder bisa dipublish ke target eksternal tanpa mengubah model inti
+
+## Superspace findings
+
+Temuan yang sudah diverifikasi dari repo
+[superspace](/home/rahman/projects/superspace):
+
+- `workspace-store` di Superspace bukan feature installer; dia adalah manager
+  hierarchy workspace
+- `menu-store` adalah pola yang lebih dekat ke `Feature Store`:
+  catalog, preview, install, visibility, permission
+- SSOT feature di Superspace berasal dari `config.ts` per feature, lalu
+  digenerate menjadi:
+  - manifest default/system
+  - optional catalog
+
+Bukti file:
+
+- backend manifest:
+  [menu_manifest_data.ts](/home/rahman/projects/superspace/convex/features/menus/menu_manifest_data.ts)
+- backend optional catalog:
+  [optional_features_catalog.ts](/home/rahman/projects/superspace/convex/features/menus/optional_features_catalog.ts)
+- backend installer/manage:
+  [menuItems.ts](/home/rahman/projects/superspace/convex/features/menus/menuItems.ts)
+- frontend store UI:
+  [MenuStorePage.tsx](/home/rahman/projects/superspace/frontend/features/menus/MenuStorePage.tsx)
+- frontend workspace hierarchy:
+  [WorkspaceStorePage.tsx](/home/rahman/projects/superspace/frontend/features/workspace-store/WorkspaceStorePage.tsx)
+
+Implikasi untuk `manef-db`:
+
+- `Feature Store` backend harus menyediakan:
+  - catalog query
+  - preview metadata query
+  - install/uninstall per workspace
+  - scope metadata:
+    `workspace-local`, `workspace-shared`, `general/shared`
+- `Workspace Store` backend tetap dipisah dari `Feature Store`
+- `Agent Builder` harus ditambahkan sebagai item store khusus, bukan disamakan
+  dengan menu installer biasa
+- model backend `manef` tidak boleh meniru Superspace mentah-mentah; dia tetap
+  harus `workspace + agent + runtime OpenClaw aware`
+
+Progress terbaru untuk `Feature Store`:
+
+- [x] Query katalog store live:
+  `listFeatureStoreItems`
+- [x] Preview metadata backend:
+  `featureStorePreviews`
+- [x] Seed katalog backend:
+  `seedFeatureStoreCatalog`
+- [x] Install/uninstall item per workspace:
+  `workspaceFeatureInstalls`
+- [x] Draft `Agent Builder` per workspace:
+  `agentBuilderDrafts`
+- [x] Katalog sekarang disejajarkan dengan feature `manef` yang nyata:
+  `overview`, `chat-session`, `inbox`, `agents`, `channels`, `sessions`,
+  `usage`, `crons`, `skills`, `nodes`, `config`, `debug`, `logs`,
+  `users`, `roles`, `audit`, `feature-store`
+- [x] RBAC backend untuk install/uninstall dan draft builder sudah diperketat
+  berdasarkan akses workspace + role admin.
+  Bukti:
+  - guard `requireViewerContext` dan `assertWorkspaceAccess` di
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+  - guard `requireViewerContext` dan `assertWorkspaceAccess` di
+    [api.ts](/home/rahman/projects/manef-db/convex/features/skills/api.ts)
+  - `seedFeatureStoreCatalog`, `installFeatureStoreItem`,
+    `uninstallFeatureStoreItem`, `createAgentBuilderDraft`,
+    `updateAgentBuilderDraft`, `archiveAgentBuilderDraft`,
+    `setWorkspaceSkillPolicy` sekarang menolak caller non-admin
+    untuk workspace target.
+- [x] Install feature sekarang otomatis menghasilkan policy skill
+  agent/workspace.
+- [ ] Publish/write-through ke downstream `Superspace` belum ada
+- [ ] Renderer `json_blocks` belum ada
+- [x] Sandbox/review contract minimum untuk `custom_code` sudah ada
+  di backend.
+  Bukti:
+  - helper evaluator custom code review di:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/featureStore/api.ts)
+  - report yang dikembalikan:
+    `customCodeReport`
+  - status `ready` ditolak jika source kosong, entry file kosong,
+    review summary kosong, atau checklist review belum lengkap
+- [ ] Sandbox execution/publish contract `custom_code` ke downstream runtime/app
+  belum ada
+
+## Auth portal extensions
+
+- [x] Tambahkan antrean `password reset request` terpisah dari registrasi.
+  Bukti:
+  - schema:
+    `authPasswordResetRequests`
+    di [schema.ts](/home/rahman/projects/manef-db/convex/features/auth/schema.ts)
+  - mutation/query:
+    `submitPasswordResetRequest`,
+    `listPasswordResetRequests`,
+    `approvePasswordResetRequest`,
+    `denyPasswordResetRequest`
+    di [api.ts](/home/rahman/projects/manef-db/convex/features/auth/api.ts)
 
 ## Navigator model
 
@@ -51,6 +273,9 @@ Task belum selesai bila:
   - [onboarding.ts](/home/rahman/projects/manef-db/convex/onboarding.ts)
   - [migrations.ts](/home/rahman/projects/manef-db/convex/migrations.ts)
   - [agentOps.ts](/home/rahman/projects/manef-db/convex/agentOps.ts)
+- [x] Navigator sekarang juga mengembalikan `featureKeys` per root/child workspace.
+  Bukti:
+  - [openclawNavigator.ts](/home/rahman/projects/manef-db/convex/openclawNavigator.ts)
 
 Definition of done:
 
@@ -161,15 +386,122 @@ Definition of done:
 
 - [ ] Jadikan binding channel -> agent sebagai data kelas satu, bukan hanya
   bagian dari blob config.
-- [ ] Tambahkan read API untuk binding per channel dan per agent.
-- [ ] Tambahkan write API untuk relink binding.
+- [x] Tambahkan binding `channel/account -> workspace`.
+  Bukti:
+  - schema baru:
+    `workspaceChannelBindings` di
+    [channels/schema.ts](/home/rahman/projects/manef-db/convex/features/channels/schema.ts)
+  - sync runtime menerima `workspaceBindings` dan resolve `agentId -> workspace`
+    di [channels/api.ts](/home/rahman/projects/manef-db/convex/features/channels/api.ts)
+  - script runtime mengirim payload binding dari `openclaw.json bindings` di
+    [sync_openclaw_channels_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_channels_to_convex.py)
+- [x] Tambahkan binding `userIdentity -> workspace`.
+  Bukti:
+  - schema baru:
+    `identityWorkspaceBindings` di
+    [channels/schema.ts](/home/rahman/projects/manef-db/convex/features/channels/schema.ts)
+  - sync runtime menerima `identityBindings` dan resolve `userProfile` bila ada
+    di [channels/api.ts](/home/rahman/projects/manef-db/convex/features/channels/api.ts)
+- [ ] Tambahkan policy apakah satu channel bisa mengakses banyak workspace atau
+  hanya satu workspace utama.
+- [x] Tambahkan read API untuk binding per channel dan per agent.
+  Bukti:
+  - `listChannelWorkspaceBindings`
+  - `listIdentityWorkspaceBindings`
+  - `listChannels` kini membawa binding summary
+  - [channels/api.ts](/home/rahman/projects/manef-db/convex/features/channels/api.ts)
+- [x] Tambahkan write API untuk relink binding.
+  Bukti:
+  - `attachWorkspaceChannel`
+  - `detachWorkspaceChannel`
+  - `attachIdentityWorkspace`
+  - `detachIdentityWorkspace`
+  - [channels/api.ts](/home/rahman/projects/manef-db/convex/features/channels/api.ts)
 - [ ] Tambahkan sync dari runtime OpenClaw bindings ke Convex.
+- [x] Tambahkan sync dari runtime OpenClaw bindings ke Convex.
+  Bukti:
+  - `syncRuntimeChannels` menerima `workspaceBindings` dan `identityBindings`
+  - [sync_openclaw_channels_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_channels_to_convex.py)
 
 Definition of done:
 
 - setiap channel account bisa ditelusuri ke agent tujuan
+- setiap channel account bisa ditelusuri ke workspace tujuan
+- nomor/identity user bisa dipetakan ke workspace yang benar
 - frontend dapat menampilkan binding live tanpa fallback
 - perubahan binding termirror dua arah sesuai mode yang dipilih
+
+## Remaining phases
+
+- [x] Phase: tambah policy unik apakah satu channel boleh multi-workspace
+  atau single primary workspace.
+  Bukti:
+  - tabel:
+    `channelBindingPolicies` di
+    [channels/schema.ts](/home/rahman/projects/manef-db/convex/features/channels/schema.ts)
+  - mutation/query:
+    `setChannelBindingPolicy`, `listChannelBindingPolicies` di
+    [channels/api.ts](/home/rahman/projects/manef-db/convex/features/channels/api.ts)
+- [x] Phase: write-through lokal dari binding manual ke runtime OpenClaw.
+  Bukti:
+  - mutation binding manual sekarang enqueue `syncOutbox`
+  - worker lokal:
+    [process_openclaw_outbox.py](/home/rahman/projects/manef-db/scripts/process_openclaw_outbox.py)
+  - worker menulis ke namespace aman:
+    `manef.dashboard.*` di `~/.openclaw/openclaw.json`
+  - runtime sync wrapper sekarang menjalankan worker outbox sebelum pull sync:
+    [sync_openclaw_runtime_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_runtime_to_convex.py)
+- [ ] Phase berikutnya: schema/backend untuk `Feature Store`.
+- [ ] Phase berikutnya: sandbox/review backend untuk `Agent Builder`
+  output `custom_code`.
+
+Remaining breakdown untuk phase selanjutnya:
+
+- [ ] schema `featureStoreItems`
+- [ ] schema `workspaceFeatureInstalls`
+- [ ] schema `featureStorePreviews`
+- [ ] read API katalog item per workspace/scope
+- [ ] install/uninstall API per workspace
+- [ ] metadata publishing target untuk Superspace/external app
+- [ ] schema `agentBuilderDrafts`
+- [ ] mode draft:
+  `json_blocks` / `custom_code`
+
+Definition of done:
+
+- write manual dari dashboard membuat outbox event
+- worker lokal memproses outbox ke file lokal
+- sync berikutnya membaca ulang file lokal dan memantulkan state yang sama ke Convex
+- policy channel terbaca lagi dari file lokal ke DB
+
+## Auth onboarding and access model
+
+- [x] Login identifier mendukung `email` atau `phone`.
+  Bukti:
+  - [api.ts](/home/rahman/projects/manef-db/convex/features/auth/api.ts)
+  - [schema.ts](/home/rahman/projects/manef-db/convex/features/auth/schema.ts)
+  - commit `d2aaa73`
+- [x] Temporary password flow tersambung ke backend.
+  Bukti:
+  - registration request + issue password:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/auth/api.ts)
+  - commit `1ad944b`
+- [x] First login dengan temporary password wajib ganti password.
+  Bukti:
+  - mutation `changePassword`
+  - flag `mustChangePassword`
+  - [api.ts](/home/rahman/projects/manef-db/convex/features/auth/api.ts)
+  - commit `1606fed`
+- [x] Device approval tidak lagi memblok login.
+  Bukti:
+  - policy default `requireDeviceApproval: false`
+  - mutation `setRequireDeviceApproval`
+  - [api.ts](/home/rahman/projects/manef-db/convex/features/auth/api.ts)
+  - commit `8323ae1`
+- [ ] Tambahkan status registry yang jelas untuk request:
+  `pending_workspace`, `ready_for_access`, `approved`, `denied`.
+- [ ] Tambahkan jalur admin reset password sementara tanpa mengubah profile/workspace.
+- [ ] Tambahkan linkage eksplisit `authUser -> userProfile -> userIdentities -> workspace access`.
 
 ## Sessions
 
@@ -303,6 +635,28 @@ Definition of done:
   - sync script:
     [sync_openclaw_skills_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_skills_to_convex.py)
   - timer service aktif menjalankan sync berkala
+- [x] Tambahkan metadata `Skills Store` untuk source/publisher/trust/scope.
+  Bukti:
+  - field baru:
+    `sourceType`, `publisherLabel`, `publisherHandle`, `trustLevel`,
+    `skillScope`, `installState`, `homepage`
+  - schema:
+    [schema.ts](/home/rahman/projects/manef-db/convex/features/skills/schema.ts)
+  - API read/sync:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/skills/api.ts)
+- [x] Klasifikasikan skill menjadi:
+  `by Rahman`, `by ClawHub`, `by OpenClaw`.
+  Bukti:
+  - sync script kini mengklasifikasikan hasil runtime menjadi:
+    `rahman_local`, `clawhub`, `openclaw_bundled`
+  - source klasifikasi ada di:
+    [sync_openclaw_skills_to_convex.py](/home/rahman/projects/manef-db/scripts/sync_openclaw_skills_to_convex.py)
+- [x] Siapkan `ClawHub` sebagai sync source `pull-ready`, bukan webhook push.
+  Bukti:
+  - sync script memeriksa kandidat lockfile/metadata lokal `ClawHub`
+  - backend menyediakan query status store:
+    `getSkillStoreStatus`
+  - tidak ada asumsi webhook eksternal dari registry
 - [ ] Tambahkan toggle enable/disable yang konsisten dengan runtime.
 - [x] Tambahkan toggle enable/disable yang konsisten dengan sync berikutnya.
   Bukti:
@@ -310,12 +664,28 @@ Definition of done:
   - `syncRuntimeSkills` menjaga override tetap hidup sambil menyimpan
     `config.runtimeEnabled`
   - [api.ts](/home/rahman/projects/manef-db/convex/features/skills/api.ts)
+- [x] Turunkan `Skills Store` menjadi policy nyata
+  `workspace -> skills -> agents`.
+  Bukti:
+  - query `listSkills` sekarang bisa menerima `workspaceId` dan mengembalikan
+    `workspacePolicyEnabled`, `workspacePolicySources`,
+    `workspaceAssignedAgentCount`
+  - mutation baru:
+    `setWorkspaceSkillPolicy`
+  - policy manual `skill_store` ditulis ke tabel capability yang sama:
+    `workspaceSkillPolicies`, `workspaceAgentSkillPolicies`
+  - file:
+    [api.ts](/home/rahman/projects/manef-db/convex/features/skills/api.ts)
 
 Definition of done:
 
 - daftar skill di DB sama dengan runtime setelah sync
 - toggle dari UI terbaca lagi dari DB
 - sync tidak menduplikasi record skill yang sama
+- source label dan metadata trust/scope tersedia untuk `Skills Store`
+- jika metadata `ClawHub` muncul di host, backend bisa memetakannya tanpa
+  perubahan schema baru
+- policy skill manual dari store ikut terbaca oleh query capability workspace
 
 ## Config
 

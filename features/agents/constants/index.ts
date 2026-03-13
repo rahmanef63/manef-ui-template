@@ -1,15 +1,4 @@
-import type { AgentItem, AgentTab } from "../types";
-
-export const MOCK_AGENTS: AgentItem[] = [
-    { id: "main", name: "main", label: "main", isDefault: true, emoji: "🐾" },
-    { id: "ina", name: "Ka Ina Agent", label: "ina", emoji: "" },
-    { id: "irul", name: "Ka Irul Agent", label: "irul", emoji: "" },
-    { id: "irul-bisnis", name: "Irul Bisnis Agent", label: "irul-bisnis", emoji: "" },
-    { id: "rysha", name: "Rysha Agent", label: "rysha", emoji: "🐱" },
-    { id: "si-coder", name: "si-coder", label: "si-coder", emoji: "👨‍💻" },
-    { id: "si-db", name: "si-db", label: "si-db", emoji: "🗄️" },
-    { id: "si-it", name: "si-it", label: "si-it", emoji: "💻" },
-];
+import type { AgentTab } from "../types";
 
 export const AGENT_TABS: AgentTab[] = [
     { id: "overview", label: "Overview" },
