@@ -1,0 +1,56 @@
+services:
+  web:
+    image: ${APP_IMAGE:-openclaw-dashbaord-manef-obeant:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://dbgg.<YOUR_DOMAIN>}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+
+      # Public/base URLs
+      HOSTED_URL: ${HOSTED_URL:-https://gg.<YOUR_DOMAIN>}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://gg.<YOUR_DOMAIN>}
+      NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://dbgg.<YOUR_DOMAIN>}
+      CONVEX_SERVER_URL: ${CONVEX_SERVER_URL:-}
+
+      # Auth & security
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
+      AUTH_DEVICE_SALT: ${AUTH_DEVICE_SALT:-}
+
+      # OpenClaw integration
+      OPENCLAW_SHARED_SECRET: ${OPENCLAW_SHARED_SECRET:-}
+      OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS: ${OPENCLAW_ALLOWED_CLOCK_SKEW_SECONDS:-300}
+      OPENCLAW_NONCE_TTL_SECONDS: ${OPENCLAW_NONCE_TTL_SECONDS:-300}
+      OPENCLAW_WORKFLOW_URL: ${OPENCLAW_WORKFLOW_URL:-}
+
+    networks:
+      - dokploy-network
+
+    # Keep Traefik routing on the service spec so it survives redeploys.
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=dokploy-network
+
+        # Main app router
+        - traefik.http.routers.gg-dashboard.rule=Host(`gg.<YOUR_DOMAIN>`)
+        - traefik.http.routers.gg-dashboard.entrypoints=websecure
+        - traefik.http.routers.gg-dashboard.tls=true
+        - traefik.http.routers.gg-dashboard.tls.certresolver=letsencrypt
+        - traefik.http.services.gg-dashboard.loadbalancer.server.port=3000
+
+    # Works for non-swarm compose flows as well.
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true

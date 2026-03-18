@@ -1,0 +1,226 @@
+import { buildDeviceContext } from "@/lib/auth/device";
+import {
+  authorizePasswordLoginRef,
+  revokeSessionRef,
+} from "@/shared/convex/auth";
+import { isConvexNetworkError } from "@/lib/convex/errors";
+import { fetchMutation } from "@/lib/convex/server";
+import type { Id } from "@/shared/types/convex";
+import NextAuth, {
+  CredentialsSignin,
+  type DefaultSession,
+} from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+
+declare module "next-auth" {
+  interface Session {
+    user: DefaultSession["user"] & {
+      deviceId?: string;
+      id: string;
+      mustChangePassword?: boolean;
+      policyVersion?: number;
+      roles: string[];
+      sessionId?: string;
+      sessionVersion?: number;
+    };
+  }
+
+  interface User {
+    deviceId?: string;
+    mustChangePassword?: boolean;
+    roles?: string[];
+    sessionId?: string;
+    sessionVersion?: number;
+  }
+}
+
+class DeviceApprovalRequiredError extends CredentialsSignin {
+  code = "device_approval_required";
+}
+
+class DeviceRevokedError extends CredentialsSignin {
+  code = "device_revoked";
+}
+
+class UserBlockedError extends CredentialsSignin {
+  code = "user_blocked";
+}
+
+class EmailDomainNotAllowedError extends CredentialsSignin {
+  code = "email_domain_not_allowed";
+}
+
+class ServiceUnavailableError extends CredentialsSignin {
+  code = "service_unavailable";
+}
+
+type AppToken = {
+  deviceId?: string;
+  id?: string;
+  mustChangePassword?: boolean;
+  policyVersion?: number;
+  roles?: string[];
+  sessionId?: string;
+  sessionVersion?: number;
+};
+
+type AuthorizedUser = {
+  deviceId?: string;
+  email: string;
+  id: string;
+  mustChangePassword?: boolean;
+  name: string;
+  policyVersion?: number;
+  roles: string[];
+  sessionId?: string;
+  sessionVersion?: number;
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: process.env.AUTH_TRUST_HOST !== "false",
+  session: {
+    strategy: "jwt",
+  },
+  providers: [
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        identifier: { label: "Email atau nomor telepon", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials, request) {
+        const identifier = String(credentials?.identifier ?? "");
+        const password = String(credentials?.password ?? "");
+        const device = buildDeviceContext(request.headers);
+
+        const runMutation = fetchMutation as (
+          ref: unknown,
+          args: Record<string, unknown>
+        ) => Promise<unknown>;
+        let result: {
+          code:
+            | "APPROVED"
+            | "DEVICE_APPROVAL_REQUIRED"
+            | "DEVICE_REVOKED"
+            | "BLOCKED"
+            | "INVALID_CREDENTIALS"
+            | "EMAIL_DOMAIN_NOT_ALLOWED";
+          deviceId?: string;
+          policyVersion?: number;
+          roles?: string[];
+          sessionId?: string;
+          sessionVersion?: number;
+          mustChangePassword?: boolean;
+          userId?: string;
+          userEmail?: string;
+          userName?: string;
+        };
+        try {
+          result = (await runMutation(authorizePasswordLoginRef, {
+            createSession: true,
+            deviceHash: device.deviceHash,
+            identifier,
+            ip: device.ip,
+            label: device.label,
+            password,
+            userAgent: device.userAgent,
+          })) as typeof result;
+        } catch (error) {
+          if (isConvexNetworkError(error)) {
+            throw new ServiceUnavailableError();
+          }
+          throw error;
+        }
+
+        switch (result.code) {
+          case "APPROVED":
+            return {
+              deviceId: result.deviceId,
+              email: result.userEmail ?? (identifier.includes("@") ? identifier : ""),
+              id: result.userId,
+              mustChangePassword: result.mustChangePassword ?? false,
+              name: result.userName ?? identifier.split("@")[0] ?? identifier,
+              policyVersion: result.policyVersion ?? 1,
+              roles: result.roles ?? [],
+              sessionId: result.sessionId,
+              sessionVersion: result.sessionVersion ?? 1,
+            };
+          case "DEVICE_APPROVAL_REQUIRED":
+            throw new DeviceApprovalRequiredError();
+          case "DEVICE_REVOKED":
+            throw new DeviceRevokedError();
+          case "BLOCKED":
+            throw new UserBlockedError();
+          case "EMAIL_DOMAIN_NOT_ALLOWED":
+            throw new EmailDomainNotAllowedError();
+          default:
+            return null;
+        }
+      },
+    }),
+  ],
+  pages: {
+    signIn: "/login",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?.id !== undefined) {
+        const appToken = token as typeof token & AppToken;
+        const authorizedUser = user as typeof user & AuthorizedUser;
+        appToken.deviceId = authorizedUser.deviceId;
+        appToken.id = authorizedUser.id;
+        appToken.mustChangePassword = authorizedUser.mustChangePassword;
+        appToken.policyVersion = authorizedUser.policyVersion;
+        appToken.roles = authorizedUser.roles ?? [];
+        appToken.sessionId = authorizedUser.sessionId;
+        appToken.sessionVersion = authorizedUser.sessionVersion;
+
+        // Persist identity fields for client session rendering (sidebar/user menu).
+        token.email = authorizedUser.email;
+        token.name = authorizedUser.name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user !== undefined) {
+        const appToken = token as typeof token & AppToken;
+        session.user.deviceId = appToken.deviceId;
+        session.user.id = appToken.id ?? session.user.email ?? "";
+        session.user.mustChangePassword = appToken.mustChangePassword;
+        session.user.policyVersion = appToken.policyVersion;
+        session.user.roles = appToken.roles ?? [];
+        session.user.sessionId = appToken.sessionId;
+        session.user.sessionVersion = appToken.sessionVersion;
+
+        // Ensure name/email are always available in sidebar after page reload.
+        session.user.email = token.email ?? session.user.email ?? "";
+        session.user.name =
+          token.name ??
+          session.user.name ??
+          (session.user.email ? session.user.email.split("@")[0] : "User");
+      }
+      return session;
+    },
+  },
+  events: {
+    async signOut(message) {
+      const sessionId =
+        "token" in message
+          ? ((message.token as AppToken | undefined)?.sessionId ?? undefined)
+          : undefined;
+      if (!sessionId) {
+        return;
+      }
+
+      const runMutation = fetchMutation as (
+        ref: unknown,
+        args: Record<string, unknown>
+      ) => Promise<unknown>;
+      await runMutation(revokeSessionRef, {
+        revokedBy: "nextauth-signout",
+        sessionId: sessionId as Id<"authSessions">,
+      });
+    },
+  },
+  secret: process.env.AUTH_SECRET,
+});
